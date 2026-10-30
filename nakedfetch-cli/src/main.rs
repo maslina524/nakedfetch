@@ -8,7 +8,6 @@ mod color;
 mod config;
 mod crc32;
 mod deflate;
-mod image;
 mod kitty;
 mod logo;
 mod lua;
@@ -43,6 +42,7 @@ extern crate alloc;
 use alloc::{boxed::Box, string::String, vec::Vec};
 use core::{slice::Iter, str::FromStr as _};
 
+use image::Image;
 use json::Map;
 
 use crate::{
@@ -52,7 +52,6 @@ use crate::{
     detect::os,
     field::cached,
     formats::{MemorySize, SplittedAnsiIter},
-    image::Image,
     imp::{env, fs, http::Request},
     logo::{LogoInfo, UILogo},
     modules::{Commit, DocsVtable, FormatValue, Module, Version},

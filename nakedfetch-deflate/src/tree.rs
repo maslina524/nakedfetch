@@ -1,5 +1,5 @@
-use core::iter::repeat_n;
 use alloc::vec::Vec;
+use core::iter::repeat_n;
 
 use huffman::{HuffmanTree, Stream, decode_symb};
 
@@ -27,7 +27,9 @@ pub fn build_fixed_trees() -> (HuffmanTree, HuffmanTree) {
     (litlen_tree, dist_tree)
 }
 
-pub fn build_dynamic_trees(stream: &mut Stream) -> Result<(HuffmanTree, HuffmanTree), DeflateError> {
+pub fn build_dynamic_trees(
+    stream: &mut Stream,
+) -> Result<(HuffmanTree, HuffmanTree), DeflateError> {
     let hlit = stream.read_bits(5) as usize + 257;
     let hdist = stream.read_bits(5) as usize + 1;
     let hclen = stream.read_bits(4) as usize + 4;

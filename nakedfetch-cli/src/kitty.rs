@@ -1,6 +1,8 @@
 use core::fmt::Write;
 
-use crate::{base64, format, image::Image, print::Stdout};
+use image::Image;
+
+use crate::{base64, format, print::Stdout};
 
 const CHUNK: usize = 4096;
 

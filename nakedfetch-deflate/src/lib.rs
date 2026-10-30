@@ -12,7 +12,10 @@ use core::error::Error;
 
 use huffman::Stream;
 
-use crate::{block::decode_block, tree::{build_dynamic_trees, build_fixed_trees}};
+use crate::{
+    block::decode_block,
+    tree::{build_dynamic_trees, build_fixed_trees},
+};
 
 #[derive(Debug)]
 pub enum DeflateError {

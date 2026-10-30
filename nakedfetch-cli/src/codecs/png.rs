@@ -2,11 +2,9 @@ use alloc::{vec, vec::Vec};
 use core::error::Error;
 
 use deflate::{self, DeflateError};
+use image::{ColorType, ColorTypeError, Image, Rgba, RgbaConvertError};
 
-use crate::{
-    crc32,
-    image::{ColorType, ColorTypeError, Image, Rgba, RgbaConvertError},
-};
+use crate::crc32;
 
 static PNG_SIG: &[u8] = b"\x89PNG\x0D\x0A\x1A\x0A";
 static IHDR_NAME: &[u8] = b"IHDR";
@@ -331,7 +329,9 @@ impl Png {
 mod tests {
     use std::fs;
 
-    use crate::{codecs::Png, image::ColorType};
+    use image::{ColorType, Image};
+
+    use crate::codecs::Png;
 
     #[test]
     fn rgba8_test() {

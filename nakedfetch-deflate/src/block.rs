@@ -1,12 +1,9 @@
+use alloc::vec::Vec;
 use core::cmp::Ordering;
 
-use alloc::vec::Vec;
+use huffman::{HuffmanTree, Stream, decode_symb};
 
-use huffman::decode_symb;
-use huffman::{HuffmanTree, Stream};
-
-use crate::DeflateError;
-use crate::consts;
+use crate::{DeflateError, consts};
 
 pub fn decode_block(
     stream: &mut Stream,
