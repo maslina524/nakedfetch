@@ -1,60 +1,54 @@
 use crate::types::{
-    primitives::{ULong, UShort},
+    KSystemTime, NtProductType,
     chars::WChar,
-    KSystemTime
+    primitives::{ULong, UShort},
 };
+
+const PROCESSOR_FEATURE_MAX: usize = 64;
 
 STRUCT! {
     struct _KUSER_SHARED_DATA {
-        TickCountLowDeprecated: ULong,
-        TickCountMultiplier: ULong,
-        InterruptTime: KSystemTime,
-        SystemTime: KSystemTime,
-        TimeZoneBias: KSystemTime,
-        ImageNumberLow: UShort,
-        ImageNumberHigh: UShort,
-        NtSystemRoot: [WChar; 260],
-        MaxStackTraceDepth: ULong,
-        CryptoExponent: ULong,
-        TimeZoneId: ULong,
-        LargePageMinimum: ULong,
-        AitSamplingValue: ULong,
-        AppCompatFlag: ULong,
-        RNGSeedVersion: ULongLong,
-        GlobalValidationRunlevel: ULong,
-        TimeZoneBiasStamp: Long,
-        NtBuildNumber: ULong,
-        NT_PRODUCT_TYPE               NtProductType,
-        BOOLEAN                       ProductTypeIsValid,
-        BOOLEAN                       Reserved0[1],
-        NativeProcessorArchitecture: UShort,
-        NtMajorVersion: ULong,
-        NtMinorVersion: ULong,
-        BOOLEAN                       ProcessorFeatures[PROCESSOR_FEATURE_MAX],
-        Reserved1: ULong,
-        Reserved3: ULong,
-        TimeSlip: ULong,
-        ALTERNATIVE_ARCHITECTURE_TYPE AlternativeArchitecture,
-        BootId: UShort,
-        LARGE_INTEGER                 SystemExpirationDate,
-        SuiteMask: ULong,
-        BOOLEAN                       KdDebuggerEnabled,
-        union {
-            UCHAR MitigationPolicies;
-            struct {
-                UCHAR NXSupportPolicy : 2;
-                UCHAR SEHValidationPolicy : 2;
-                UCHAR CurDirDevicesSkippedForDlls : 2;
-                UCHAR Reserved : 2;
-            };
-        };
-        USHORT                        CyclesPerYield;
-        ULONG                         ActiveConsoleId;
-        ULONG                         DismountCount;
-        ULONG                         ComPlusPackage;
-        ULONG                         LastSystemRITEventTickCount;
-        ULONG                         NumberOfPhysicalPages;
-        BOOLEAN                       SafeBootMode;
+        tick_count_low_deprecated: ULong,
+        tick_count_multiplier: ULong,
+        interrupt_time: KSystemTime,
+        system_time: KSystemTime,
+        time_zone_bias: KSystemTime,
+        image_number_low: UShort,
+        image_number_high: UShort,
+        nt_system_root: [WChar; 260],
+        max_stack_trace_depth: ULong,
+        crypto_exponent: ULong,
+        time_zone_id: ULong,
+        large_page_minimum: ULong,
+        ait_sampling_value: ULong,
+        app_compat_flag: ULong,
+        rng_seed_version: ULongLong,
+        global_validation_runlevel: ULong,
+        time_zone_bias_stamp: Long,
+        nt_build_number: ULong,
+        nt_product_type: NtProductType,
+        product_type_is_valid: Boolean,
+        reserved0: [Boolean; 1],
+        native_processor_architecture: UShort,
+        nt_major_version: ULong,
+        nt_minor_version: ULong,
+        processor_features: [Boolean; PROCESSOR_FEATURE_MAX],
+        reserved1: ULong,
+        reserved3: ULong,
+        time_slip: ULong,
+        alternative_architecture: AlternativeArchitectureType,
+        boot_id: UShort,
+        system_expiration_date: LargeInteger,
+        suite_mask: ULong,
+        kd_debugger_enabled: Boolean,
+        mitigation_policies: MitigationPolicies,
+        cycles_per_yield: UShort,
+        active_console_id: ULong,
+        dismount_count: ULong,
+        com_plus_package: ULong,
+        last_system_rit_event_tick_count: ULong,
+        number_of_physical_pages: ULong,
+        safe_boot_mode: Boolean,
         union {
             UCHAR VirtualizationFlags;
             struct {
@@ -96,4 +90,4 @@ STRUCT! {
             } DUMMYSTRUCTNAME;
         }
     }
-};
+}

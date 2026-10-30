@@ -576,7 +576,10 @@ fn main() {
     // nightly version of the compiler is required\x1b[0m" );
 
     let (raw, encoded) = setup::compress_logos();
-    #[allow(clippy::cast_precision_loss, reason = "It will work correctly as long as encoded and raw are less than 2^52 bytes")]
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "It will work correctly as long as encoded and raw are less than 2^52 bytes"
+    )]
     {
         println!(
             "cargo:warning={}b -> {}b = {:.02}%",

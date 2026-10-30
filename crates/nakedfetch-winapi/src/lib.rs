@@ -6,4 +6,4 @@ mod macros;
 
 mod native;
 mod ntdll;
-mod types;
+pub mod types;
