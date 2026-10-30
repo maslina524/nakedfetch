@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 use core::{cmp::Ordering, error::Error, iter::repeat_n};
 
-use crate::huffman::{HuffmanTree, Stream, decode_symb};
+use huffman::{HuffmanTree, Stream, decode_symb};
 
 const LENGTH_BASE: [(usize, u8); 29] = [
     (3, 0),

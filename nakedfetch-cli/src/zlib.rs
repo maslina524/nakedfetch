@@ -1,10 +1,9 @@
 use alloc::vec::Vec;
 use core::{cmp, iter::repeat_n};
 
-use crate::{
-    abort,
-    huffman::{HuffmanTree, Stream, decode_symb},
-};
+use huffman::{HuffmanTree, Stream, decode_symb};
+
+use crate::abort;
 
 const LENGTH_BASE: [u32; 29] = [
     3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131,
