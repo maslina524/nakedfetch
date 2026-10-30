@@ -8,6 +8,13 @@ STRUCT! {
     }
 }
 
+impl KSystemTime {
+    #[must_use]
+    pub const fn quad(&self) -> u64 {
+        ((self.high1_time as u64) << 32) | (self.low_part as u64)
+    }
+}
+
 ENUM! {
     enum NtProductType {
         WinNt = 1,

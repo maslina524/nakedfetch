@@ -6,6 +6,7 @@ use crate::types::{
 };
 
 const PROCESSOR_FEATURE_MAX: usize = 64;
+const KUSER_SHARED_DATA_PTR: *mut KUserSharedData = 0x7FFE_0000 as *mut _;
 
 STRUCT! {
     struct KUserSharedData {
@@ -62,4 +63,9 @@ STRUCT! {
         system_call_pad: [ULongLong; 1],
         tick_count: KSystemTime
     }
+}
+
+pub fn kuser_share_data() -> &'static KUserSharedData {
+    // SAFETY: The ptr is static for all versions of Windows, safe
+    unsafe { &*KUSER_SHARED_DATA_PTR }
 }

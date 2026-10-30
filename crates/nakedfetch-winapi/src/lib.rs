@@ -7,3 +7,5 @@ mod macros;
 mod native;
 mod ntdll;
 pub mod types;
+
+pub mod win32;
