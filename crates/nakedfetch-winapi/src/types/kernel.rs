@@ -1,23 +1,4 @@
-#[derive(Debug, Clone, Copy)]
-pub struct MitigationPolicies(chars::UChar);
-
-impl MitigationPolicies {
-    pub fn nx_support_policy(&self) -> u8 {
-        self.0 & 0b11
-    }
-
-    pub fn seh_validation_policy(&self) -> u8 {
-        (self.0 >> 2) & 0b11
-    }
-
-    pub fn cur_dir_devices_skipped_for_dlls(&self) -> u8 {
-        (self.0 >> 4) & 0b11
-    }
-
-    pub fn reserved(&self) -> u8 {
-        (self.0 >> 6) & 0b11
-    }
-}
+use crate::types::primitives::{Long, ULong};
 
 STRUCT! {
     struct KSystemTime {
