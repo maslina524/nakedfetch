@@ -299,7 +299,7 @@ mod setup {
         let mut raw_bytes_len = 0;
         let mut encoded_bytes_len = 0;
 
-        let base_path = PathBuf::from("logo");
+        let base_path = PathBuf::from("../../logo");
         let mut all_paths = Vec::new();
         for letter in VALID_CHARS {
             let letter_path = base_path.join(letter.to_string());
@@ -341,7 +341,7 @@ mod setup {
 
         let manifest_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
         println!("Manifest: {manifest_dir:?}");
-        let json_path = manifest_dir.join("logo.json");
+        let json_path = manifest_dir.join("../../logo.json");
         let out_dir = PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("logo");
 
         println!("cargo:rerun-if-changed={}", json_path.display());

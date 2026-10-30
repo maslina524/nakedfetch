@@ -1,13 +1,18 @@
 [workspace]
 resolver = "2"
 members = [
-    "nakedfetch-cli", 
-    "nakedfetch-unixlib",
-    "nakedfetch-proc",
-    "nakedfetch-json", "nakedfetch-huffman", "nakedfetch-zlib", "nakedfetch-lz77", "nakedfetch-deflate", "nakedfetch-image",
+    "crates/nakedfetch-cli", 
+    "crates/nakedfetch-unixlib",
+    "crates/nakedfetch-proc",
+    "crates/nakedfetch-json", 
+    "crates/nakedfetch-huffman", 
+    "crates/nakedfetch-zlib", 
+    "crates/nakedfetch-lz77", 
+    "crates/nakedfetch-deflate", 
+    "crates/nakedfetch-image",
 ]
 
-default-members = ["nakedfetch-cli"]
+default-members = ["crates/nakedfetch-cli"]
 
 [workspace.package]
 version = "0.5.0"
