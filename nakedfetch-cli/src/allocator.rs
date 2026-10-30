@@ -8,8 +8,6 @@ use core::{
 
 use crate::imp::allocator::AllocatorInner;
 
-const HEAP_ZERO_MEMORY: u32 = 0x08;
-
 static ALLOC_COUNTER: AtomicUsize = AtomicUsize::new(0);
 static REALLOC_COUNTER: AtomicUsize = AtomicUsize::new(0);
 static DEALLOC_COUNTER: AtomicUsize = AtomicUsize::new(0);

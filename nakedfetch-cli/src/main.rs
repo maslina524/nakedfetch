@@ -1,23 +1,5 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
-#![deny(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
-#![warn(clippy::missing_safety_doc, clippy::undocumented_unsafe_blocks)]
-#![allow(
-    dead_code,
-    reason = "A lot of code is made \"for the future\"; all unused code will be removed by release"
-)]
-#![allow(
-    clippy::too_many_lines,
-    reason = "In logo/{a-z}.rs there are functions longer than 100 lines"
-)]
-#![allow(
-    clippy::cast_lossless,
-    clippy::cast_possible_truncation,
-    clippy::cast_possible_wrap,
-    clippy::cast_sign_loss,
-    reason = "There's no point in them, it will make the code cleaner"
-)]
-#![allow(clippy::cargo_common_metadata)]
 
 mod allocator;
 mod base64;
