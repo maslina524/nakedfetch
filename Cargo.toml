@@ -4,7 +4,7 @@ members = [
     "nakedfetch-cli", 
     "nakedfetch-unixlib",
     "nakedfetch-proc",
-    "nakedfetch-json", "nakedfetch-huffman", "nakedfetch-zlib", "nakedfetch-lz77",
+    "nakedfetch-json", "nakedfetch-huffman", "nakedfetch-zlib", "nakedfetch-lz77", "nakedfetch-deflate",
 ]
 
 default-members = ["nakedfetch-cli"]

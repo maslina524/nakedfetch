@@ -8,7 +8,6 @@ mod color;
 mod config;
 mod crc32;
 mod deflate;
-mod huffman;
 mod image;
 mod kitty;
 mod logo;

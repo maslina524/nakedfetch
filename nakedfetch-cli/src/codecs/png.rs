@@ -1,9 +1,10 @@
 use alloc::{vec, vec::Vec};
 use core::error::Error;
 
+use deflate::{self, DeflateError};
+
 use crate::{
     crc32,
-    deflate::{self, DeflateError},
     image::{ColorType, ColorTypeError, Image, Rgba, RgbaConvertError},
 };
 
