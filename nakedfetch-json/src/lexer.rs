@@ -188,7 +188,7 @@ impl Iterator for TokenStream {
 
 #[cfg(test)]
 mod tests {
-    use crate::json::lexer::{Token, TokenStream};
+    use super::{Token, TokenStream};
 
     #[test]
     fn single_chars_test() {

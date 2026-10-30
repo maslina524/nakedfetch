@@ -1,5 +1,7 @@
 use alloc::string::String;
-use core::str::SplitN;
+use core::str::{FromStr as _, SplitN};
+
+use json::{Map, Value};
 
 use crate::{
     format,
@@ -9,7 +11,6 @@ use crate::{
         http::Request,
         path::Path,
     },
-    json::{Json, Map},
     modules::publicip::PublicIP,
     warning,
 };
@@ -63,7 +64,7 @@ fn request() -> Option<Map> {
     };
     if response.is_success() {
         let text = response.as_text().unwrap();
-        match Json::from_str(&text) {
+        match Map::from_str(&text) {
             Ok(c) => Some(c),
             Err(e) => {
                 warning!("Failed to parse response (publicip): {e}");
@@ -94,7 +95,7 @@ fn read_cache() -> Option<(u64, Map)> {
     let hours = next_item(&mut parts)?.parse::<u64>().ok()?;
     let raw = next_item(&mut parts)?;
 
-    match Json::from_str(raw) {
+    match Map::from_str(raw) {
         Ok(m) => Some((hours, m)),
         Err(e) => {
             warning!("Failed to parse cache (publicip): {e}");

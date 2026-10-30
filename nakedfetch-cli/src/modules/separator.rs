@@ -1,10 +1,10 @@
 use alloc::{borrow::Cow, collections::BTreeMap, string::String};
 
+use json::Value;
 use proc::Docs;
 
 use crate::{
     formats, impl_display_for_module,
-    json::Value,
     modules::{self, FormatValue, Module, ModuleFormat, Title},
     sync::OnceLock,
 };

@@ -1,9 +1,10 @@
 use alloc::{borrow::ToOwned, collections::BTreeMap, string::String, vec, vec::Vec};
 
+use json::{Map, Value};
+
 use crate::{
     format,
     formats::{ColorPlan, Percent, Temperature, format_color},
-    json::{Map, Value},
     modules::Module,
     sync::OnceLock,
     warning,

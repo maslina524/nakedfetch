@@ -39,6 +39,7 @@ pub use datetime::Datetime;
 pub use disk::{Disk, DiskList};
 pub use gpu::Gpu;
 pub use initsystem::Initsystem;
+use json::Value;
 pub use kernel::Kernel;
 pub use locale::Locale;
 pub use memory::Memory;
@@ -54,8 +55,6 @@ pub use uptime::Uptime;
 pub use version::Version;
 pub use wallpaper::Wallpaper;
 pub use weather::Weather;
-
-use crate::json::Value;
 
 macro_rules! module_registry {
     (

@@ -26,7 +26,6 @@ mod codecs;
 mod detect;
 mod field;
 mod formats;
-mod json;
 mod modules;
 mod str;
 
@@ -45,7 +44,9 @@ cfg_if! {
 extern crate alloc;
 
 use alloc::{boxed::Box, string::String, vec::Vec};
-use core::slice::Iter;
+use core::{slice::Iter, str::FromStr as _};
+
+use json::Map;
 
 use crate::{
     allocator::{AllocationReport, Allocator},
@@ -56,7 +57,6 @@ use crate::{
     formats::{MemorySize, SplittedAnsiIter},
     image::Image,
     imp::{env, fs, http::Request},
-    json::Json,
     logo::{LogoInfo, UILogo},
     modules::{Commit, DocsVtable, FormatValue, Module, Version},
     nvidia::NvidiaLib,
@@ -289,7 +289,7 @@ fn get_config(args: &mut Iter<'_, String>) -> Config {
             warning!("Failed to parse the response");
             return Config::default();
         };
-        return match Json::from_str(&t) {
+        return match Map::from_str(&t) {
             Ok(c) => Config::from_json(&c),
             Err(e) => {
                 warning!("Failed to parse the json config: {e}");
@@ -299,7 +299,14 @@ fn get_config(args: &mut Iter<'_, String>) -> Config {
     }
 
     // FS path
-    match Json::from_file(path) {
+    let content = match fs::read_to_string(path) {
+        Ok(c) => c,
+        Err(e) => {
+            warning!("Failed to read json config: {e}");
+            return Config::default();
+        },
+    };
+    match Map::from_str(path) {
         Ok(c) => Config::from_json(&c),
         Err(e) => {
             warning!("Failed to parse the json config: {e}");

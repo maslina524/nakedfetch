@@ -1,12 +1,12 @@
 use alloc::{borrow::Cow, collections::BTreeMap, string::String, vec::Vec};
 
+use json::Value;
 use proc::{Docs, Module};
 
 use crate::{
     detect::disk::get_disks,
     formats::{MemorySize, Percent, Time},
     impl_display_for_module,
-    json::Value,
     modules::{self, Module, ModuleFormat},
     sync::OnceLock,
 };

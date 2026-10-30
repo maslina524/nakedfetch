@@ -52,7 +52,7 @@ pub fn imp(type_name: &Ident, fields: &[&Field]) -> TokenStream {
                 _map: ::core::option::Option<
                     &::alloc::collections::BTreeMap<
                         ::alloc::string::String,
-                        crate::json::Value,
+                        json::Value,
                     >,
                 >,
             ) -> ::core::option::Option<::alloc::borrow::Cow<'_, str>> {

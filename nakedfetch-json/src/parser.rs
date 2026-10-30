@@ -1,118 +1,41 @@
-use alloc::{string::String, vec::Vec};
-use core::str::FromStr;
+use alloc::vec::Vec;
+use core::{error::Error, fmt, str::FromStr};
 
 use crate::{
-    format,
-    json::lexer::{Token, TokenStream},
+    Map, Value,
+    lexer::{Token, TokenStream},
 };
 
-#[derive(Debug, Clone)]
-pub enum Value {
-    String(String),
-    Number(f64),
-    Bool(bool),
-    Array(Vec<Self>),
-    Dict(Map),
-    Null,
+#[derive(Debug)]
+pub enum ParseError {
+    Unexpected { expected: Token, got: Token },
+    UnexpectedToken(Token),
+    ExpectedInObject,
+    ExpectedInArray,
+    ObjectKeyMustBeStr,
+    InvalidNum,
+    ObjectKeyNotFound,
+    Eoi,
 }
 
-impl Value {
-    pub const fn as_string(&self) -> Option<&String> {
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::String(s) => Some(s),
-            _ => None,
+            ParseError::Unexpected { expected, got } => {
+                write!(f, "Expected {expected:?}, got {got:?}")
+            },
+            ParseError::UnexpectedToken(t) => write!(f, "Unexpected token: {t:?}"),
+            ParseError::ExpectedInObject => write!(f, "Expected `,` or `{{` in object"),
+            ParseError::ExpectedInArray => write!(f, "Expected `,` or `[` in object"),
+            ParseError::ObjectKeyMustBeStr => write!(f, "Object key must be a string"),
+            ParseError::InvalidNum => write!(f, "Invalid number format"),
+            ParseError::ObjectKeyNotFound => write!(f, "Expected object key"),
+            ParseError::Eoi => write!(f, "End of input"),
         }
-    }
-
-    pub const fn as_number(&self) -> Option<f64> {
-        match self {
-            Self::Number(s) => Some(*s),
-            _ => None,
-        }
-    }
-
-    pub const fn as_bool(&self) -> Option<bool> {
-        match self {
-            Self::Bool(s) => Some(*s),
-            _ => None,
-        }
-    }
-
-    pub const fn as_array(&self) -> Option<&Vec<Self>> {
-        match self {
-            Self::Array(s) => Some(s),
-            _ => None,
-        }
-    }
-
-    pub const fn as_object(&self) -> Option<&Map> {
-        match self {
-            Self::Dict(s) => Some(s),
-            _ => None,
-        }
-    }
-
-    pub const fn is_string(&self) -> bool {
-        matches!(self, Self::String(_))
-    }
-
-    pub const fn is_number(&self) -> bool {
-        matches!(self, Self::Number(_))
-    }
-
-    pub const fn is_bool(&self) -> bool {
-        matches!(self, Self::Bool(_))
-    }
-
-    pub const fn is_array(&self) -> bool {
-        matches!(self, Self::Array(_))
-    }
-
-    pub const fn is_object(&self) -> bool {
-        matches!(self, Self::Dict(_))
-    }
-
-    pub const fn is_null(&self) -> bool {
-        matches!(self, Self::Null)
     }
 }
 
-#[derive(Debug, Clone, Default)]
-pub struct Map(Vec<(String, Value)>);
-
-impl Map {
-    pub const fn new() -> Self {
-        Self(Vec::new())
-    }
-
-    pub fn insert(&mut self, key: String, value: Value) {
-        self.0.push((key, value));
-    }
-
-    pub fn get(&self, key: &str) -> Option<&Value> {
-        self.0.iter().find(|(k, _)| k == key).map(|(_, v)| v)
-    }
-
-    pub fn get_string(&self, key: &str) -> Option<&String> {
-        self.get(key).and_then(Value::as_string)
-    }
-
-    pub fn get_number(&self, key: &str) -> Option<f64> {
-        self.get(key).and_then(Value::as_number)
-    }
-
-    pub fn get_bool(&self, key: &str) -> Option<bool> {
-        self.get(key).and_then(Value::as_bool)
-    }
-
-    pub fn get_array(&self, key: &str) -> Option<&Vec<Value>> {
-        self.get(key).and_then(Value::as_array)
-    }
-
-    pub fn get_object(&self, key: &str) -> Option<&Self> {
-        self.get(key).and_then(Value::as_object)
-    }
-}
+impl Error for ParseError {}
 
 pub struct Parser {
     iter: TokenStream,
@@ -135,23 +58,23 @@ impl Parser {
         token
     }
 
-    fn consume(&mut self, expected: &Token) -> Result<Token, String> {
-        let token = self.next().ok_or("Unexpected end of input")?;
+    fn consume(&mut self, expected: &Token) -> Result<Token, ParseError> {
+        let token = self.next().ok_or(ParseError::Eoi)?;
         if token == *expected {
             Ok(token)
         } else {
-            Err(format!("Expected {expected:?}, got {token:?}"))
+            Err(ParseError::Unexpected {
+                expected: expected.clone(),
+                got: token,
+            })
         }
     }
 
-    pub fn parse_value(&mut self) -> Result<Value, String> {
+    pub fn parse_value(&mut self) -> Result<Value, ParseError> {
         match self.peek() {
             Some(Token::LCurly) => Ok(Value::Dict(self.parse_object()?)),
             Some(Token::LBrace) => Ok(Value::Array(self.parse_array()?)),
             Some(Token::String(s)) => {
-                // The lexer already strips the surrounding quotes and
-                // resolves escape sequences (including \uXXXX), so the
-                // token's content is the final string value as-is.
                 let s = s.clone();
                 self.next();
                 Ok(Value::String(s))
@@ -159,7 +82,7 @@ impl Parser {
             Some(Token::Number(s)) => {
                 let s = s.clone();
                 self.next();
-                let num = f64::from_str(&s).map_err(|_| "Invalid number format")?;
+                let num = f64::from_str(&s).map_err(|_| ParseError::InvalidNum)?;
                 Ok(Value::Number(num))
             },
             Some(Token::True) => {
@@ -174,11 +97,12 @@ impl Parser {
                 self.next();
                 Ok(Value::Null)
             },
-            _ => Err("Unexpected token while parsing value".into()),
+            Some(t) => Err(ParseError::UnexpectedToken(t.clone())),
+            None => Err(ParseError::Eoi),
         }
     }
 
-    pub fn parse_object(&mut self) -> Result<Map, String> {
+    pub fn parse_object(&mut self) -> Result<Map, ParseError> {
         self.next(); // consume '{'
         let mut map = Map::new();
 
@@ -188,9 +112,9 @@ impl Parser {
         }
 
         loop {
-            let key_token = self.next().ok_or("Expected object key")?;
+            let key_token = self.next().ok_or(ParseError::ObjectKeyNotFound)?;
             let Token::String(key) = key_token else {
-                return Err("Object key must be a string".into());
+                return Err(ParseError::ObjectKeyMustBeStr);
             };
 
             self.consume(&Token::Colon)?;
@@ -210,14 +134,14 @@ impl Parser {
                     self.next();
                     break;
                 },
-                _ => return Err("Expected ',' or '}}' in object".into()),
+                _ => return Err(ParseError::ExpectedInObject),
             }
         }
 
         Ok(map)
     }
 
-    pub fn parse_array(&mut self) -> Result<Vec<Value>, String> {
+    pub fn parse_array(&mut self) -> Result<Vec<Value>, ParseError> {
         self.next(); // consume '['
         let mut vec = Vec::new();
 
@@ -242,7 +166,7 @@ impl Parser {
                     self.next();
                     break;
                 },
-                _ => return Err("Expected ',' or ']' in array".into()),
+                _ => return Err(ParseError::ExpectedInArray),
             }
         }
 
@@ -257,7 +181,7 @@ impl core::fmt::Display for Map {
         fn proc_map(f: &mut core::fmt::Formatter<'_>, map: &Map) -> core::fmt::Result {
             f.write_char('{')?;
 
-            for (i, (k, v)) in map.0.iter().enumerate() {
+            for (i, (k, v)) in map.iter().enumerate() {
                 write!(f, "\"{k}\": ")?;
 
                 match v {
@@ -269,7 +193,7 @@ impl core::fmt::Display for Map {
                     Value::Array(a) => proc_array(f, a)?,
                 }
 
-                if i != map.0.len() - 1 {
+                if i != map.len() - 1 {
                     f.write_str(", ")?;
                 }
             }
@@ -320,7 +244,8 @@ impl core::fmt::Display for Map {
 
 #[cfg(test)]
 mod tests {
-    use crate::json::{lexer::TokenStream, parser::Parser};
+    use super::Parser;
+    use crate::lexer::TokenStream;
 
     #[test]
     fn single_chars_test() {
