@@ -1,7 +1,7 @@
 use alloc::{string::String, vec::Vec};
 use core::fmt::Write;
 
-use crate::{abort, color, formats::char_width, image::Image, sync::OnceLock, zlib};
+use crate::{abort, color, formats::char_width, image::Image, sync::OnceLock};
 
 macro_rules! logo_mod {
     ($($letter:ident),* $(,)?) => {

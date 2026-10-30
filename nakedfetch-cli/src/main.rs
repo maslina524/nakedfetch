@@ -20,7 +20,6 @@ mod parser;
 mod print;
 mod sync;
 mod url;
-mod zlib;
 
 mod codecs;
 mod detect;

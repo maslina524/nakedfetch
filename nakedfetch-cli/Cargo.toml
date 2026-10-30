@@ -11,6 +11,7 @@ proc = { path = "../nakedfetch-proc" }
 unixlib = { path = "../nakedfetch-unixlib" }
 json = { path = "../nakedfetch-json" }
 huffman = { path = "../nakedfetch-huffman" }
+zlib = { path = "../nakedfetch-zlib" }
 
 [build-dependencies]
 chrono      = "0.4.45"

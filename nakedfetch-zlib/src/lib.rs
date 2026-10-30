@@ -1,26 +1,31 @@
+#![cfg_attr(not(test), no_std)]
+#![cfg_attr(not(test), no_main)]
+
+extern crate alloc;
+
 use alloc::vec::Vec;
-use core::{cmp, iter::repeat_n};
+use core::{cmp, error::Error, fmt, iter::repeat_n};
 
 use huffman::{HuffmanTree, Stream, decode_symb};
 
-use crate::abort;
+pub type Adler32 = u32;
 
-const LENGTH_BASE: [u32; 29] = [
+const LENGTH_BASE: &[u32; 29] = &[
     3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131,
     163, 195, 227, 258,
 ];
-const LENGTH_EXTRA_BITS: [u32; 29] = [
+const LENGTH_EXTRA_BITS: &[u32; 29] = &[
     0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0,
 ];
-const DISTANCE_BASE: [u32; 30] = [
+const DISTANCE_BASE: &[u32; 30] = &[
     1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537,
     2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577,
 ];
-const DISTANCE_EXTRA_BITS: [u32; 30] = [
+const DISTANCE_EXTRA_BITS: &[u32; 30] = &[
     0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13,
     13,
 ];
-const CODE_LEN_CODES_ORDER: [u32; 19] = [
+const CODE_LEN_CODES_ORDER: &[u32; 19] = &[
     16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
 ];
 
@@ -41,7 +46,10 @@ pub fn inflate_block_no_compression(stream: &mut Stream, inflated: &mut Vec<u8>)
     }
 }
 
-pub fn inflate_block_fixed_huffman(stream: &mut Stream, inflated: &mut Vec<u8>) {
+pub fn inflate_block_fixed_huffman(
+    stream: &mut Stream,
+    inflated: &mut Vec<u8>,
+) -> Result<(), InvalidHuffman> {
     let mut bl_list = [0u8; 288];
     extend_at(&mut bl_list, 0, repeat_n(8, 144));
     extend_at(&mut bl_list, 144, repeat_n(9, 256 - 144));
@@ -60,22 +68,33 @@ pub fn inflate_block_fixed_huffman(stream: &mut Stream, inflated: &mut Vec<u8>) 
 
     let distance_tree = HuffmanTree::from_alphabet_and_bl_list(&alphabet, &bl_list);
 
-    inflate_compressed_block(stream, &literal_len_tree, &distance_tree, inflated);
+    inflate_compressed_block(stream, &literal_len_tree, &distance_tree, inflated)
 }
+
+#[derive(Debug)]
+pub struct InvalidHuffman;
+
+impl fmt::Display for InvalidHuffman {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for InvalidHuffman {}
 
 pub fn inflate_compressed_block(
     stream: &mut Stream,
     literal_len_tree: &HuffmanTree,
     distance_tree: &HuffmanTree,
     inflated: &mut Vec<u8>,
-) {
+) -> Result<(), InvalidHuffman> {
     loop {
         let symb = decode_symb(stream, literal_len_tree).unwrap();
 
         if symb < 256 {
             inflated.push(symb as u8);
         } else if symb == 256 {
-            return;
+            return Ok(());
         } else if (257..=285).contains(&symb) {
             let i = (symb - 257) as usize;
             let len = LENGTH_BASE[i] + stream.read_bits(LENGTH_EXTRA_BITS[i] as usize) as u32;
@@ -87,7 +106,7 @@ pub fn inflate_compressed_block(
                 inflated.push(inflated[inflated.len() - distance as usize]);
             }
         } else {
-            abort!("Invalid Huffman symbol: {symb}");
+            return Err(InvalidHuffman);
         }
     }
 }
@@ -143,12 +162,15 @@ pub fn decode_trees(stream: &mut Stream) -> (HuffmanTree, HuffmanTree) {
     (literal_len_tree, distance_tree)
 }
 
-pub fn inflate_block_dynamic_huffman(stream: &mut Stream, inflated: &mut Vec<u8>) {
+pub fn inflate_block_dynamic_huffman(
+    stream: &mut Stream,
+    inflated: &mut Vec<u8>,
+) -> Result<(), InvalidHuffman> {
     let (literal_len_tree, distance_tree) = decode_trees(stream);
-    inflate_compressed_block(stream, &literal_len_tree, &distance_tree, inflated);
+    inflate_compressed_block(stream, &literal_len_tree, &distance_tree, inflated)
 }
 
-fn inflate(stream: &mut Stream, buf: &mut Vec<u8>) {
+fn inflate(stream: &mut Stream, buf: &mut Vec<u8>) -> Result<(), InvalidHuffman> {
     let mut bfinal = 0;
     while bfinal == 0 {
         bfinal = stream.read_bit();
@@ -156,35 +178,19 @@ fn inflate(stream: &mut Stream, buf: &mut Vec<u8>) {
 
         match btype {
             0b00 => inflate_block_no_compression(stream, buf),
-            0b01 => inflate_block_fixed_huffman(stream, buf),
-            0b10 => inflate_block_dynamic_huffman(stream, buf),
+            0b01 => inflate_block_fixed_huffman(stream, buf)?,
+            0b10 => inflate_block_dynamic_huffman(stream, buf)?,
             _ => {},
         }
     }
+    Ok(())
 }
 
-pub type Adler32 = u32;
-
-pub fn decompress(bytes: &'_ [u8], buf: &mut Vec<u8>) -> Adler32 {
+pub fn decompress(bytes: &'_ [u8], buf: &mut Vec<u8>) -> Result<Adler32, InvalidHuffman> {
     let mut stream = Stream::new(bytes);
     stream.read_byte();
     stream.read_byte();
-    inflate(&mut stream, buf);
-    stream.read_bytes(4) as u32
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::zlib::decompress;
-
-    #[test]
-    fn decompress_logo_test() {
-        let compressed = include_bytes!(concat!(env!("LOGO_OUT_DIR"), "/temp/d/debian.txt"));
-        let mut decompressed = Vec::new();
-
-        decompress(compressed, &mut decompressed);
-        let string = String::from_utf8(decompressed).expect("Non Utf8 logo");
-
-        println!("{string}");
-    }
+    inflate(&mut stream, buf)?;
+    let adler32 = stream.read_bytes(4) as u32;
+    Ok(adler32)
 }

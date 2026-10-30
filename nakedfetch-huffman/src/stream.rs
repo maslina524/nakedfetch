@@ -1,12 +1,12 @@
 #[derive(Debug, Clone)]
-pub struct Stream<'zlib> {
-    memory: &'zlib [u8],
+pub struct Stream<'huff> {
+    memory: &'huff [u8],
     byte_idx: usize,
     bit_idx: usize,
 }
 
-impl<'zlib> Stream<'zlib> {
-    pub const fn new(memory: &'zlib [u8]) -> Self {
+impl<'huff> Stream<'huff> {
+    pub const fn new(memory: &'huff [u8]) -> Self {
         Self {
             memory,
             byte_idx: 0,
