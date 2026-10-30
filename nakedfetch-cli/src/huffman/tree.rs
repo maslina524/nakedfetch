@@ -1,6 +1,4 @@
-use alloc::boxed::Box;
-use alloc::vec;
-use alloc::vec::Vec;
+use alloc::{boxed::Box, vec, vec::Vec};
 
 use crate::huffman::stream::Stream;
 

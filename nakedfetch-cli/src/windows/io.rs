@@ -6,8 +6,10 @@ use core::{
 
 use crate::{
     sync::OnceLock,
-    windows::error::ErrorCode,
-    windows::link::{GetStdHandle, SetConsoleOutputCP, WriteFile},
+    windows::{
+        error::ErrorCode,
+        link::{GetStdHandle, SetConsoleOutputCP, WriteFile},
+    },
 };
 
 const STDOUT: u32 = u32::MAX - 10;
@@ -37,8 +39,8 @@ pub fn write(handle: isize, s: &[u8]) {
         .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
         .is_ok()
     {
-        // SAFETY: The function always receives a valid constant from the documentation,
-        // and possible errors are checked
+        // SAFETY: The function always receives a valid constant from the
+        // documentation, and possible errors are checked
         let ret = unsafe { SetConsoleOutputCP(CP_UTF8) };
         if ret == 0 {
             ErrorCode::last().panic();

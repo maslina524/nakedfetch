@@ -1,24 +1,21 @@
-use core::{
-    ffi::{CStr, c_char, c_int},
-    ptr,
-};
-
 use alloc::{
     string::{FromUtf8Error, String},
     vec,
     vec::Vec,
 };
-
-use crate::{
-    unix::error::{self, ErrorCode},
-    unix::libc::{
-        Dir, FileHandle, fclose, ferror, fopen, fread, fwrite, mkdir, opendir, readdir, readlink,
-        rewind,
-    },
-    unix::path::Path,
+use core::{
+    ffi::{CStr, c_char, c_int},
+    ptr,
 };
 
-use crate::unix::libc::{LinuxDirent64, close, getdents64, open};
+use crate::unix::{
+    error::{self, ErrorCode},
+    libc::{
+        Dir, FileHandle, LinuxDirent64, close, fclose, ferror, fopen, fread, fwrite, getdents64,
+        mkdir, open, opendir, readdir, readlink, rewind,
+    },
+    path::Path,
+};
 const O_RDONLY: c_int = 0;
 
 #[cfg(target_arch = "aarch64")]
@@ -199,6 +196,7 @@ pub struct ReadDirIter {
 
 impl Iterator for ReadDirIter {
     type Item = Item;
+
     fn next(&mut self) -> Option<Self::Item> {
         crate::println!("Called ReadDirIter::next()");
         loop {
@@ -243,7 +241,8 @@ pub fn read_dir_all(path: impl Into<Path>) -> error::Result<Vec<Item>> {
     let c_path = path.as_c_str();
 
     let fd = open(c_path.as_ptr(), O_RDONLY | O_DIRECTORY, 0);
-    // crate::println!("Open: Fd: {fd}, Path: {c_path:?}, Error: {}:{}", ErrorCode::last(), ErrorCode::last().code());
+    // crate::println!("Open: Fd: {fd}, Path: {c_path:?}, Error: {}:{}",
+    // ErrorCode::last(), ErrorCode::last().code());
     if fd < 0 {
         return Err(ErrorCode::last());
     }

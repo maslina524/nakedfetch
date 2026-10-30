@@ -1,12 +1,11 @@
-use core::{
-    ffi::{CStr, c_char},
-    slice,
-};
-
 use alloc::{
     ffi::CString,
     string::{String, ToString},
     vec::Vec,
+};
+use core::{
+    ffi::{CStr, c_char},
+    slice,
 };
 
 use crate::{
@@ -69,7 +68,7 @@ pub fn processes_count() -> usize {
         Err(e) => {
             warning!("Failed to read /proc: {e}");
             return 0;
-        }
+        },
     };
 
     let mut ret = 0;

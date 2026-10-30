@@ -1,6 +1,5 @@
-use core::fmt::Write;
-
 use alloc::{string::String, vec::Vec};
+use core::fmt::Write;
 
 use crate::{abort, color, formats::char_width, image::Image, sync::OnceLock, zlib};
 
@@ -99,7 +98,7 @@ impl LogoInfo {
                 let mut decompressed = Vec::with_capacity(self.encoded.len());
                 zlib::decompress(self.encoded, &mut decompressed);
                 String::from_utf8(decompressed).expect("Non Utf8 in logo")
-            }
+            },
             UILogo::Ascii(s) => s,
             _ => return Vec::new(),
         };

@@ -1,9 +1,8 @@
-use core::ffi::CStr;
-
 use alloc::{
     borrow::{Cow, ToOwned},
     string::String,
 };
+use core::ffi::CStr;
 
 use crate::{
     detect::os::{OsInfo, get_id},
@@ -49,11 +48,11 @@ impl OsInfo {
             "rhel" | "centos" | "fedora" | "rocky" | "almalinux" => {
                 let content = fs::read_to_string("/etc/redhat-release").ok()?;
                 Some(Self::extract_version(&content))
-            }
+            },
             "gentoo" => {
                 let content = fs::read_to_string("/etc/gentoo-release").ok()?;
                 Some(Self::extract_version(&content))
-            }
+            },
             "arch" => Some("Rolling".to_owned()),
             _ => None, // os-release -> VERSION_ID
         }

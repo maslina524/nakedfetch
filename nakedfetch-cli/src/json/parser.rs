@@ -1,6 +1,5 @@
-use core::str::FromStr;
-
 use alloc::{string::String, vec::Vec};
+use core::str::FromStr;
 
 use crate::{
     format,
@@ -156,25 +155,25 @@ impl Parser {
                 let s = s.clone();
                 self.next();
                 Ok(Value::String(s))
-            }
+            },
             Some(Token::Number(s)) => {
                 let s = s.clone();
                 self.next();
                 let num = f64::from_str(&s).map_err(|_| "Invalid number format")?;
                 Ok(Value::Number(num))
-            }
+            },
             Some(Token::True) => {
                 self.next();
                 Ok(Value::Bool(true))
-            }
+            },
             Some(Token::False) => {
                 self.next();
                 Ok(Value::Bool(false))
-            }
+            },
             Some(Token::Null) => {
                 self.next();
                 Ok(Value::Null)
-            }
+            },
             _ => Err("Unexpected token while parsing value".into()),
         }
     }
@@ -206,11 +205,11 @@ impl Parser {
                         self.next(); // consume '}'
                         break;
                     }
-                }
+                },
                 Some(Token::RCurly) => {
                     self.next();
                     break;
-                }
+                },
                 _ => return Err("Expected ',' or '}}' in object".into()),
             }
         }
@@ -238,11 +237,11 @@ impl Parser {
                         self.next(); // consume ']'
                         break;
                     }
-                }
+                },
                 Some(Token::RBrace) => {
                     self.next();
                     break;
-                }
+                },
                 _ => return Err("Expected ',' or ']' in array".into()),
             }
         }
@@ -321,8 +320,7 @@ impl core::fmt::Display for Map {
 
 #[cfg(test)]
 mod tests {
-    use crate::json::lexer::TokenStream;
-    use crate::json::parser::Parser;
+    use crate::json::{lexer::TokenStream, parser::Parser};
 
     #[test]
     fn single_chars_test() {

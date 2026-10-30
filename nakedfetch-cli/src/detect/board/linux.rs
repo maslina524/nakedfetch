@@ -18,11 +18,11 @@ fn read_file(path: Path) -> SmolStr {
                 warning!("Failed to read file: {e} ({})", e.code());
             }
             SmolStr::empty()
-        }
+        },
         Err(ReadError::Utf8(e)) => {
             warning!("Failed to read file: {e}");
             SmolStr::empty()
-        }
+        },
     }
 }
 

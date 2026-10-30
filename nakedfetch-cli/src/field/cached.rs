@@ -1,13 +1,12 @@
-use core::{
-    fmt::{Debug, Display},
-    marker::PhantomData,
-    sync::atomic::{AtomicBool, Ordering},
-};
-
 use alloc::{
     borrow::ToOwned,
     boxed::Box,
     string::{String, ToString},
+};
+use core::{
+    fmt::{Debug, Display},
+    marker::PhantomData,
+    sync::atomic::{AtomicBool, Ordering},
 };
 
 use crate::{
@@ -42,7 +41,7 @@ pub fn flush_to_file() {
         Err(e) => {
             warning!("Failed to create cache/session: {e}");
             return;
-        }
+        },
     };
 
     let entries = ENTRIES.lock();
@@ -71,19 +70,19 @@ fn load_entries() {
         Err(ReadError::Utf8(e)) => {
             warning!("Failed to read cache/session: {e}");
             fallback()
-        }
+        },
         Err(ReadError::Code(e)) if !e.is_file_not_found() => {
             warning!("Failed to read cache/session: {e} ({:2X})", e.code());
             fallback()
-        }
+        },
         Err(_) => fallback(),
     };
 
     match parsed.get("boot_timestamp").and_then(u64::from_cached) {
-        Some(bt) if bt == actual => {}
+        Some(bt) if bt == actual => {},
         _ => {
             parsed = LineBased::parse(format!("boot_timestamp={actual}"), '=');
-        }
+        },
     }
 
     *entries = parsed;
@@ -144,10 +143,11 @@ impl<T: Debug + AsCached + Clone + Send + Sync + 'static> Debug for SessionCache
 }
 
 impl<T: Display + AsCached + AsLua + Clone + Send + Sync + 'static> AsLua for SessionCached<T> {
+    const LUA_TYPE: &'static str = T::LUA_TYPE;
+
     fn as_lua(&self) -> LuaType {
         LuaType::String(format!("{self}"))
     }
-    const LUA_TYPE: &'static str = T::LUA_TYPE;
 }
 
 pub trait AsCached: Sized {

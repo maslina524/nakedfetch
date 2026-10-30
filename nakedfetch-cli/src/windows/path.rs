@@ -1,6 +1,5 @@
-use core::{ptr, slice};
-
 use alloc::{borrow::ToOwned, string::String, vec::Vec};
+use core::{ptr, slice};
 
 use crate::windows::{
     encoding::{Utf16Len, utf16le_to_utf8, wide},

@@ -3,13 +3,13 @@
 mod lexer;
 pub mod parser;
 
+use alloc::string::{String, ToString};
+
 use lexer::TokenStream;
 use parser::Parser;
 pub use parser::{Map, Value};
 
-use alloc::string::{String, ToString};
-
-use crate::{imp::fs, imp::path::Path};
+use crate::imp::{fs, path::Path};
 
 #[derive(Debug)]
 pub struct Json;

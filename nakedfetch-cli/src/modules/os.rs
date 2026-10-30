@@ -1,6 +1,6 @@
-use proc::{Docs, Module};
-
 use alloc::{borrow::Cow, string::String};
+
+use proc::{Docs, Module};
 
 use crate::{
     detect::os::OsInfo,
@@ -50,8 +50,8 @@ impl Module for Os {
         let info = OsInfo::new();
 
         // #[cfg(target_os = "windows")]
-        // let pretty_name = format!("{} {} ({})", info.id, info.variant, info.codename);
-        // #[cfg(target_family = "unix")]
+        // let pretty_name = format!("{} {} ({})", info.id, info.variant,
+        // info.codename); #[cfg(target_family = "unix")]
         let pretty_name = format!("{} {}", info.name, info.version);
 
         Self {

@@ -60,6 +60,7 @@ impl Default for Temperature {
 
 impl FromStr for Temperature {
     type Err = ();
+
     fn from_str(mut s: &str) -> Result<Self, Self::Err> {
         s = s.trim().trim_start_matches('+');
         let (val_str, suffix) = if s.ends_with("°C") {

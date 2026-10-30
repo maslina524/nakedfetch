@@ -1,18 +1,19 @@
-use core::{ffi::c_void, mem, ptr, sync::atomic::AtomicPtr};
-
 use alloc::{borrow::ToOwned, string::String};
+use core::{ffi::c_void, mem, ptr, sync::atomic::AtomicPtr};
 
 use crate::{
     abort,
     detect::gpu::{GpuInfo, GpuType},
     formats::MemorySize,
     warning,
-    windows::link::{
-        CreateDXGIFactory, DIGCF_PRESENT, DXGI_ADAPTER_DESC, DXGI_ERROR_NOT_FOUND,
-        GUID_DEVCLASS_DISPLAY, IDXGIAdapter_Vtbl, IDXGIFactory_Vtbl, IID_IDXGIFactory,
-        SP_DEVINFO_DATA, SetupDiEnumDeviceInfo, SetupDiGetClassDevsW, SetupDiOpenDevRegKey,
+    windows::{
+        link::{
+            CreateDXGIFactory, DIGCF_PRESENT, DXGI_ADAPTER_DESC, DXGI_ERROR_NOT_FOUND,
+            GUID_DEVCLASS_DISPLAY, IDXGIAdapter_Vtbl, IDXGIFactory_Vtbl, IID_IDXGIFactory,
+            SP_DEVINFO_DATA, SetupDiEnumDeviceInfo, SetupDiGetClassDevsW, SetupDiOpenDevRegKey,
+        },
+        regedit::Regedit,
     },
-    windows::regedit::Regedit,
 };
 
 const INVALID_HANDLE: *mut c_void = (-1isize).cast_unsigned() as *mut c_void;
@@ -56,7 +57,8 @@ impl GpuInfo {
         loop {
             let mut adapter_void = ptr::null_mut();
 
-            // SAFETY: A virtual table is guaranteed to be located at the raw pointer
+            // SAFETY: A virtual table is guaranteed to be located at the raw
+            // pointer
             let hr =
                 unsafe { ((*factory_vtbl).EnumAdapters)(factory_void, i, &raw mut adapter_void) };
             if hr == DXGI_ERROR_NOT_FOUND {
@@ -68,7 +70,8 @@ impl GpuInfo {
 
                 // SAFETY: We check that the raw pointer is not null
                 let adapter_vtbl = unsafe { *adapter_void.cast::<*mut IDXGIAdapter_Vtbl>() };
-                // SAFETY: A virtual table is guaranteed to be located at the raw pointer
+                // SAFETY: A virtual table is guaranteed to be located at the
+                // raw pointer
                 let hr = unsafe { ((*adapter_vtbl).GetDesc)(adapter_void, &raw mut desc) };
 
                 if hr >= 0 {

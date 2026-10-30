@@ -1,6 +1,5 @@
-use core::{cmp::Ordering, error::Error, iter::repeat_n};
-
 use alloc::vec::Vec;
+use core::{cmp::Ordering, error::Error, iter::repeat_n};
 
 use crate::huffman::{HuffmanTree, Stream, decode_symb};
 
@@ -153,15 +152,15 @@ fn build_dynamic_trees(stream: &mut Stream) -> Result<(HuffmanTree, HuffmanTree)
                 let repeat = stream.read_bits(2) as usize + 3;
                 let last = *lens.last().ok_or(DeflateError::DecodeError)?;
                 lens.extend(repeat_n(last, repeat));
-            }
+            },
             17 => {
                 let repeat = stream.read_bits(3) as usize + 3;
                 lens.extend(repeat_n(0, repeat));
-            }
+            },
             18 => {
                 let repeat = stream.read_bits(7) as usize + 11;
                 lens.extend(repeat_n(0, repeat));
-            }
+            },
             _ => return Err(DeflateError::DynamicTreeError),
         }
     }
@@ -197,18 +196,18 @@ pub fn decode(input: &[u8]) -> Result<Vec<u8>, DeflateError> {
                 for _ in 0..len {
                     output.push(stream.read_byte());
                 }
-            }
+            },
             1 => {
                 let (litlen_tree, dist_tree) = build_fixed_trees();
                 decode_block(&mut stream, &mut output, &litlen_tree, &dist_tree)?;
-            }
+            },
             2 => {
                 let (litlen_tree, dist_tree) = build_dynamic_trees(&mut stream)?;
                 decode_block(&mut stream, &mut output, &litlen_tree, &dist_tree)?;
-            }
+            },
             _ => {
                 return Err(DeflateError::InvalidBtype);
-            }
+            },
         }
 
         if bfinal == 1 {
@@ -253,7 +252,7 @@ fn decode_block(
                 for i in 0..length {
                     output.push(output[start + i]);
                 }
-            }
+            },
             Ordering::Equal => break,
         }
     }

@@ -1,9 +1,8 @@
+use alloc::{borrow::ToOwned, string::String};
 use core::{
     ffi::{CStr, c_char, c_uint, c_void},
     ptr,
 };
-
-use alloc::{borrow::ToOwned, string::String};
 
 use crate::{abort, cfg_if, get_fn, sync::OnceLock, warning};
 
@@ -77,7 +76,8 @@ impl NvidiaLib {
             // Load library
             let lib = load();
 
-            // SAFETY: `get_fn!` transmutes the resolved symbol to the declared fn type
+            // SAFETY: `get_fn!` transmutes the resolved symbol to the declared
+            // fn type
             let init = unsafe { get_fn!(lib, c"nvmlInit_v2", nvmlInit) };
             // SAFETY: See above
             let shutdown = unsafe { get_fn!(lib, c"nvmlShutdown", nvmlShutdown) };

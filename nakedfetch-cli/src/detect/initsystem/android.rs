@@ -1,9 +1,8 @@
-use core::ffi::CStr;
-
 use alloc::{
     borrow::{Cow, ToOwned},
     string::String,
 };
+use core::ffi::CStr;
 
 use crate::{
     detect::initsystem::InitSystemInfo,

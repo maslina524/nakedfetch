@@ -19,7 +19,7 @@ impl WallpaperInfo {
             Err(e) => {
                 warning!("Failed to get full wallpaper path: {e}");
                 Path::new()
-            }
+            },
         };
 
         Self { full_path }

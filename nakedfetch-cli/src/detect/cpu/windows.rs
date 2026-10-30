@@ -1,22 +1,23 @@
-use core::{mem, ptr};
-
 use alloc::{
     borrow::{Cow, ToOwned},
     string::String,
     vec,
     vec::Vec,
 };
+use core::{mem, ptr};
 
 use crate::{
     detect::cpu,
     formats::Frequency,
     modules::cpu::Cpu,
-    windows::error::ErrorCode,
-    windows::link::{
-        GetActiveProcessorCount, GetLogicalProcessorInformation, GetNumaHighestNodeNumber,
-        SYSTEM_LOGICAL_PROCESSOR_INFORMATION,
+    windows::{
+        error::ErrorCode,
+        link::{
+            GetActiveProcessorCount, GetLogicalProcessorInformation, GetNumaHighestNodeNumber,
+            SYSTEM_LOGICAL_PROCESSOR_INFORMATION,
+        },
+        regedit::{Access, Hkey, Regedit},
     },
-    windows::regedit::{Access, Hkey, Regedit},
 };
 
 type LogicalInfo = SYSTEM_LOGICAL_PROCESSOR_INFORMATION;

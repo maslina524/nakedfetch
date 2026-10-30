@@ -1,6 +1,5 @@
-use core::str::SplitN;
-
 use alloc::string::String;
+use core::str::SplitN;
 
 use crate::{
     format,
@@ -60,7 +59,7 @@ fn request() -> Option<Map> {
         Err(e) => {
             warning!("Failed to connect to server (publicip): {}", e.code());
             return None;
-        }
+        },
     };
     if response.is_success() {
         let text = response.as_text().unwrap();
@@ -69,7 +68,7 @@ fn request() -> Option<Map> {
             Err(e) => {
                 warning!("Failed to parse response (publicip): {e}");
                 None
-            }
+            },
         }
     } else {
         warning!("Ip-api.com (publicip) response code: {}", response.code());
@@ -100,7 +99,7 @@ fn read_cache() -> Option<(u64, Map)> {
         Err(e) => {
             warning!("Failed to parse cache (publicip): {e}");
             None
-        }
+        },
     }
 }
 

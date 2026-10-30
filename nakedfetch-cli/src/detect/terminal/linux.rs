@@ -97,7 +97,7 @@ pub fn get() -> Terminal {
         Err(e) => {
             warning!("Failed to get terminal process: {e}");
             return Terminal::default();
-        }
+        },
     };
 
     let exe_name = info.arg.last().map(SmolStr::from).unwrap_or_default();

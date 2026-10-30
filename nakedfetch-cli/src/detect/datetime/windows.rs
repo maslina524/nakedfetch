@@ -3,10 +3,12 @@ use alloc::{borrow::ToOwned, string::String};
 use crate::{
     detect::datetime::{AmPm, DatetimeInfo},
     format,
-    windows::error::ErrorCode,
-    windows::link::{
-        DYNAMIC_TIME_ZONE_INFORMATION, GetDynamicTimeZoneInformation, GetLocalTime,
-        GetTimeZoneInformation, SYSTEMTIME, TIME_ZONE_INFORMATION,
+    windows::{
+        error::ErrorCode,
+        link::{
+            DYNAMIC_TIME_ZONE_INFORMATION, GetDynamicTimeZoneInformation, GetLocalTime,
+            GetTimeZoneInformation, SYSTEMTIME, TIME_ZONE_INFORMATION,
+        },
     },
 };
 

@@ -1,9 +1,8 @@
+use alloc::{borrow::Cow, collections::BTreeMap, ffi::CString, string::String};
 use core::{
     ffi::{CStr, c_char, c_int, c_void},
     ptr,
 };
-
-use alloc::{borrow::Cow, collections::BTreeMap, ffi::CString, string::String};
 
 use crate::{
     abort, cfg_if, format,
@@ -166,10 +165,11 @@ impl_as_lua_as_f64!(
 );
 
 impl AsLua for bool {
+    const LUA_TYPE: &'static str = "boolean";
+
     fn as_lua(&self) -> LuaType {
         LuaType::Boolean(*self)
     }
-    const LUA_TYPE: &'static str = "boolean";
 }
 
 impl core::fmt::Debug for LuaType {
@@ -193,11 +193,11 @@ pub fn open_lua_file(code: &str) -> Cow<'_, str> {
                     warning!("Failed to open file: {e}");
                     Cow::Owned(String::new())
                 }
-            }
+            },
             ReadError::Utf8(e) => {
                 warning!("Failed to open the file as Utf8: {e}");
                 Cow::Owned(String::new())
-            }
+            },
         },
     }
 }
@@ -215,8 +215,9 @@ pub struct LuaLib {
 }
 
 // SAFETY: The structure is not thread-safe; however we never mutate its fields,
-// and each call creates a fresh Lua state, so concurrent use from different threads
-// is safe as long as the underlying Lua library is thread‑aware (it is).
+// and each call creates a fresh Lua state, so concurrent use from different
+// threads is safe as long as the underlying Lua library is thread‑aware (it
+// is).
 unsafe impl Sync for LuaLib {}
 
 impl LuaLib {
@@ -302,8 +303,8 @@ impl LuaLib {
             abort!("Lua compilation error: {}", err_msg);
         }
 
-        // SAFETY: Call the compiled function with 0 arguments and expect 1 result
-        // The last argument is a continuation function pointer (NULL)
+        // SAFETY: Call the compiled function with 0 arguments and expect 1
+        // result The last argument is a continuation function pointer (NULL)
         let pcall_err = unsafe { (self.pcall)(state, 0, 1, 0, 0, None) };
 
         if pcall_err != 0 {

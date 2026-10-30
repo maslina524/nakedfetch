@@ -53,7 +53,7 @@ impl GpuType {
                     return Self::BuiltIn;
                 }
                 Self::Discrete
-            }
+            },
             _ => Self::Unknown,
         }
     }

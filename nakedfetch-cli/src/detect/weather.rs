@@ -1,6 +1,5 @@
-use core::str::{FromStr, SplitN};
-
 use alloc::{borrow::ToOwned, string::String};
+use core::str::{FromStr, SplitN};
 
 use crate::{
     format,
@@ -98,7 +97,7 @@ fn request() -> Option<String> {
         Err(e) => {
             warning!("Failed to connect to server (weather): {}", e.code());
             return None;
-        }
+        },
     };
     if response.is_success() {
         Some(response.as_text().unwrap())

@@ -1,6 +1,5 @@
-use core::{ffi::CStr, mem, ops::Deref};
-
 use alloc::{borrow::Cow, string::String, sync::Arc};
+use core::{ffi::CStr, mem, ops::Deref};
 
 const INLINE_CAP: usize = 23;
 
@@ -34,9 +33,11 @@ pub enum InlineLen {
 
 impl TryFrom<u8> for InlineLen {
     type Error = ();
+
     fn try_from(value: u8) -> Result<Self, ()> {
         if (1u8..=INLINE_CAP as u8).contains(&value) {
-            // SAFETY: Enum bounds are checked, it has the same layout as u8, safe
+            // SAFETY: Enum bounds are checked, it has the same layout as u8,
+            // safe
             let len = unsafe { mem::transmute::<u8, Self>(value) };
             Ok(len)
         } else {
@@ -86,7 +87,8 @@ impl SmolStr {
         match &self.0 {
             Repr::Empty => "",
             Repr::Heap(a) => a,
-            // SAFETY: `SmolStr` is created only from `str`, utf8 is always valid.
+            // SAFETY: `SmolStr` is created only from `str`, utf8 is always
+            // valid.
             Repr::Inline { len, data } => unsafe {
                 str::from_utf8_unchecked(&data[..*len as usize])
             },
@@ -97,6 +99,7 @@ impl SmolStr {
 
 impl Deref for SmolStr {
     type Target = str;
+
     fn deref(&self) -> &Self::Target {
         self.as_str()
     }
@@ -140,6 +143,7 @@ impl_from_string!(String, &str, Cow<'static, str>);
 
 impl TryFrom<&CStr> for SmolStr {
     type Error = core::str::Utf8Error;
+
     fn try_from(value: &CStr) -> Result<Self, Self::Error> {
         let len = value.count_bytes();
         let repr = if len == 0 {

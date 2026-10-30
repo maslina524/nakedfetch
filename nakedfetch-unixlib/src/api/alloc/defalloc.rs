@@ -34,10 +34,10 @@ pub fn defalloc(ptr: *mut c_void, size: usize) -> bool {
                 page_ptr = p;
                 // SAFETY: The pointer is guaranteed to store a Page
                 page = unsafe { page_ptr.as_mut() };
-            }
+            },
             None => {
                 return big_defalloc(ptr);
-            }
+            },
         }
     }
 }

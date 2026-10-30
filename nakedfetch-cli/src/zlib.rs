@@ -1,6 +1,5 @@
-use core::{cmp, iter::repeat_n};
-
 use alloc::vec::Vec;
+use core::{cmp, iter::repeat_n};
 
 use crate::{
     abort,
@@ -160,7 +159,7 @@ fn inflate(stream: &mut Stream, buf: &mut Vec<u8>) {
             0b00 => inflate_block_no_compression(stream, buf),
             0b01 => inflate_block_fixed_huffman(stream, buf),
             0b10 => inflate_block_dynamic_huffman(stream, buf),
-            _ => {}
+            _ => {},
         }
     }
 }

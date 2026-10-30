@@ -1,6 +1,5 @@
-use core::ffi::CStr;
-
 use alloc::{borrow::Cow, vec::Vec};
+use core::ffi::CStr;
 
 use crate::{
     abort,
@@ -49,11 +48,11 @@ fn max_freq_android() -> Frequency {
         Ok(c) => {
             let hz = c.trim().parse::<u64>().unwrap_or(0);
             Frequency::from_hz(hz)
-        }
+        },
         Err(e) => {
             warning!("Failed to read .../cpufreq/cpuinfo_max_freq: {e}");
             Frequency::default()
-        }
+        },
     }
 }
 
@@ -62,11 +61,11 @@ fn base_freq_android() -> Frequency {
         Ok(c) => {
             let hz = c.trim().parse::<u64>().unwrap_or(0);
             Frequency::from_hz(hz)
-        }
+        },
         Err(e) => {
             warning!("Failed to read .../cpufreq/scaling_cur_freq: {e}");
             Frequency::default()
-        }
+        },
     }
 }
 

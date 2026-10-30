@@ -29,11 +29,11 @@ pub fn get_fields(data: &Data) -> Vec<&Field> {
             Fields::Named(fields_named) => fields_named.named.iter().collect::<Vec<&Field>>(),
             Fields::Unnamed(fields_unnamed) => {
                 fields_unnamed.unnamed.iter().collect::<Vec<&Field>>()
-            }
+            },
             Fields::Unit => Vec::new(),
         },
         _ => {
             panic!("Docs derive only works for structs");
-        }
+        },
     }
 }

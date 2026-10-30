@@ -1,6 +1,5 @@
-use core::fmt::{Arguments, Write};
-
 use alloc::{string::String, vec::Vec};
+use core::fmt::{Arguments, Write};
 
 use crate::{
     imp::io::{stderr, stdout, write},
@@ -44,12 +43,12 @@ pub fn write_stdout(args: Arguments<'_>) {
     match guard.last_mut() {
         Some(o) if matches!(o.typ, OutputType::Stdout) => {
             let _ = o.inner.write_fmt(args);
-        }
+        },
         _ => {
             let mut s = String::with_capacity(STRING_BASE_CAP);
             let _ = s.write_fmt(args);
             guard.push(Output::stdout(s));
-        }
+        },
     }
 }
 
@@ -58,12 +57,12 @@ pub fn write_stderr(args: Arguments<'_>) {
     match guard.last_mut() {
         Some(o) if matches!(o.typ, OutputType::Stderr) => {
             let _ = o.inner.write_fmt(args);
-        }
+        },
         _ => {
             let mut s = String::with_capacity(STRING_BASE_CAP);
             let _ = s.write_fmt(args);
             guard.push(Output::stderr(s));
-        }
+        },
     }
 }
 

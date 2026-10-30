@@ -18,6 +18,7 @@ pub enum Level {
 #[allow(clippy::used_underscore_items)]
 impl TryFrom<u8> for Level {
     type Error = ();
+
     fn try_from(value: u8) -> Result<Self, ()> {
         match value {
             1 => Ok(Self::_V1),
@@ -27,7 +28,7 @@ impl TryFrom<u8> for Level {
             _ => {
                 warning!("Incorrect march level value: {value}");
                 Err(())
-            }
+            },
         }
     }
 }
@@ -63,8 +64,9 @@ impl Debug for MicroArch {
 }
 
 impl AsLua for MicroArch {
+    const LUA_TYPE: &'static str = "string";
+
     fn as_lua(&self) -> LuaType {
         LuaType::String(format!("{self:?}"))
     }
-    const LUA_TYPE: &'static str = "string";
 }

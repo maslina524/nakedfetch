@@ -1,6 +1,5 @@
-use core::error::Error;
-
 use alloc::{vec, vec::Vec};
+use core::error::Error;
 
 use crate::{
     crc32,
@@ -38,7 +37,7 @@ impl core::fmt::Display for PngError {
             Self::IncorrectIHDRName => write!(f, "Png: Incorrect IHDR name"),
             Self::UnsupportedCompression => {
                 write!(f, "Png: Unsupported compression method (only Deflate)")
-            }
+            },
             Self::UnsupportedFilter => write!(f, "Png: Unsupported filter method (only 0)"),
             Self::UnsupportedInterlace => write!(f, "Png: Unsupported interlace method (only 0)"),
             Self::UnexpectedEof => write!(f, "Png: Unexpected end of data"),
@@ -271,15 +270,16 @@ impl Png {
         let mut idat_data = Vec::with_capacity(8 * 1024);
         loop {
             let chunk = Chunk::new(&mut iter)?;
-            // crate::println!("{}: {:?}", str::from_utf8(&chunk.name).unwrap(), chunk.data);
+            // crate::println!("{}: {:?}", str::from_utf8(&chunk.name).unwrap(),
+            // chunk.data);
             match &chunk.name {
                 b"IEND" => {
                     break;
-                }
+                },
                 b"IDAT" => {
                     idat_data.extend_from_slice(&chunk.data);
-                }
-                _ => {}
+                },
+                _ => {},
             }
         }
 

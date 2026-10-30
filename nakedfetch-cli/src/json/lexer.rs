@@ -88,7 +88,7 @@ impl TokenStream {
                             }
                             self.pos += 4;
                         }
-                    }
+                    },
                     other => ret.push(other),
                 }
             } else {

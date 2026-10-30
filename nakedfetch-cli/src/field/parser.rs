@@ -30,7 +30,7 @@ impl<'fp> Iterator for FormatParserIter<'fp> {
                 let text = self.rest;
                 self.rest = "";
                 Some(Part::Text(text))
-            }
+            },
             Some(0) => {
                 let after = &self.rest[1..];
                 if let Some(rel) = after.find('}') {
@@ -42,12 +42,12 @@ impl<'fp> Iterator for FormatParserIter<'fp> {
                     self.rest = "";
                     Some(Part::Text(text))
                 }
-            }
+            },
             Some(pos) => {
                 let text = &self.rest[..pos];
                 self.rest = &self.rest[pos..];
                 Some(Part::Text(text))
-            }
+            },
         }
     }
 }

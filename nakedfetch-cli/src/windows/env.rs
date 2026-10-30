@@ -1,9 +1,3 @@
-use core::{
-    ffi::{CStr, c_void},
-    fmt::Write,
-    mem, ptr, slice,
-};
-
 use alloc::{
     borrow::{Cow, ToOwned},
     boxed::Box,
@@ -11,6 +5,11 @@ use alloc::{
     string::{String, ToString},
     vec,
     vec::Vec,
+};
+use core::{
+    ffi::{CStr, c_void},
+    fmt::Write,
+    mem, ptr, slice,
 };
 
 use crate::{
@@ -373,46 +372,46 @@ fn format_system_time(st: &SYSTEMTIME, fmt: &str) -> String {
         match spec {
             'Y' => {
                 let _ = write!(out, "{:04}", st.wYear);
-            }
+            },
             'y' => {
                 let _ = write!(out, "{:02}", st.wYear % 100);
-            }
+            },
             'm' => {
                 let _ = write!(out, "{:02}", st.wMonth);
-            }
+            },
             'd' => {
                 let _ = write!(out, "{:02}", st.wDay);
-            }
+            },
             'e' => {
                 let _ = write!(out, "{:2}", st.wDay);
-            }
+            },
             'j' => {
                 let _ = write!(out, "{:03}", day_of_year(st));
-            }
+            },
 
             'H' => {
                 let _ = write!(out, "{:02}", st.wHour);
-            }
+            },
             'I' => {
                 let h = st.wHour % 12;
                 let h = if h == 0 { 12 } else { h };
                 let _ = write!(out, "{h:02}");
-            }
+            },
             'M' => {
                 let _ = write!(out, "{:02}", st.wMinute);
-            }
+            },
             'S' => {
                 let _ = write!(out, "{:02}", st.wSecond);
-            }
+            },
             'f' => {
                 let _ = write!(out, "{:03}", st.wMilliseconds);
-            }
+            },
 
             '%' => out.push('%'),
             other => {
                 out.push('%');
                 out.push(other);
-            }
+            },
         }
     }
 

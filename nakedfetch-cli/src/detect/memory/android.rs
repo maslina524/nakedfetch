@@ -7,7 +7,7 @@ impl MemoryInfo {
             Err(e) => {
                 warning!("Failed to open /proc/meminfo: {e}");
                 return Self::default();
-            }
+            },
         };
 
         let total_kb_raw = info.get("MemTotal").map_or(0.0, |v| {
@@ -17,7 +17,7 @@ impl MemoryInfo {
                 Err(e) => {
                     warning!("Failed to parse `{value_str}` as f64: {e} (Raw: {v})");
                     0.0
-                }
+                },
             }
         });
 
@@ -28,7 +28,7 @@ impl MemoryInfo {
                 Err(e) => {
                     warning!("Failed to parse `{value_str}` as f64: {e} (Raw: {v})");
                     0.0
-                }
+                },
             }
         });
 

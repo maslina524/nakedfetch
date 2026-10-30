@@ -82,7 +82,7 @@ pub fn get_shell_pid() -> u32 {
             Err(e) => {
                 warning!("Failed to read /proc/pid/stat: {e}");
                 return 0;
-            }
+            },
         };
         let item_iter = state.split(' ');
 

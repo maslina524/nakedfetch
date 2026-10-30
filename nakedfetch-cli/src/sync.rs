@@ -27,7 +27,8 @@ impl<T> OnceLock<T> {
 
     pub fn get_or_init(&self, f: impl FnOnce() -> T) -> &T {
         if self.state.load(Ordering::Acquire) == READY {
-            // SAFETY: The value in `MaybeUninit` is guaranteed to be initialized
+            // SAFETY: The value in `MaybeUninit` is guaranteed to be
+            // initialized
             unsafe {
                 return (&*self.value.get()).assume_init_ref();
             }
@@ -53,21 +54,24 @@ impl<T> OnceLock<T> {
             }
             self.state.store(READY, Ordering::Release);
 
-            // SAFETY: The value in `MaybeUninit` is guaranteed to be initialized
+            // SAFETY: The value in `MaybeUninit` is guaranteed to be
+            // initialized
             unsafe { (&*self.value.get()).assume_init_ref() }
         } else {
             while self.state.load(Ordering::Acquire) != READY {
                 core::hint::spin_loop();
             }
 
-            // SAFETY: The value in `MaybeUninit` is guaranteed to be initialized
+            // SAFETY: The value in `MaybeUninit` is guaranteed to be
+            // initialized
             unsafe { (&*self.value.get()).assume_init_ref() }
         }
     }
 
     pub fn get(&self) -> Option<&T> {
         if self.state.load(Ordering::Acquire) == READY {
-            // SAFETY: The value in `MaybeUninit` is guaranteed to be initialized
+            // SAFETY: The value in `MaybeUninit` is guaranteed to be
+            // initialized
             unsafe { Some((&*self.value.get()).assume_init_ref()) }
         } else {
             None
@@ -76,7 +80,8 @@ impl<T> OnceLock<T> {
 
     pub fn get_or_abort(&self, msg: &str) -> &T {
         if self.state.load(Ordering::Acquire) == READY {
-            // SAFETY: The value in `MaybeUninit` is guaranteed to be initialized
+            // SAFETY: The value in `MaybeUninit` is guaranteed to be
+            // initialized
             unsafe { (&*self.value.get()).assume_init_ref() }
         } else {
             abort!("{}", msg);
@@ -85,7 +90,8 @@ impl<T> OnceLock<T> {
 
     pub fn set(&self, val: T) -> Result<&T, &T> {
         if self.state.load(Ordering::Acquire) == READY {
-            // SAFETY: The value in `MaybeUninit` is guaranteed to be initialized
+            // SAFETY: The value in `MaybeUninit` is guaranteed to be
+            // initialized
             let val = unsafe { (&*self.value.get()).assume_init_ref() };
             return Err(val);
         }
@@ -109,7 +115,8 @@ impl<T> OnceLock<T> {
                 core::hint::spin_loop();
             }
 
-            // SAFETY: The value in `MaybeUninit` is guaranteed to be initialized
+            // SAFETY: The value in `MaybeUninit` is guaranteed to be
+            // initialized
             let val = unsafe { (&*self.value.get()).assume_init_ref() };
             Err(val)
         }
@@ -162,6 +169,7 @@ impl<'mtx, T> MutexGuard<'mtx, T> {
 
 impl<T> Deref for MutexGuard<'_, T> {
     type Target = T;
+
     fn deref(&self) -> &Self::Target {
         // SAFETY: UnsafeCell<T> == T
         unsafe { &*self.mutex.data.get() }

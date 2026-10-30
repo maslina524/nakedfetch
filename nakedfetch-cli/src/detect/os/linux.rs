@@ -84,13 +84,13 @@ impl OsInfo {
                     .map(|s| s.trim().to_owned())
                     .ok()?;
                 Some(Self::extract_version(&content))
-            }
+            },
             "gentoo" => {
                 let content = fs::read_to_string("/etc/gentoo-release")
                     .map(|s| s.trim().to_owned())
                     .ok()?;
                 Some(Self::extract_version(&content))
-            }
+            },
             "arch" => Some("Rolling".to_owned()),
             _ => None, // os-release -> VERSION_ID
         }

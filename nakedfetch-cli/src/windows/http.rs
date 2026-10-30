@@ -1,6 +1,5 @@
-use core::{ffi::c_void, ptr};
-
 use alloc::{string::String, vec::Vec};
+use core::{ffi::c_void, ptr};
 
 use crate::{
     url::{Response, Url},

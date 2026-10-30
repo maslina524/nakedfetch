@@ -41,13 +41,14 @@ impl Process {
         let ret = unsafe { QueryFullProcessImageNameW(handle, 0, buf.as_mut_ptr(), &raw mut size) };
 
         let exe_path = if ret == 1 {
-            // SAFETY: WinAPI returns a valid C string and always leaves 261 bytes zeroed
+            // SAFETY: WinAPI returns a valid C string and always leaves 261
+            // bytes zeroed
             match utf16le_to_utf8(&buf, Utf16Len::Len(size as usize)) {
                 Ok(s) => Path::from(s),
                 Err(e) => {
                     warning!("Failed to convert Utf16 to Utf8 in terminal exe path: {e}");
                     Path::default()
-                }
+                },
             }
         } else {
             warning!("Failed to get terminal exe path: {}", ErrorCode::last());
@@ -72,7 +73,7 @@ pub fn get() -> Terminal {
         Err(e) => {
             warning!("Failed to get file version: {e} (shell)");
             SmolStr::from_static("0.0.0.0")
-        }
+        },
     };
 
     let pid = info.pid;

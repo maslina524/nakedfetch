@@ -1,7 +1,7 @@
 #![doc = include_str!("README.md")]
 
-pub mod board; // 5)  Board         : Print motherboard name and other info
-pub mod break_; // 7)  Break         : Print an empty line
+pub mod board; // 5) Board         : Print motherboard name and other info
+pub mod break_; // 7) Break         : Print an empty line
 pub mod colors; // 14) Colors        : Display the terminal's 16-color palette
 pub mod commit; // LF) Commit        : Display last commit
 pub mod cpu; // 15) CPU           : Print CPU name, frequency, etc.
@@ -26,6 +26,8 @@ pub mod uptime; // 66) Uptime        : Print how long the system has been runnin
 pub mod version; // 68) Version       : Print the Fastfetch version and build information
 pub mod wallpaper; // 70) Wallpaper     : Print the file path of the current wallpaper
 pub mod weather; // 71) Weather       : Print weather information
+
+use alloc::{borrow::Cow, collections::BTreeMap, string::String, vec::Vec};
 
 pub use board::Board;
 pub use break_::Break;
@@ -52,8 +54,6 @@ pub use uptime::Uptime;
 pub use version::Version;
 pub use wallpaper::Wallpaper;
 pub use weather::Weather;
-
-use alloc::{borrow::Cow, collections::BTreeMap, string::String, vec::Vec};
 
 use crate::json::Value;
 
@@ -217,7 +217,7 @@ pub fn expand_env_in_module(s: String) -> Cow<'static, str> {
         Err(e) => {
             crate::warning!("Failed to convert Utf16: {e}");
             s.into()
-        }
+        },
     }
 }
 

@@ -2,8 +2,10 @@ use core::fmt::Display;
 
 use crate::{
     abort,
-    windows::encoding::{Utf16Len, utf16le_to_utf8},
-    windows::link::{FormatMessageW, GetLastError},
+    windows::{
+        encoding::{Utf16Len, utf16le_to_utf8},
+        link::{FormatMessageW, GetLastError},
+    },
 };
 
 pub type Result<T> = core::result::Result<T, ErrorCode>;

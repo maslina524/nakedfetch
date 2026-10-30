@@ -1,6 +1,5 @@
-use core::ops::Range;
-
 use alloc::{string::String, vec::Vec};
+use core::ops::Range;
 
 #[derive(Clone)]
 pub struct SplittedAnsiIter {

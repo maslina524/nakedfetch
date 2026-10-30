@@ -6,10 +6,9 @@ mod stable {
 
 #[cfg(unstable)]
 mod unstable {
-    use {
-        proc_macro::{Diagnostic, Level, Span, TokenStream, TokenTree},
-        std::sync::atomic::{AtomicU32, Ordering::Relaxed},
-    };
+    use std::sync::atomic::{AtomicU32, Ordering::Relaxed};
+
+    use proc_macro::{Diagnostic, Level, Span, TokenStream, TokenTree};
 
     static COUNTER: AtomicU32 = AtomicU32::new(1);
 
@@ -18,7 +17,7 @@ mod unstable {
             TokenTree::Literal(s) => {
                 let string = s.str_value().ok()?;
                 Some(format!("#{} TODO: {string}", COUNTER.load(Relaxed)))
-            }
+            },
             _ => None,
         })
     }
@@ -35,6 +34,5 @@ mod unstable {
 
 #[cfg(not(unstable))]
 pub use stable::imp;
-
 #[cfg(unstable)]
 pub use unstable::imp;

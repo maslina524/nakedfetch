@@ -1,5 +1,6 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
+#![allow(unused)]
 
 mod allocator;
 mod base64;
@@ -43,9 +44,8 @@ cfg_if! {
 
 extern crate alloc;
 
-use core::slice::Iter;
-
 use alloc::{boxed::Box, string::String, vec::Vec};
+use core::slice::Iter;
 
 use crate::{
     allocator::{AllocationReport, Allocator},
@@ -279,7 +279,7 @@ fn get_config(args: &mut Iter<'_, String>) -> Config {
             Err(e) => {
                 warning!("Failed to connect to server (config): {}", e.code());
                 return Config::default();
-            }
+            },
         };
         if !response.is_success() {
             warning!("Failed to get preset from URL, Code: {}", response.code());
@@ -294,7 +294,7 @@ fn get_config(args: &mut Iter<'_, String>) -> Config {
             Err(e) => {
                 warning!("Failed to parse the json config: {e}");
                 Config::default()
-            }
+            },
         };
     }
 
@@ -304,7 +304,7 @@ fn get_config(args: &mut Iter<'_, String>) -> Config {
         Err(e) => {
             warning!("Failed to parse the json config: {e}");
             Config::default()
-        }
+        },
     }
 }
 
@@ -318,7 +318,7 @@ fn get_logo_name_and_custom(val: &str) -> (Box<str>, UILogo) {
                     Err(e) => {
                         warning!("Failed to parse png: {e}");
                         (id, UILogo::Preset)
-                    }
+                    },
                 }
             } else if let Ok(s) = String::from_utf8(b) {
                 (id, UILogo::Ascii(s))
@@ -326,7 +326,7 @@ fn get_logo_name_and_custom(val: &str) -> (Box<str>, UILogo) {
                 warning!("Failed to represent data as utf8");
                 (id, UILogo::Preset)
             }
-        }
+        },
         Err(e) if e.is_file_not_found() => (
             val.to_lowercase().replace('_', " ").into_boxed_str(),
             UILogo::Preset,
@@ -334,7 +334,7 @@ fn get_logo_name_and_custom(val: &str) -> (Box<str>, UILogo) {
         Err(e) => {
             warning!("Failed to use logo from fs: {e}");
             (id, UILogo::Preset)
-        }
+        },
     }
 }
 
@@ -365,7 +365,7 @@ fn print_help(theme: Option<&str>) -> ! {
                 } else {
                     println!("Module `{ident}` doesn't support output formatting");
                 }
-            }
+            },
             "lua" => {
                 if let Some(doc) = (vtable.lua)() {
                     println!(
@@ -384,7 +384,7 @@ fn print_help(theme: Option<&str>) -> ! {
                 } else {
                     println!("Module `{ident}` doesn't support lua");
                 }
-            }
+            },
             "example" => {
                 let id = os::get_id().as_boxed_str();
                 LogoInfo::new(&id);
@@ -392,8 +392,8 @@ fn print_help(theme: Option<&str>) -> ! {
 
                 if let Some(doc) = (vtable.example)() {
                     // println!(
-                    //     "# In config file: {{ \"type\": \"{ident}\", \"format\": \"lua: return (...).{}\" }}",
-                    //     doc[0].name
+                    //     "# In config file: {{ \"type\": \"{ident}\",
+                    // \"format\": \"lua: return (...).{}\" }}",     doc[0].name
                     // );
                     println!("The following variables are passed:");
                     for (name, value) in doc {
@@ -402,11 +402,11 @@ fn print_help(theme: Option<&str>) -> ! {
                 } else {
                     println!("Module `{ident}` doesn't have variables");
                 }
-            }
+            },
             _ => {
                 println!("Incorrect action");
                 exit(1);
-            }
+            },
         }
 
         exit(0);
@@ -446,7 +446,7 @@ fn print_version(method: Option<&str>) -> ! {
                 "    {} <{}> ({})",
                 com.message, com.date_small, com.sha_short
             );
-        }
+        },
         _ => eprintln!("Unknown method for version, supported: raw, dbg, extended"),
     }
     exit(0)

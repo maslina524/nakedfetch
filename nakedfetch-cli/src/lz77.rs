@@ -1,6 +1,5 @@
-use core::error::Error;
-
 use alloc::vec::Vec;
+use core::error::Error;
 
 #[derive(Debug)]
 pub enum Lz77Error {
@@ -33,14 +32,14 @@ pub fn decompress(bytes: Vec<u8>) -> Result<Vec<u8>, Lz77Error> {
             Offset::Dictionary { length, offset } => {
                 let dict = fetch_offset(&dictionary, length, offset)?;
                 dictionary.extend_from_slice(&dict);
-            }
+            },
             Offset::Literal { length } => match safe_take(&mut iter, length) {
                 Ok(mut bytes) => {
                     dictionary.append(&mut bytes);
-                }
+                },
                 Err(_) => {
                     return Err(Lz77Error::ReachedEndOfBuffer);
-                }
+                },
             },
         }
     }
@@ -88,7 +87,7 @@ where
                 length: cb_mask,
                 offset: ((q << 8) + r as usize + 1),
             }
-        }
+        },
 
         9 => {
             let r = next(reader)?;
@@ -98,7 +97,7 @@ where
                 length: 9 + r as usize,
                 offset: ((q << 8) + s as usize + 1),
             }
-        }
+        },
         _ => unreachable!(),
     })
 }

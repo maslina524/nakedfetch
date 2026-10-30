@@ -53,7 +53,7 @@ fn get_version() -> SmolStr {
             Ok(s) => return s,
             Err(e) => {
                 warning!("Failed to parse CStr: {e}");
-            }
+            },
         }
     }
 

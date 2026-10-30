@@ -1,7 +1,6 @@
+use alloc::string::String;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::{__cpuid, __cpuid_count, _xgetbv};
-
-use alloc::string::String;
 
 use crate::{
     cfg_if,

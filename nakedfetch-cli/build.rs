@@ -262,7 +262,7 @@ mod setup {
                 println!("cargo:rustc-link-lib=dylib=m");
                 println!("cargo:rustc-link-arg=-pthread");
                 println!("cargo:rustc-link-arg=-lc");
-            }
+            },
             ("android", "aarch64") => {
                 let lua_dir = env::var("LUA_ANDROID_LIB_DIR")
                     .unwrap_or_else(|_| "bin/android-aarch64".to_owned());
@@ -272,16 +272,17 @@ mod setup {
                 println!("cargo:rustc-link-arg=-lc");
                 println!("cargo:rustc-link-lib=dylib=m");
                 println!("cargo:rustc-link-lib=dylib=dl");
-            }
+            },
             ("windows", _) => {
                 println!("cargo:rustc-link-search=native=bin/windows");
                 println!("cargo:rustc-link-lib=static=lua55");
 
                 // FIXME: This just suppresses the error rather than solving it,
-                // in the future Lua should be built manually for the linker that Rust uses
+                // in the future Lua should be built manually for the linker
+                // that Rust uses
                 println!("cargo:rustc-link-arg=/NODEFAULTLIB:LIBCMT");
-            }
-            _ => {}
+            },
+            _ => {},
         }
     }
 
@@ -501,7 +502,7 @@ mod setup {
                             );
                             String::new()
                         }
-                    }
+                    },
                     ("linux", "musl") => "musl".to_owned(),
                     _ => String::new(),
                 }
@@ -525,7 +526,7 @@ mod setup {
             match crate::target_os() {
                 "linux" => println!("cargo:rustc-cfg=glibc"),
                 "android" => println!("cargo:rustc-cfg=bionic"),
-                _ => {}
+                _ => {},
             }
         }
 
@@ -573,8 +574,8 @@ fn main() {
     // let is_nightly = ver.contains("nightly") || ver.contains("dev");
     // assert!(
     //     is_nightly,
-    //     "\x1b[31;1mTo compile and work with the nakedfetch source code, the nightly version of the compiler is required\x1b[0m"
-    // );
+    //     "\x1b[31;1mTo compile and work with the nakedfetch source code, the
+    // nightly version of the compiler is required\x1b[0m" );
 
     let (raw, encoded) = setup::compress_logos();
     #[allow(clippy::cast_precision_loss)]

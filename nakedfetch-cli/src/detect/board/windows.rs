@@ -1,6 +1,5 @@
-use core::{ptr, slice};
-
 use alloc::vec;
+use core::{ptr, slice};
 
 use crate::{modules::Board, warning, windows::link::GetSystemFirmwareTable};
 
@@ -62,10 +61,11 @@ pub fn get() -> Board {
     }
 
     let size_of_header = size_of::<RawSMBIOSData>();
-    // SAFETY: Shift the pointer from the beginning of the structure to its "end",
-    // where the table is located
+    // SAFETY: Shift the pointer from the beginning of the structure to its
+    // "end", where the table is located
     let ptr = unsafe { buf.as_mut_ptr().add(size_of_header) };
-    // SAFETY: Create a slice from the beginning of the table to `size` - `size_of_header`
+    // SAFETY: Create a slice from the beginning of the table to `size` -
+    // `size_of_header`
     let table = unsafe { slice::from_raw_parts(ptr, size as usize - size_of_header) };
 
     let mut pos = 0usize;

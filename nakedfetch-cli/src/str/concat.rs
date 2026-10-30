@@ -1,6 +1,5 @@
-use core::fmt::Write;
-
 use alloc::{boxed::Box, string::String, vec::Vec};
+use core::fmt::Write;
 
 use crate::{
     format,
@@ -88,8 +87,9 @@ impl From<&'static str> for ConcatStr<1> {
 }
 
 impl<const N: usize> AsLua for ConcatStr<N> {
+    const LUA_TYPE: &'static str = "string";
+
     fn as_lua(&self) -> LuaType {
         LuaType::String(format!("{self:?}"))
     }
-    const LUA_TYPE: &'static str = "string";
 }

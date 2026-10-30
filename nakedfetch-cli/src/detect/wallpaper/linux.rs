@@ -1,6 +1,5 @@
-use core::ffi::{CStr, c_char};
-
 use alloc::{borrow::ToOwned, string::String};
+use core::ffi::{CStr, c_char};
 
 use crate::{
     detect::wallpaper::WallpaperInfo,

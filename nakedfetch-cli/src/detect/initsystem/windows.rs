@@ -1,4 +1,4 @@
-use alloc::{borrow::Cow, borrow::ToOwned};
+use alloc::borrow::{Cow, ToOwned};
 
 use crate::{
     detect::initsystem::InitSystemInfo,
@@ -17,7 +17,7 @@ impl InitSystemInfo {
             Err(e) => {
                 warning!("Failed to get file version: {e} (initsystem)");
                 SmolStr::from_static("0.0.0.0")
-            }
+            },
         };
 
         Self {

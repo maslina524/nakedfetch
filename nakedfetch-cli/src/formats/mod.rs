@@ -1,8 +1,7 @@
 #![doc = include_str!("README.md")]
 
-use core::fmt::Write;
-
 use alloc::{borrow::ToOwned, string::String, vec::Vec};
+use core::fmt::Write;
 
 use crate::color;
 
@@ -268,7 +267,7 @@ pub fn format_color(s: &str, plan: ColorPlan) -> String {
             } else {
                 color::FG_DEFAULT
             }
-        }
+        },
     };
     ret.push(color_str);
 

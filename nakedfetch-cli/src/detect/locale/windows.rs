@@ -1,6 +1,5 @@
-use core::ptr;
-
 use alloc::string::String;
+use core::ptr;
 
 use crate::{
     str::SmolStr,

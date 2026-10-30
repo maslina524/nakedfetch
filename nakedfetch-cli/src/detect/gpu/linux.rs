@@ -46,7 +46,7 @@ impl GpuInfo {
             Err(e) => {
                 warning!("Failed to read {path}: {e}");
                 return 0;
-            }
+            },
         };
         let trimmed = content.trim_start_matches("0x").trim();
 
@@ -60,7 +60,7 @@ impl GpuInfo {
             Err(e) => {
                 warning!("Failed to parse {path}: {e}");
                 return None;
-            }
+            },
         };
 
         parsed.get("DRIVER")
@@ -72,7 +72,7 @@ impl GpuInfo {
             Err(e) => {
                 warning!("Failed to read devices: {e}");
                 return None;
-            }
+            },
         };
 
         for entry in entries {

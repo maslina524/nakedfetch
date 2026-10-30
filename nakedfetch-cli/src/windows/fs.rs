@@ -1,17 +1,16 @@
-use core::{ffi::c_void, ptr};
-
 use alloc::{
     string::{FromUtf8Error, String},
     vec,
     vec::Vec,
 };
+use core::{ffi::c_void, ptr};
 
-use crate::{
-    windows::error::{self, ErrorCode},
-    windows::link::{
+use crate::windows::{
+    error::{self, ErrorCode},
+    link::{
         CloseHandle, CreateDirectoryW, CreateFileW, GetFileSizeEx, HANDLE, ReadFile, WriteFile,
     },
-    windows::path::Path,
+    path::Path,
 };
 
 const FILE_SHARE_READ: u32 = 0x0001;

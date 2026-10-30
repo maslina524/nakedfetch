@@ -1,6 +1,5 @@
-use core::fmt::{self, Debug, Display};
-
 use alloc::boxed::Box;
+use core::fmt::{self, Debug, Display};
 
 use crate::{
     format,
@@ -42,8 +41,9 @@ impl<T: Debug + Send + Sync + 'static> Debug for LazyField<T> {
 }
 
 impl<T: Display + AsLua + Send + Sync + 'static> AsLua for LazyField<T> {
+    const LUA_TYPE: &'static str = T::LUA_TYPE;
+
     fn as_lua(&self) -> LuaType {
         LuaType::String(format!("{self}"))
     }
-    const LUA_TYPE: &'static str = T::LUA_TYPE;
 }

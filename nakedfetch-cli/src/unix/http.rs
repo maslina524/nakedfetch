@@ -1,10 +1,9 @@
-use core::{ffi::c_int, ptr};
-
 use alloc::{
     ffi::CString,
     string::{String, ToString},
     vec::Vec,
 };
+use core::{ffi::c_int, ptr};
 
 use crate::{
     abort, format,
@@ -81,8 +80,8 @@ impl Request {
             // SAFETY: Libc always returns a valid pointer
             let ai = unsafe { &*rp };
             // crate::println!(
-            //     "ai: family={} socktype={} proto={} addrlen={} addr={:p} next={:p}",
-            //     ai.ai_family, ai.ai_socktype, ai.ai_protocol,
+            //     "ai: family={} socktype={} proto={} addrlen={} addr={:p}
+            // next={:p}",     ai.ai_family, ai.ai_socktype, ai.ai_protocol,
             //     ai.ai_addrlen, ai.ai_addr, ai.ai_next
             // );
 

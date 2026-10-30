@@ -6,8 +6,7 @@ pub mod raw;
 pub mod table;
 
 pub mod api;
-pub use api::io;
-pub use api::process;
+pub use api::{io, process};
 
 #[macro_export]
 macro_rules! syscall {

@@ -41,8 +41,9 @@ impl<N: NumTrait, const W: usize> Debug for ZeroPadded<N, W> {
 }
 
 impl<N: NumTrait + Into<f64>, const W: usize> AsLua for ZeroPadded<N, W> {
+    const LUA_TYPE: &'static str = "number";
+
     fn as_lua(&self) -> LuaType {
         LuaType::Number(self.value.into())
     }
-    const LUA_TYPE: &'static str = "number";
 }

@@ -1,6 +1,5 @@
-use core::{ffi::CStr, ptr};
-
 use alloc::{borrow::ToOwned, string::String};
+use core::{ffi::CStr, ptr};
 
 use crate::{
     detect::datetime::{AmPm, DatetimeInfo},

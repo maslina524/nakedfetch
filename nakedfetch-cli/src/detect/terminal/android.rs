@@ -31,7 +31,7 @@ fn get_version() -> Option<SmolStr> {
             Ok(s) => return Some(s),
             Err(e) => {
                 warning!("Failed to parse CStr: {e}");
-            }
+            },
         }
     }
 

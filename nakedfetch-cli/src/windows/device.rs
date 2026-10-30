@@ -1,13 +1,14 @@
-use core::{ffi::c_void, mem::size_of, ptr};
-
 use alloc::{string::String, vec, vec::Vec};
+use core::{ffi::c_void, mem::size_of, ptr};
 
 use crate::{
     sync::OnceLock,
     warning,
-    windows::encoding::{Utf16Len, utf16le_to_utf8},
-    windows::error::ErrorCode,
-    windows::link::{GetRawInputDeviceInfoW, GetRawInputDeviceList, RAWINPUTDEVICELIST},
+    windows::{
+        encoding::{Utf16Len, utf16le_to_utf8},
+        error::ErrorCode,
+        link::{GetRawInputDeviceInfoW, GetRawInputDeviceList, RAWINPUTDEVICELIST},
+    },
 };
 
 type DeviceHandle = *mut c_void;

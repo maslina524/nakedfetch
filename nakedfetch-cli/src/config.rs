@@ -407,7 +407,7 @@ impl TemperatureType {
             _ => {
                 warning!("Unknown temperature type ({s})");
                 Self::Celsius
-            }
+            },
         }
     }
 }

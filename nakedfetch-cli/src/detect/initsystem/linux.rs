@@ -1,7 +1,10 @@
 use alloc::borrow::{Cow, ToOwned};
 
 use crate::{
-    detect::initsystem::InitSystemInfo, str::SmolStr, unix::fs, unix::path::Path, warning,
+    detect::initsystem::InitSystemInfo,
+    str::SmolStr,
+    unix::{fs, path::Path},
+    warning,
 };
 
 impl InitSystemInfo {

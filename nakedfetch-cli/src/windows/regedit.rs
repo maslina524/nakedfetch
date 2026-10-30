@@ -1,15 +1,14 @@
+use alloc::{string::String, vec, vec::Vec};
 use core::{
     ffi::c_void,
     ptr,
     sync::atomic::{AtomicPtr, Ordering},
 };
 
-use alloc::{string::String, vec, vec::Vec};
-
-use crate::{
-    windows::encoding::wide,
-    windows::error::{self, ErrorCode},
-    windows::link::{RegCloseKey, RegCreateKeyExW, RegOpenKeyExW, RegQueryValueExW},
+use crate::windows::{
+    encoding::wide,
+    error::{self, ErrorCode},
+    link::{RegCloseKey, RegCreateKeyExW, RegOpenKeyExW, RegQueryValueExW},
 };
 
 pub type Handle = AtomicPtr<c_void>;
@@ -195,7 +194,7 @@ impl Regedit {
                     .collect::<Vec<u16>>();
                 let s = String::from_utf16_lossy(&chars);
                 Ok(RegValue::Sz(s))
-            }
+            },
             2 => {
                 // SAFETY: Using memory specifically allocated for the string
                 let u16_slice = unsafe {
@@ -209,21 +208,21 @@ impl Regedit {
                     .collect::<Vec<u16>>();
                 let s = String::from_utf16_lossy(&chars);
                 Ok(RegValue::ExpandSz(s))
-            }
+            },
             4 => {
                 if buf.len() != 4 {
                     return Err(ErrorCode::new(13)); // ERROR_INVALID_DATA
                 }
                 let val = u32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]);
                 Ok(RegValue::Dword(val))
-            }
+            },
             5 => {
                 if buf.len() != 4 {
                     return Err(ErrorCode::new(13));
                 }
                 let val = u32::from_be_bytes([buf[0], buf[1], buf[2], buf[3]]);
                 Ok(RegValue::DwordBE(val))
-            }
+            },
             6 => {
                 // SAFETY: Using memory specifically allocated for the string
                 let u16_slice = unsafe {
@@ -237,7 +236,7 @@ impl Regedit {
                     .collect::<Vec<u16>>();
                 let s = String::from_utf16_lossy(&chars);
                 Ok(RegValue::Link(s))
-            }
+            },
             7 => {
                 // SAFETY: Using memory specifically allocated for the string
                 let u16_slice = unsafe {
@@ -264,7 +263,7 @@ impl Regedit {
                     }
                 }
                 Ok(RegValue::MultiSz(strings))
-            }
+            },
             11 => {
                 if buf.len() != 8 {
                     return Err(ErrorCode::new(13));
@@ -273,7 +272,7 @@ impl Regedit {
                     buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7],
                 ]);
                 Ok(RegValue::Qword(val))
-            }
+            },
             _ => Ok(RegValue::Binary(buf)),
         }
     }

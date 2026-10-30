@@ -81,9 +81,8 @@ pub fn falloc(size: usize) -> ErrnoResult<*mut c_void> {
 
 #[cfg(test)]
 mod tests {
-    use crate::api::alloc::init::{falloc_destroy, falloc_init};
-
     use super::*;
+    use crate::api::alloc::init::{falloc_destroy, falloc_init};
 
     const THREE_PAGES: usize = 511 * 3;
     #[test]

@@ -1,6 +1,5 @@
-use core::ffi::CStr;
-
 use alloc::{string::String, vec::Vec};
+use core::ffi::CStr;
 
 use crate::{
     formats::{MemorySize, Percent, Time},

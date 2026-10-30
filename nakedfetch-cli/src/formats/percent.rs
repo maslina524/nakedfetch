@@ -28,6 +28,7 @@ impl Percent {
 
 impl FromStr for Percent {
     type Err = ();
+
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         s.trim()
             .trim_end_matches('%')
