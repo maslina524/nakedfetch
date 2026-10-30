@@ -66,7 +66,7 @@ Nakedfetch использует два уровня кэша:
 
 ## Comparison
 
-| Feature      | Fastfetch | Nakedfetch           |
+| Feature      | Fastfetch | Nakedfetch          |
 | ------------ | --------- | ------------------- |
 | Язык         | C         | Rust                |
 | Зависимости  | Yes       | No                  |

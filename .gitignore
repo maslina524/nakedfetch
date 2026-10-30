@@ -6,8 +6,5 @@
 /.VSCodeCounter
 /test*
 Cargo.lock
-sum.ps1
+count.py
 flamegraph*
-
-# WIP
-src/detect/os.rs

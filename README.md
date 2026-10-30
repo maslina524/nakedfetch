@@ -68,7 +68,7 @@ Lua code runs at runtime, the library is linked at compile time
 
 ## Comparison
 
-| Feature      | Fastfetch | Nakedfetch           |
+| Feature      | Fastfetch | Nakedfetch          |
 | ------------ | --------- | ------------------- |
 | Language     | C         | Rust                |
 | Dependencies | Yes       | No                  |

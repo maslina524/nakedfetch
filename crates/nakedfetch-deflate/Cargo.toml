@@ -8,3 +8,6 @@ repository.workspace = true
 
 [dependencies]
 huffman = { path = "../nakedfetch-huffman" }
+
+[lints]
+workspace = true

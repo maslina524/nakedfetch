@@ -1,4 +1,9 @@
-#![allow(clippy::cargo_common_metadata)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::missing_panics_doc,
+    reason = "Unsafe unwrap for values is used only where incorrect evaluation of these values (`Err`/`None`) should cause compilation to stop"
+)]
 
 use std::{
     collections::HashMap, env, ffi::OsString, fs, path::Path, process::Command, sync::OnceLock,
@@ -15,27 +20,22 @@ pub static TARGET_ARCH: OnceLock<String> = OnceLock::new();
 
 pub static VERSION_MAP: OnceLock<HashMap<String, String>> = OnceLock::new();
 
-#[allow(clippy::missing_panics_doc)]
 pub fn target_os() -> &'static str {
-    TARGET_OS.get_or_init(|| std::env::var("CARGO_CFG_TARGET_OS").unwrap())
+    TARGET_OS.get_or_init(|| env::var("CARGO_CFG_TARGET_OS").unwrap())
 }
 
-#[allow(clippy::missing_panics_doc)]
 pub fn target_family() -> &'static str {
-    TARGET_FAMILY.get_or_init(|| std::env::var("CARGO_CFG_TARGET_FAMILY").unwrap())
+    TARGET_FAMILY.get_or_init(|| env::var("CARGO_CFG_TARGET_FAMILY").unwrap())
 }
 
-#[allow(clippy::missing_panics_doc)]
 pub fn target_env() -> &'static str {
-    TARGET_ENV.get_or_init(|| std::env::var("CARGO_CFG_TARGET_ENV").unwrap())
+    TARGET_ENV.get_or_init(|| env::var("CARGO_CFG_TARGET_ENV").unwrap())
 }
 
-#[allow(clippy::missing_panics_doc)]
 pub fn target_arch() -> &'static str {
-    TARGET_ARCH.get_or_init(|| std::env::var("CARGO_CFG_TARGET_ARCH").unwrap())
+    TARGET_ARCH.get_or_init(|| env::var("CARGO_CFG_TARGET_ARCH").unwrap())
 }
 
-#[allow(clippy::missing_panics_doc)]
 pub fn version_map() -> &'static HashMap<String, String> {
     VERSION_MAP.get_or_init(|| {
         // Build command
@@ -340,7 +340,7 @@ mod setup {
         use std::path::PathBuf;
 
         let manifest_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-        println!("Manifest: {manifest_dir:?}");
+        println!("Manifest: {}", manifest_dir.display());
         let json_path = manifest_dir.join("../../logo.json");
         let out_dir = PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("logo");
 
@@ -533,22 +533,20 @@ mod setup {
         pub fn no_alloc_in_panic() {
             use std::env;
 
-            let env = if let Ok(e) = env::var("NO_ALLOC_IN_PANIC") {
-                e
-            } else {
+            let Ok(env) = env::var("NO_ALLOC_IN_PANIC") else {
                 return;
             };
 
             if ["yes", "true"].contains(&env.to_lowercase().as_str()) {
                 println!("cargo:warning=No alloc in panic: True");
-                println!("cargo:rustc-cfg=no_alloc_in_panic")
+                println!("cargo:rustc-cfg=no_alloc_in_panic");
             }
         }
     }
 }
 
 fn main() {
-    if std::env::var("CARGO_CFG_TARGET_OS").unwrap() == "windows" {
+    if env::var("CARGO_CFG_TARGET_OS").unwrap() == "windows" {
         setup::windows_resource();
     }
 
@@ -578,7 +576,7 @@ fn main() {
     // nightly version of the compiler is required\x1b[0m" );
 
     let (raw, encoded) = setup::compress_logos();
-    #[allow(clippy::cast_precision_loss)]
+    #[allow(clippy::cast_precision_loss, reason = "It will work correctly as long as encoded and raw are less than 2^52 bytes")]
     {
         println!(
             "cargo:warning={}b -> {}b = {:.02}%",

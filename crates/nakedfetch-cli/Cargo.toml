@@ -25,10 +25,5 @@ proc-macro2 = "1"
 syn         = "3.0.5"
 winresource = "0.1.31"
 
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = [
-        'cfg(lua5_5)', 'cfg(lua5_4)',
-        'cfg(glibc)', 'cfg(bionic)',
-        'cfg(no_alloc_in_panic)'
-    ]
-}
+[lints]
+workspace = true

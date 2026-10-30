@@ -6,7 +6,7 @@ use huffman::{HuffmanTree, Stream, decode_symb};
 use crate::{DeflateError, consts};
 
 pub fn decode_block(
-    stream: &mut Stream,
+    stream: &mut Stream<'_>,
     output: &mut Vec<u8>,
     litlen_tree: &HuffmanTree,
     dist_tree: &HuffmanTree,

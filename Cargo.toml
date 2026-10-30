@@ -9,7 +9,8 @@ members = [
     "crates/nakedfetch-zlib", 
     "crates/nakedfetch-lz77", 
     "crates/nakedfetch-deflate", 
-    "crates/nakedfetch-image",
+    "crates/nakedfetch-image", 
+    "crates/nakedfetch-winapi",
 ]
 
 default-members = ["crates/nakedfetch-cli"]
@@ -38,3 +39,51 @@ debug = true
 codegen-units = 1
 panic = "abort"
 overflow-checks = true
+
+[workspace.lints.rust]
+unused_lifetimes      = "warn"
+trivial_casts         = "warn"
+trivial_numeric_casts = "warn"
+unused_qualifications = "warn"
+rust_2018_idioms      = { level = "warn", priority = -1 }
+
+unexpected_cfgs = { level = "warn", check-cfg = [
+        'cfg(lua5_5)', 'cfg(lua5_4)',
+        'cfg(glibc)', 'cfg(bionic)',
+        'cfg(no_alloc_in_panic)',
+        'cfg(unstable)'
+    ]
+}
+
+[workspace.lints.rustdoc]
+broken_intra_doc_links       = "warn"
+private_intra_doc_links      = "warn"
+bare_urls                    = "warn"
+invalid_html_tags            = "warn"
+unescaped_backticks          = "warn"
+redundant_explicit_links     = "warn"
+invalid_codeblock_attributes = "warn"
+
+[workspace.lints.clippy]
+all      = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery  = { level = "warn", priority = -1 }
+cargo    = { level = "warn", priority = -1 }
+
+missing_safety_doc         = "warn"
+undocumented_unsafe_blocks = "warn"
+unwrap_used                = "warn"
+expect_used                = "warn"
+
+allow_attributes_without_reason = "warn"
+
+cast_possible_truncation = "allow"
+cast_possible_wrap       = "allow"
+cast_sign_loss           = "allow"
+
+doc_lazy_continuation       = "warn"
+doc_overindented_list_items = "warn"
+doc_link_with_quotes        = "warn"
+empty_docs                  = "warn"
+
+cargo_common_metadata = "allow"

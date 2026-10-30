@@ -1,3 +1,5 @@
+#![allow(unused_qualifications, reason = "include! can generate A LOT of such meaningless warnings")]
+
 use alloc::{string::String, vec::Vec};
 use core::fmt::Write;
 

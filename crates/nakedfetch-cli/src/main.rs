@@ -7,7 +7,6 @@ mod base64;
 mod color;
 mod config;
 mod crc32;
-mod deflate;
 mod kitty;
 mod logo;
 mod lua;

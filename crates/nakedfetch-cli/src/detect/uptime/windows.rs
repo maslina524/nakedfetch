@@ -25,7 +25,6 @@ impl UptimeInfo {
         let mut raw = 0;
         // SAFETY: Completely safe
         let ms = if unsafe { QueryUnbiasedInterruptTime(&raw mut raw) } != 0 {
-            crate::println!("Used QueryUnbiasedInterruptTime raw: {raw}");
             raw / 10_000
         } else {
             // SAFETY: Completely safe
