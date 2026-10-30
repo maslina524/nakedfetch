@@ -1,5 +1,10 @@
+#![cfg_attr(not(test), no_std)]
+#![cfg_attr(not(test), no_main)]
+
+extern crate alloc;
+
 use alloc::vec::Vec;
-use core::error::Error;
+use core::{error::Error, fmt};
 
 #[derive(Debug)]
 pub enum Lz77Error {
@@ -9,13 +14,13 @@ pub enum Lz77Error {
     IndexOutOfBounds,
 }
 
-impl core::fmt::Display for Lz77Error {
+impl fmt::Display for Lz77Error {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            Self::ReachedEndOfBuffer => write!(f, "Lz77: Reached end of buffer"),
-            Self::UnknownControlByte(b) => write!(f, "Lz77: Unknow control byte ({b:02X})"),
-            Self::OffseLargerThanDict => write!(f, "Lz77: Offset larger than dictionary"),
-            Self::IndexOutOfBounds => write!(f, "Lz77: Index out of bounds"),
+            Self::ReachedEndOfBuffer => write!(f, "Reached end of buffer"),
+            Self::UnknownControlByte(b) => write!(f, "Unknow control byte ({b:02X})"),
+            Self::OffseLargerThanDict => write!(f, "Offset larger than dictionary"),
+            Self::IndexOutOfBounds => write!(f, "Index out of bounds"),
         }
     }
 }
@@ -88,7 +93,6 @@ where
                 offset: ((q << 8) + r as usize + 1),
             }
         },
-
         9 => {
             let r = next(reader)?;
             let s = next(reader)?;
@@ -132,7 +136,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::lz77::decompress;
+    use crate::decompress;
 
     #[test]
     fn literal_single_test() {

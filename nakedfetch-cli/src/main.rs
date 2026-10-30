@@ -13,7 +13,6 @@ mod image;
 mod kitty;
 mod logo;
 mod lua;
-mod lz77;
 mod macros;
 mod nvidia;
 mod parser;
