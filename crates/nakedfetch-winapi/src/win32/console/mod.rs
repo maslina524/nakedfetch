@@ -1,4 +1,8 @@
-use crate::{AsRawHandle, ntdll, types::Handle};
+use crate::{
+    AsRawHandle, ntdll,
+    types::Handle,
+    win32::fileapi::{FileHandle, Write},
+};
 
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
@@ -11,6 +15,12 @@ impl AsRawHandle for ConsoleHandle {
 
     fn from_raw(raw: Handle) -> Self {
         Self(raw)
+    }
+}
+
+impl From<ConsoleHandle> for FileHandle<Write> {
+    fn from(val: ConsoleHandle) -> Self {
+        Self::from_raw(val.as_raw())
     }
 }
 
