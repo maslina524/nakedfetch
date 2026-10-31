@@ -1,4 +1,10 @@
-use crate::types::primitives::{Long, ULong};
+use crate::types::{
+    primitives::{Long, ULong},
+    ptr::{ULongPtr, VoidPtr},
+};
+
+pub type Handle = VoidPtr;
+pub type Ntstatus = i32;
 
 STRUCT! {
     struct KSystemTime {
@@ -12,6 +18,22 @@ impl KSystemTime {
     #[must_use]
     pub const fn quad(&self) -> u64 {
         ((self.high1_time as u64) << 32) | (self.low_part as u64)
+    }
+}
+
+STRUCT! {
+    #[derive(Debug)]
+    struct IoStatusBlock {
+        union: IoStatusBlockInner,
+        information: ULongPtr,
+    }
+}
+
+UNION! {
+    #[derive(Debug)]
+    union IoStatusBlockInner {
+        status: Ntstatus,
+        pointer: VoidPtr,
     }
 }
 

@@ -28,7 +28,7 @@ impl fmt::Display for Lz77Error {
 impl Error for Lz77Error {}
 
 /// # Errors
-/// 
+///
 /// `Err` when passing an invalid `lz77` sequence.
 pub fn decompress(bytes: Vec<u8>) -> Result<Vec<u8>, Lz77Error> {
     let cap = bytes.len();

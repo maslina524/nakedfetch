@@ -33,7 +33,7 @@ impl HuffmanTree {
     }
 
     /// # Panics
-    /// 
+    ///
     /// ``assert_eq!(alphabet.len(), bl_list.len())``
     #[must_use]
     pub fn from_alphabet_and_bl_list(alphabet: &[u32], bl_list: &[u8]) -> Self {

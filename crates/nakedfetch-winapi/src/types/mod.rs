@@ -1,5 +1,6 @@
 pub mod chars;
 pub mod primitives;
+pub mod ptr;
 
 mod bool;
 pub use bool::Boolean;

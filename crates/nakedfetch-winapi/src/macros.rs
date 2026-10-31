@@ -34,3 +34,47 @@ macro_rules! ENUM {
         );
     );
 }
+
+macro_rules! UNION {
+    ($(#[$attrs:meta])* union $name:ident {
+        $($field:ident: $ftype:ty),+ $(,)?
+    }) => (
+        #[repr(C)]
+        #[derive(Clone)]
+        $(#[$attrs])*
+        pub struct $name {
+            $(pub $field: $ftype,)+
+        }
+
+        impl Default for $name {
+            fn default() -> $name {
+                // SAFETY: Guarantee that all fields can be zeroable
+                unsafe { ::core::mem::zeroed() }
+            }
+        }
+    );
+}
+
+macro_rules! impl_tag {
+    ($trait:ident : $($name:ident),+ $(,)?) => {
+        $(
+            impl $trait for $name {}
+        )+
+    };
+}
+
+macro_rules! impl_sealed {
+    ($($name:ident),+ $(,)?) => {
+        $(
+            impl sealed::Sealed for $name {}
+        )+
+    };
+}
+
+macro_rules! mod_sealed {
+    () => {
+        mod sealed {
+            pub trait Sealed {}
+        }
+    };
+}

@@ -72,7 +72,7 @@ pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
 
 impl Rgba {
     /// # Errors
-    /// 
+    ///
     /// `Err` on an invalid byte sequence for ``ColorType``.
     pub const fn from(data: &[u8], typ: ColorType, bits: u8) -> Result<Self, RgbaConvertError> {
         match (typ, bits) {

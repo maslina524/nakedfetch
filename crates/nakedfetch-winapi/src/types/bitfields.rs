@@ -1,5 +1,6 @@
 use crate::types::chars;
 
+#[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
 pub struct MitigationPolicies(chars::UChar);
 
@@ -25,6 +26,7 @@ impl MitigationPolicies {
     }
 }
 
+#[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
 pub struct VirtualizationFlags(chars::UChar);
 

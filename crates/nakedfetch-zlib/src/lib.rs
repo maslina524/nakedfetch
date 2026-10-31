@@ -47,8 +47,6 @@ pub fn inflate_block_no_compression(stream: &mut Stream<'_>, inflated: &mut Vec<
 }
 
 /// # Errors
-/// 
-/// 
 pub fn inflate_block_fixed_huffman(
     stream: &mut Stream<'_>,
     inflated: &mut Vec<u8>,
@@ -86,7 +84,7 @@ impl fmt::Display for InvalidHuffman {
 impl Error for InvalidHuffman {}
 
 /// # Errors
-/// 
+///
 /// `Err` on invalid huffman.
 pub fn inflate_compressed_block(
     stream: &mut Stream<'_>,
@@ -95,8 +93,8 @@ pub fn inflate_compressed_block(
     inflated: &mut Vec<u8>,
 ) -> Result<(), InvalidHuffman> {
     loop {
-        let Some(symb) = decode_symb(stream, literal_len_tree) else { 
-            unreachable!() 
+        let Some(symb) = decode_symb(stream, literal_len_tree) else {
+            unreachable!()
         };
 
         if symb < 256 {
@@ -107,8 +105,8 @@ pub fn inflate_compressed_block(
             let i = (symb - 257) as usize;
             let len = LENGTH_BASE[i] + stream.read_bits(LENGTH_EXTRA_BITS[i] as usize) as u32;
 
-            let Some(dist_symb) = decode_symb(stream, distance_tree).map(|v| v as usize) else { 
-                unreachable!() 
+            let Some(dist_symb) = decode_symb(stream, distance_tree).map(|v| v as usize) else {
+                unreachable!()
             };
 
             let distance = DISTANCE_BASE[dist_symb]
@@ -141,8 +139,8 @@ pub fn decode_trees(stream: &mut Stream<'_>) -> (HuffmanTree, HuffmanTree) {
 
     let mut bl_list = Vec::with_capacity((hlit + hdist) as usize);
     while bl_list.len() < (hlit + hdist) as usize {
-        let Some(symb) = decode_symb(stream, &code_len_tree) else { 
-            unreachable!() 
+        let Some(symb) = decode_symb(stream, &code_len_tree) else {
+            unreachable!()
         };
 
         if symb < 16 {
@@ -178,7 +176,7 @@ pub fn decode_trees(stream: &mut Stream<'_>) -> (HuffmanTree, HuffmanTree) {
 }
 
 /// # Errors
-/// 
+///
 /// `Err` on invalid huffman.
 pub fn inflate_block_dynamic_huffman(
     stream: &mut Stream<'_>,
@@ -205,7 +203,7 @@ fn inflate(stream: &mut Stream<'_>, buf: &mut Vec<u8>) -> Result<(), InvalidHuff
 }
 
 /// # Errors
-/// 
+///
 /// `Err` on invalid huffman.
 pub fn decompress(bytes: &'_ [u8], buf: &mut Vec<u8>) -> Result<Adler32, InvalidHuffman> {
     let mut stream = Stream::new(bytes);

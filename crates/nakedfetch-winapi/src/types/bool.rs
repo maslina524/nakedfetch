@@ -1,3 +1,4 @@
+#[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
 pub struct Boolean(u8);
 
