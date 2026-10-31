@@ -1,5 +1,6 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
+#![allow(clippy::trivial_numeric_casts, reason = "When passing usize, a useless warning occurs")]
 
 pub mod errno;
 pub mod raw;

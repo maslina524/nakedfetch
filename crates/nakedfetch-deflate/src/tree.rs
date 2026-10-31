@@ -28,7 +28,7 @@ pub fn build_fixed_trees() -> (HuffmanTree, HuffmanTree) {
 }
 
 pub fn build_dynamic_trees(
-    stream: &mut Stream,
+    stream: &mut Stream<'_>,
 ) -> Result<(HuffmanTree, HuffmanTree), DeflateError> {
     let hlit = stream.read_bits(5) as usize + 257;
     let hdist = stream.read_bits(5) as usize + 1;

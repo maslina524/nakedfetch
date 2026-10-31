@@ -25,12 +25,17 @@ pub struct HuffmanTree {
 }
 
 impl HuffmanTree {
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             root: HuffmanNode::new(),
         }
     }
 
+    /// # Panics
+    /// 
+    /// ``assert_eq!(alphabet.len(), bl_list.len())``
+    #[must_use]
     pub fn from_alphabet_and_bl_list(alphabet: &[u32], bl_list: &[u8]) -> Self {
         assert_eq!(alphabet.len(), bl_list.len());
 
@@ -79,18 +84,16 @@ impl HuffmanTree {
                 &mut curr.left
             };
 
-            if next.is_none() {
-                *next = Some(Box::new(HuffmanNode::new()));
-            }
-
-            curr = next.as_mut().unwrap();
+            curr = next
+                .get_or_insert_with(|| Box::new(HuffmanNode::new()))
+                .as_mut();
         }
 
         curr.symb = Some(symb);
     }
 }
 
-pub fn decode_symb(stream: &mut Stream, tree: &HuffmanTree) -> Option<u32> {
+pub fn decode_symb(stream: &mut Stream<'_>, tree: &HuffmanTree) -> Option<u32> {
     let mut curr = &tree.root;
 
     while curr.left.is_some() || curr.right.is_some() {

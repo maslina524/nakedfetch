@@ -35,7 +35,7 @@ fn extend_at<T: Clone>(dst: &mut [T], offset: usize, src: impl IntoIterator<Item
     }
 }
 
-pub fn inflate_block_no_compression(stream: &mut Stream, inflated: &mut Vec<u8>) {
+pub fn inflate_block_no_compression(stream: &mut Stream<'_>, inflated: &mut Vec<u8>) {
     stream.align_to_byte();
 
     let len = stream.read_bytes(2);
@@ -46,8 +46,11 @@ pub fn inflate_block_no_compression(stream: &mut Stream, inflated: &mut Vec<u8>)
     }
 }
 
+/// # Errors
+/// 
+/// 
 pub fn inflate_block_fixed_huffman(
-    stream: &mut Stream,
+    stream: &mut Stream<'_>,
     inflated: &mut Vec<u8>,
 ) -> Result<(), InvalidHuffman> {
     let mut bl_list = [0u8; 288];
@@ -82,14 +85,19 @@ impl fmt::Display for InvalidHuffman {
 
 impl Error for InvalidHuffman {}
 
+/// # Errors
+/// 
+/// `Err` on invalid huffman.
 pub fn inflate_compressed_block(
-    stream: &mut Stream,
+    stream: &mut Stream<'_>,
     literal_len_tree: &HuffmanTree,
     distance_tree: &HuffmanTree,
     inflated: &mut Vec<u8>,
 ) -> Result<(), InvalidHuffman> {
     loop {
-        let symb = decode_symb(stream, literal_len_tree).unwrap();
+        let Some(symb) = decode_symb(stream, literal_len_tree) else { 
+            unreachable!() 
+        };
 
         if symb < 256 {
             inflated.push(symb as u8);
@@ -98,7 +106,11 @@ pub fn inflate_compressed_block(
         } else if (257..=285).contains(&symb) {
             let i = (symb - 257) as usize;
             let len = LENGTH_BASE[i] + stream.read_bits(LENGTH_EXTRA_BITS[i] as usize) as u32;
-            let dist_symb = decode_symb(stream, distance_tree).unwrap() as usize;
+
+            let Some(dist_symb) = decode_symb(stream, distance_tree).map(|v| v as usize) else { 
+                unreachable!() 
+            };
+
             let distance = DISTANCE_BASE[dist_symb]
                 + stream.read_bits(DISTANCE_EXTRA_BITS[dist_symb] as usize) as u32;
 
@@ -111,7 +123,7 @@ pub fn inflate_compressed_block(
     }
 }
 
-pub fn decode_trees(stream: &mut Stream) -> (HuffmanTree, HuffmanTree) {
+pub fn decode_trees(stream: &mut Stream<'_>) -> (HuffmanTree, HuffmanTree) {
     let hlit = stream.read_bits(5) + 257;
     let hdist = stream.read_bits(5) + 1;
     let hclen = stream.read_bits(4) + 4;
@@ -129,7 +141,10 @@ pub fn decode_trees(stream: &mut Stream) -> (HuffmanTree, HuffmanTree) {
 
     let mut bl_list = Vec::with_capacity((hlit + hdist) as usize);
     while bl_list.len() < (hlit + hdist) as usize {
-        let symb = decode_symb(stream, &code_len_tree).unwrap();
+        let Some(symb) = decode_symb(stream, &code_len_tree) else { 
+            unreachable!() 
+        };
+
         if symb < 16 {
             bl_list.push(symb as u8);
         } else if symb == 16 {
@@ -162,15 +177,18 @@ pub fn decode_trees(stream: &mut Stream) -> (HuffmanTree, HuffmanTree) {
     (literal_len_tree, distance_tree)
 }
 
+/// # Errors
+/// 
+/// `Err` on invalid huffman.
 pub fn inflate_block_dynamic_huffman(
-    stream: &mut Stream,
+    stream: &mut Stream<'_>,
     inflated: &mut Vec<u8>,
 ) -> Result<(), InvalidHuffman> {
     let (literal_len_tree, distance_tree) = decode_trees(stream);
     inflate_compressed_block(stream, &literal_len_tree, &distance_tree, inflated)
 }
 
-fn inflate(stream: &mut Stream, buf: &mut Vec<u8>) -> Result<(), InvalidHuffman> {
+fn inflate(stream: &mut Stream<'_>, buf: &mut Vec<u8>) -> Result<(), InvalidHuffman> {
     let mut bfinal = 0;
     while bfinal == 0 {
         bfinal = stream.read_bit();
@@ -186,6 +204,9 @@ fn inflate(stream: &mut Stream, buf: &mut Vec<u8>) -> Result<(), InvalidHuffman>
     Ok(())
 }
 
+/// # Errors
+/// 
+/// `Err` on invalid huffman.
 pub fn decompress(bytes: &'_ [u8], buf: &mut Vec<u8>) -> Result<Adler32, InvalidHuffman> {
     let mut stream = Stream::new(bytes);
     stream.read_byte();

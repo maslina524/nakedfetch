@@ -52,6 +52,9 @@ pub(crate) fn extend_at<T: Clone>(dst: &mut [T], offset: usize, src: impl IntoIt
     }
 }
 
+/// # Errors
+/// 
+/// `Err` when passing an invalid `deflate` sequence.
 pub fn decode(input: &[u8]) -> Result<Vec<u8>, DeflateError> {
     let mut stream = Stream::new(input);
     let mut output = Vec::with_capacity(input.len());

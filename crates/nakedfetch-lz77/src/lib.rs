@@ -15,7 +15,7 @@ pub enum Lz77Error {
 }
 
 impl fmt::Display for Lz77Error {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::ReachedEndOfBuffer => write!(f, "Reached end of buffer"),
             Self::UnknownControlByte(b) => write!(f, "Unknow control byte ({b:02X})"),
@@ -27,6 +27,9 @@ impl fmt::Display for Lz77Error {
 
 impl Error for Lz77Error {}
 
+/// # Errors
+/// 
+/// `Err` when passing an invalid `lz77` sequence.
 pub fn decompress(bytes: Vec<u8>) -> Result<Vec<u8>, Lz77Error> {
     let cap = bytes.len();
     let mut iter = bytes.into_iter();

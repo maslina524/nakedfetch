@@ -21,16 +21,16 @@ pub enum ParseError {
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ParseError::Unexpected { expected, got } => {
+            Self::Unexpected { expected, got } => {
                 write!(f, "Expected {expected:?}, got {got:?}")
             },
-            ParseError::UnexpectedToken(t) => write!(f, "Unexpected token: {t:?}"),
-            ParseError::ExpectedInObject => write!(f, "Expected `,` or `{{` in object"),
-            ParseError::ExpectedInArray => write!(f, "Expected `,` or `[` in object"),
-            ParseError::ObjectKeyMustBeStr => write!(f, "Object key must be a string"),
-            ParseError::InvalidNum => write!(f, "Invalid number format"),
-            ParseError::ObjectKeyNotFound => write!(f, "Expected object key"),
-            ParseError::Eoi => write!(f, "End of input"),
+            Self::UnexpectedToken(t) => write!(f, "Unexpected token: {t:?}"),
+            Self::ExpectedInObject => write!(f, "Expected `,` or `{{` in object"),
+            Self::ExpectedInArray => write!(f, "Expected `,` or `[` in object"),
+            Self::ObjectKeyMustBeStr => write!(f, "Object key must be a string"),
+            Self::InvalidNum => write!(f, "Invalid number format"),
+            Self::ObjectKeyNotFound => write!(f, "Expected object key"),
+            Self::Eoi => write!(f, "End of input"),
         }
     }
 }
@@ -174,11 +174,11 @@ impl Parser {
     }
 }
 
-impl core::fmt::Display for Map {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+impl fmt::Display for Map {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use core::fmt::Write;
 
-        fn proc_map(f: &mut core::fmt::Formatter<'_>, map: &Map) -> core::fmt::Result {
+        fn proc_map(f: &mut fmt::Formatter<'_>, map: &Map) -> fmt::Result {
             f.write_char('{')?;
 
             for (i, (k, v)) in map.iter().enumerate() {
@@ -202,7 +202,7 @@ impl core::fmt::Display for Map {
             Ok(())
         }
 
-        fn proc_array(f: &mut core::fmt::Formatter<'_>, array: &[Value]) -> core::fmt::Result {
+        fn proc_array(f: &mut fmt::Formatter<'_>, array: &[Value]) -> fmt::Result {
             f.write_char('[')?;
 
             for (i, v) in array.iter().enumerate() {
@@ -224,15 +224,15 @@ impl core::fmt::Display for Map {
             Ok(())
         }
 
-        fn proc_num(f: &mut core::fmt::Formatter<'_>, num: f64) -> core::fmt::Result {
+        fn proc_num(f: &mut fmt::Formatter<'_>, num: f64) -> fmt::Result {
             write!(f, "{num}")
         }
 
-        fn proc_string(f: &mut core::fmt::Formatter<'_>, string: &str) -> core::fmt::Result {
+        fn proc_string(f: &mut fmt::Formatter<'_>, string: &str) -> fmt::Result {
             write!(f, "{string:?}")
         }
 
-        fn proc_bool(f: &mut core::fmt::Formatter<'_>, b: bool) -> core::fmt::Result {
+        fn proc_bool(f: &mut fmt::Formatter<'_>, b: bool) -> fmt::Result {
             write!(f, "{b}")
         }
 

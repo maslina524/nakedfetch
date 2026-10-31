@@ -9,6 +9,7 @@ pub enum ColorType {
 }
 
 impl ColorType {
+    #[must_use]
     pub const fn get_bytes_count(self) -> usize {
         match self {
             Self::Rgba => 4,
@@ -46,7 +47,7 @@ impl core::fmt::Display for ColorTypeError {
     }
 }
 
-impl core::error::Error for ColorTypeError {}
+impl Error for ColorTypeError {}
 
 #[derive(Debug)]
 pub struct RgbaConvertError {
@@ -70,6 +71,9 @@ impl Error for RgbaConvertError {}
 pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
 
 impl Rgba {
+    /// # Errors
+    /// 
+    /// `Err` on an invalid byte sequence for ``ColorType``.
     pub const fn from(data: &[u8], typ: ColorType, bits: u8) -> Result<Self, RgbaConvertError> {
         match (typ, bits) {
             (ColorType::Rgba, 8) => Ok(Self(data[0], data[1], data[2], data[3])),

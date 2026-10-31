@@ -6,6 +6,7 @@ pub struct Stream<'huff> {
 }
 
 impl<'huff> Stream<'huff> {
+    #[must_use]
     pub const fn new(memory: &'huff [u8]) -> Self {
         Self {
             memory,
@@ -34,7 +35,7 @@ impl<'huff> Stream<'huff> {
     pub fn read_bytes(&mut self, count: usize) -> u64 {
         let mut bytes = 0u64;
         for i in 0..count {
-            bytes |= (self.read_byte() as u64) << (8 * i);
+            bytes |= u64::from(self.read_byte()) << (8 * i);
         }
         bytes
     }
@@ -52,7 +53,7 @@ impl<'huff> Stream<'huff> {
     pub fn read_bits(&mut self, count: usize) -> u64 {
         let mut bits = 0;
         for i in 0..count {
-            bits |= (self.read_bit() as u64) << i;
+            bits |= u64::from(self.read_bit()) << i;
         }
         bits
     }

@@ -11,6 +11,7 @@ use crate::{
 pub struct Map(Vec<(String, Value)>);
 
 impl Map {
+    #[must_use]
     pub const fn new() -> Self {
         Self(Vec::new())
     }
@@ -19,11 +20,13 @@ impl Map {
         self.0.iter().map(|(k, v)| (k.as_str(), v))
     }
 
-    pub fn len(&self) -> usize {
+    #[must_use]
+    pub const fn len(&self) -> usize {
         self.0.len()
     }
 
-    pub fn is_empty(&self) -> bool {
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
@@ -31,6 +34,7 @@ impl Map {
         self.0.push((key, value));
     }
 
+    #[must_use]
     pub fn get(&self, key: &str) -> Option<&Value> {
         self.0.iter().find(|(k, _)| k == key).map(|(_, v)| v)
     }

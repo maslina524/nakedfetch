@@ -13,6 +13,7 @@ pub enum Value {
 }
 
 impl Value {
+    #[must_use]
     pub const fn as_string(&self) -> Option<&String> {
         match self {
             Self::String(s) => Some(s),
@@ -20,6 +21,7 @@ impl Value {
         }
     }
 
+    #[must_use]
     pub const fn as_number(&self) -> Option<f64> {
         match self {
             Self::Number(s) => Some(*s),
@@ -27,6 +29,7 @@ impl Value {
         }
     }
 
+    #[must_use]
     pub const fn as_bool(&self) -> Option<bool> {
         match self {
             Self::Bool(s) => Some(*s),
@@ -34,6 +37,7 @@ impl Value {
         }
     }
 
+    #[must_use]
     pub const fn as_array(&self) -> Option<&Vec<Self>> {
         match self {
             Self::Array(s) => Some(s),
@@ -41,6 +45,7 @@ impl Value {
         }
     }
 
+    #[must_use]
     pub const fn as_object(&self) -> Option<&Map> {
         match self {
             Self::Dict(s) => Some(s),
@@ -48,26 +53,32 @@ impl Value {
         }
     }
 
+    #[must_use]
     pub const fn is_string(&self) -> bool {
         matches!(self, Self::String(_))
     }
 
+    #[must_use]
     pub const fn is_number(&self) -> bool {
         matches!(self, Self::Number(_))
     }
 
+    #[must_use]
     pub const fn is_bool(&self) -> bool {
         matches!(self, Self::Bool(_))
     }
 
+    #[must_use]
     pub const fn is_array(&self) -> bool {
         matches!(self, Self::Array(_))
     }
 
+    #[must_use]
     pub const fn is_object(&self) -> bool {
         matches!(self, Self::Dict(_))
     }
 
+    #[must_use]
     pub const fn is_null(&self) -> bool {
         matches!(self, Self::Null)
     }
