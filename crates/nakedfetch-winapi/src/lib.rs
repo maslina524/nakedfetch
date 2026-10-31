@@ -7,8 +7,8 @@ use crate::types::Handle;
 mod macros;
 
 mod native;
-mod ntstatus;
 mod ntdll;
+mod ntstatus;
 pub mod types;
 
 pub mod win32;

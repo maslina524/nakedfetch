@@ -1,7 +1,10 @@
-use crate::{ntstatus::Ntstatus, types::{
-    primitives::{Long, ULong},
-    ptr::{ULongPtr, VoidPtr},
-}};
+use crate::{
+    ntstatus::Ntstatus,
+    types::{
+        primitives::{Long, ULong},
+        ptr::{ULongPtr, VoidPtr},
+    },
+};
 
 pub type Handle = VoidPtr;
 

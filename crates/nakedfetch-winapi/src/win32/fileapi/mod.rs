@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 mod WriteFile;
 pub use WriteFile::WriteFile;
 
-use crate::{AsRawHandle, types::Handle};
+use crate::{AsRawHandle, types::Handle, win32::handleapi};
 
 mod_sealed!();
 pub trait FileAccess: sealed::Sealed {
@@ -66,6 +66,12 @@ impl<Access> AsRawHandle for FileHandle<Access> {
     }
 }
 
+impl<Access> Drop for FileHandle<Access> {
+    fn drop(&mut self) {
+        handleapi::CloseHandle(self);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::WriteFile;
@@ -77,7 +83,7 @@ mod tests {
     const STDOUT: u32 = (-11i32).cast_unsigned();
 
     #[test]
-    fn write_to_std_handle() {
+    fn write_to_std_test() {
         unsafe extern "system" {
             safe fn GetStdHandle(nStdHandle: u32) -> *mut ();
             safe fn SetConsoleOutputCP(wCodePage: u32) -> i32;

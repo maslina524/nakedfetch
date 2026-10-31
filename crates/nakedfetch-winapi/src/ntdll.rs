@@ -1,5 +1,7 @@
-use crate::types::{self as t, ptr};
-use crate::ntstatus::Ntstatus;
+use crate::{
+    ntstatus::Ntstatus,
+    types::{self as t, primitives, ptr},
+};
 
 #[macro_export]
 macro_rules! link {
@@ -12,4 +14,5 @@ macro_rules! link {
     )
 }
 
-link!("ntdll" fn NtWriteFile(fileHandle: t::Handle, event: t::Handle, apcRoutine: ptr::IoApcRoutinePtr, apcContext: ptr::VoidPtr, ioStatusBlock: *mut t::IoStatusBlock, buffer: ptr::VoidPtr, length: t::primitives::ULong, byteOffset: ptr::LargeIntegerPtr, key: ptr::ULongPtr) -> Ntstatus);
+link!("ntdll" fn NtWriteFile(fileHandle: t::Handle, event: t::Handle, apcRoutine: ptr::IoApcRoutinePtr, apcContext: ptr::VoidPtr, ioStatusBlock: *mut t::IoStatusBlock, buffer: ptr::VoidPtr, length: primitives::ULong, byteOffset: ptr::LargeIntegerPtr, key: ptr::ULongPtr) -> Ntstatus);
+link!("ntdll" fn NtClose(handle: t::Handle) -> Ntstatus);
