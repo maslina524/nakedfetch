@@ -1,7 +1,7 @@
 use crate::{AsRawHandle, ntdll, types::Handle};
 
 #[repr(transparent)]
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct ConsoleHandle(Handle);
 
 impl AsRawHandle for ConsoleHandle {
