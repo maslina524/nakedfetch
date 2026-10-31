@@ -51,7 +51,7 @@ impl KernelInfo {
             GetSystemInfo(&raw mut si);
         }
 
-        MemorySize::from_bytes(si.dwPageSize as u64)
+        MemorySize::from_bytes(u64::from(si.dwPageSize))
     }
 }
 

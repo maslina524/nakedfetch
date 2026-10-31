@@ -49,7 +49,7 @@ impl MemorySize {
 
     pub fn as_bytes(self) -> u64 {
         match self {
-            Self::Byte(b) => b as u64,
+            Self::Byte(b) => u64::from(b),
             Self::Kb(b) => (b * 1024.0) as u64,
             Self::Mb(b) => (b * 1024.0 * 1024.0) as u64,
             Self::Gb(b) => (b * 1024.0 * 1024.0 * 1024.0) as u64,
@@ -58,16 +58,19 @@ impl MemorySize {
 
     pub fn as_kilobytes(self) -> f64 {
         match self {
-            Self::Byte(b) => b as f64 / 1024.0,
-            Self::Kb(b) => b as f64,
-            Self::Mb(b) => (b * 1024.0) as f64,
-            Self::Gb(b) => (b * 1024.0 * 1024.0) as f64,
+            Self::Byte(b) => f64::from(b) / 1024.0,
+            Self::Kb(b) => f64::from(b),
+            Self::Mb(b) => f64::from(b * 1024.0),
+            Self::Gb(b) => f64::from(b * 1024.0 * 1024.0),
         }
     }
 }
 
 impl From<MemorySize> for f64 {
-    #[allow(clippy::cast_precision_loss)]
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "It should not lead to a problem"
+    )]
     fn from(val: MemorySize) -> Self {
         val.as_bytes() as Self
     }

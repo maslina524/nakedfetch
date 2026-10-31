@@ -39,9 +39,12 @@ impl FromStr for Percent {
 }
 
 impl From<Percent> for f64 {
-    #[allow(clippy::cast_precision_loss)]
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "It should not lead to a problem"
+    )]
     fn from(val: Percent) -> Self {
-        val.get() as Self
+        Self::from(val.get())
     }
 }
 

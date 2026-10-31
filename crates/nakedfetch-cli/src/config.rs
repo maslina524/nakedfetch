@@ -134,7 +134,7 @@ impl Config {
             });
 
         // Logo
-        #[allow(clippy::option_if_let_else)]
+        #[allow(clippy::option_if_let_else, reason = "Переписать нахуй")]
         let logo = if let Some(logo_val) = json.get("logo") {
             if let Some(obj) = logo_val.as_object() {
                 let padding = obj
@@ -179,11 +179,7 @@ impl Config {
     }
 
     pub fn module_by_typ(&self, string: &str) -> Option<&ConfigModule> {
-        self.modules
-            .as_inner()
-            .iter()
-            .find(|&m| m.typ == string)
-            .map(|v| v as _)
+        self.modules.as_inner().iter().find(|&m| m.typ == string)
     }
 
     pub const fn modules(&self) -> &[ConfigModule] {

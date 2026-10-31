@@ -8,10 +8,10 @@ static VERSION: OnceLock<Version> = OnceLock::new();
 pub struct Version {
     #[doc = "Project name"]
     pub project_name: &'static str,
-    #[allow(clippy::struct_field_names)]
+    #[allow(clippy::struct_field_names, reason = "Fastfetch field")]
     #[doc = "Version"]
     pub version: &'static str,
-    #[allow(clippy::struct_field_names)]
+    #[allow(clippy::struct_field_names, reason = "Fastfetch field")]
     #[doc = "Version tweak"]
     pub version_tweak: &'static str,
     #[doc = "Build type (debug or release)"]

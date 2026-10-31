@@ -10,7 +10,10 @@ impl Time {
 }
 
 impl From<Time> for f64 {
-    #[allow(clippy::cast_precision_loss)]
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "It should not lead to a problem"
+    )]
     fn from(val: Time) -> Self {
         val.0 as Self
     }

@@ -16,7 +16,6 @@ pub struct Wallpaper {
 }
 
 impl Module for Wallpaper {
-    #[allow(clippy::redundant_closure)]
     fn new() -> Self {
         let info = WallpaperInfo::new();
         let file_name = info.full_path.last().map_or_default(SmolStr::from);

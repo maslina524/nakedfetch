@@ -27,7 +27,7 @@ pub mod version; // 68) Version       : Print the Fastfetch version and build in
 pub mod wallpaper; // 70) Wallpaper     : Print the file path of the current wallpaper
 pub mod weather; // 71) Weather       : Print weather information
 
-use alloc::{borrow::Cow, collections::BTreeMap, string::String, vec::Vec};
+use alloc::{borrow::Cow, boxed::Box, collections::BTreeMap, string::String, vec::Vec};
 
 pub use board::Board;
 pub use break_::Break;
@@ -154,7 +154,7 @@ pub trait Docs {
 pub struct DocsVtable {
     pub format: fn() -> Option<&'static [DocString]>,
     pub lua: fn() -> Option<&'static [DocString]>,
-    pub example: fn() -> Option<alloc::vec::Vec<Example>>,
+    pub example: fn() -> Option<Vec<Example>>,
 }
 
 pub trait Module: ModuleFormat {
@@ -188,7 +188,7 @@ pub fn from_preset_module(s: &str) -> Option<&'static dyn Module> {
 pub fn __field_name(raw: &'static str) -> &'static str {
     let trimmed = raw.strip_prefix("r#").unwrap_or(raw);
     if trimmed.contains('_') {
-        alloc::boxed::Box::leak(trimmed.replace('_', "-").into_boxed_str())
+        Box::leak(trimmed.replace('_', "-").into_boxed_str())
     } else {
         trimmed
     }
@@ -211,8 +211,8 @@ pub fn __eq_name_and_field(name: &str, field: &str) -> bool {
 #[cfg(target_os = "windows")]
 pub fn expand_env_in_module(s: String) -> Cow<'static, str> {
     match crate::windows::env::expand_env(&s) {
-        Ok(alloc::borrow::Cow::Borrowed(_)) => s.into(),
-        Ok(alloc::borrow::Cow::Owned(expanded)) => expanded.into(),
+        Ok(Cow::Borrowed(_)) => s.into(),
+        Ok(Cow::Owned(expanded)) => expanded.into(),
         Err(e) => {
             crate::warning!("Failed to convert Utf16: {e}");
             s.into()

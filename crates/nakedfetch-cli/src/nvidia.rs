@@ -1,3 +1,5 @@
+#![allow(non_camel_case_types, reason = "Types from C")]
+
 use alloc::{borrow::ToOwned, string::String};
 use core::{
     ffi::{CStr, c_char, c_uint, c_void},
@@ -20,35 +22,24 @@ cfg_if! {
     }
 }
 
-#[allow(non_camel_case_types)]
 type nvmlReturn = i32;
-#[allow(non_camel_case_types)]
 type nvmlTemperatureSensors = i32;
-#[allow(non_camel_case_types)]
 type nvmlDevice = *mut c_void;
-#[allow(non_camel_case_types)]
 type nvmlClockType = u32;
 
-#[allow(non_camel_case_types)]
 type nvmlInit = unsafe extern "C" fn() -> nvmlReturn;
-#[allow(non_camel_case_types)]
 type nvmlShutdown = unsafe extern "C" fn() -> nvmlReturn;
-#[allow(non_camel_case_types)]
 type nvmlDeviceGetHandleByIndex =
     unsafe extern "C" fn(index: c_uint, device: *mut nvmlDevice) -> nvmlReturn;
-#[allow(non_camel_case_types)]
 type nvmlDeviceGetTemperature = unsafe extern "C" fn(
     device: nvmlDevice,
     sensor: nvmlTemperatureSensors,
     temp: *mut c_uint,
 ) -> nvmlReturn;
-#[allow(non_camel_case_types)]
 type nvmlDeviceGetClockInfo =
     unsafe extern "C" fn(device: nvmlDevice, typ: nvmlClockType, clock: *mut u32) -> nvmlReturn;
-#[allow(non_camel_case_types)]
 type nvmlDeviceGetName =
     unsafe extern "C" fn(device: nvmlDevice, name: *mut c_char, length: c_uint) -> nvmlReturn;
-#[allow(non_camel_case_types)]
 type nvmlErrorString = unsafe extern "C" fn(result: nvmlReturn) -> *const c_char;
 
 static NVIDIA: OnceLock<NvidiaLib> = OnceLock::new();
@@ -175,7 +166,7 @@ impl NvidiaLib {
         let ret = inner(self.get_clock_info, self.device, &raw mut clock);
 
         if ret == 0 {
-            clock as f64 / 100.0
+            f64::from(clock) / 100.0
         } else {
             warning!("Failed to get GPU frequency (nvml)");
             0.0

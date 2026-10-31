@@ -11,7 +11,6 @@ use crate::{
     errno::ErrnoResult,
 };
 
-#[allow(clippy::missing_panics_doc)]
 pub fn falloc(size: usize) -> ErrnoResult<*mut c_void> {
     if size == 0 {
         return Ok(ptr::null_mut());
@@ -92,14 +91,13 @@ mod tests {
         for _ in 0..THREE_PAGES {
             let ret = falloc(BLOCK_SIZE).expect("Falloc returned Err");
 
-            // UB check
-            #[allow(clippy::undocumented_unsafe_blocks)]
+            // SAFETY: Test write bytes
             unsafe {
                 ptr::write_bytes(ret, 42, BLOCK_SIZE);
             }
 
             for i in 0..BLOCK_SIZE {
-                #[allow(clippy::undocumented_unsafe_blocks)]
+                // SAFETY: Read writted bytes
                 let val = unsafe {
                     let moved_ptr = ret.cast::<u8>().add(i);
                     ptr::read(moved_ptr)

@@ -10,7 +10,7 @@ const OFF_VERSION: usize = 0x06;
 const OFF_SERIAL: usize = 0x07;
 const TYPE2_MIN_LEN: usize = 0x08;
 
-#[allow(non_snake_case)]
+#[allow(non_snake_case, reason = "Winapi struct")]
 #[repr(C)]
 struct RawSMBIOSData {
     _Used20CallingMethod: u8,

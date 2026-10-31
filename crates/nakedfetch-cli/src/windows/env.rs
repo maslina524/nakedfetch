@@ -225,7 +225,7 @@ pub fn timestamp_mils() -> u64 {
         GetSystemTimeAsFileTime(&raw mut info);
     };
 
-    let uli = ((info.dwHighDateTime as u64) << 32) | (info.dwLowDateTime as u64);
+    let uli = (u64::from(info.dwHighDateTime) << 32) | u64::from(info.dwLowDateTime);
     (uli - EPOCH_DIFF) / 10_000
 }
 

@@ -1,6 +1,6 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
-#![allow(unused)]
+#![allow(unused, reason = "All unused will be removed closer to 1.0.0.")]
 
 mod allocator;
 mod base64;
@@ -137,7 +137,7 @@ mod panic_impl {
 
     #[panic_handler]
     #[cfg(not(no_alloc_in_panic))]
-    fn panic(info: &PanicInfo) -> ! {
+    fn panic(info: &PanicInfo<'_>) -> ! {
         use crate::{eprintln, format};
 
         let msg = format!("{}", info.message());
@@ -254,7 +254,7 @@ pub fn exit(code: u32) -> ! {
             unixlib::process::exit(code)
         } else if #[cfg(target_os = "windows")] {
             // SAFETY: Run in binary, safe
-            unsafe { crate::windows::link::ExitProcess(code) }
+            unsafe { windows::link::ExitProcess(code) }
         }
     }
 }
@@ -519,7 +519,10 @@ fn print_none() {
     }
 }
 
-#[allow(clippy::cast_precision_loss)]
+#[allow(
+    clippy::cast_precision_loss,
+    reason = "It should not lead to a problem"
+)]
 fn print_image(image: &Image) {
     let id = os::get_id().as_boxed_str();
     LogoInfo::new(&id);
@@ -641,8 +644,8 @@ extern "C" fn main(argc: ffi::c_int, argv: *const *const ffi::c_char) -> ffi::c_
 #[cfg(target_os = "windows")]
 #[unsafe(no_mangle)]
 extern "C" fn main() -> ffi::c_int {
-    let _ = ARGS.set(imp::env::args_init());
-    let ret = nakedfetch_main() as ffi::c_int;
+    let _ = ARGS.set(env::args_init());
+    let ret = nakedfetch_main();
     let _ = flush();
     ret
 }
@@ -672,12 +675,12 @@ fn nakedfetch_main() -> i32 {
 
     let (logo_name, custom) = name_raw.map_or_else(
         || {
-            let id = crate::detect::os::get_id().as_boxed_str();
+            let id = os::get_id().as_boxed_str();
             (id, UILogo::Preset)
         },
         |name| {
             if name == "null" {
-                let id = crate::detect::os::get_id().as_boxed_str();
+                let id = os::get_id().as_boxed_str();
                 (id, UILogo::None)
             } else {
                 get_logo_name_and_custom(&name)

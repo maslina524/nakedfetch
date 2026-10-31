@@ -85,7 +85,7 @@ pub fn flush() -> core::fmt::Result {
 pub struct Stdout(isize);
 
 impl Stdout {
-    #[allow(clippy::missing_const_for_fn)]
+    #[allow(clippy::missing_const_for_fn, reason = "")]
     pub fn get() -> Self {
         Self(stdout())
     }

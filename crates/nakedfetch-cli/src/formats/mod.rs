@@ -42,8 +42,8 @@ impl<'a> StringFormatter<'a> {
         Self(ptr)
     }
 
-    pub fn write_fmt(&mut self, args: core::fmt::Arguments) -> core::fmt::Result {
-        core::fmt::Write::write_fmt(self, args)
+    pub fn write_fmt(&mut self, args: core::fmt::Arguments<'_>) -> core::fmt::Result {
+        Write::write_fmt(self, args)
     }
 
     pub fn write_nl(&mut self) -> core::fmt::Result {

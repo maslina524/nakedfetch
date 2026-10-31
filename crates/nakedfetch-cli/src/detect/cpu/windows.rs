@@ -62,7 +62,7 @@ fn logical_info() -> Vec<LogicalInfo> {
         err.code() == 122 || err.code() == 0,
         "`GetLogicalProcessorInformation` (size) failed"
     );
-    let struct_size = mem::size_of::<SYSTEM_LOGICAL_PROCESSOR_INFORMATION>();
+    let struct_size = size_of::<SYSTEM_LOGICAL_PROCESSOR_INFORMATION>();
     let buf_size = size as usize / struct_size;
     let mut buf = vec![SYSTEM_LOGICAL_PROCESSOR_INFORMATION::default(); buf_size];
     // SAFETY: Completely safe
@@ -125,7 +125,7 @@ fn base_freq(handle: &Regedit) -> Frequency {
         |_| 0,
         |key| {
             let mhz = key.as_u32().unwrap_or(0);
-            mhz as u64 / 1000
+            u64::from(mhz) / 1000
         },
     );
     Frequency::from_hz(val)

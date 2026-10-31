@@ -48,8 +48,8 @@ impl Module for DiskList {
 impl ModuleFormat for DiskList {
     fn format(
         &self,
-        key: super::FormatValue,
-        format: super::FormatValue,
+        key: super::FormatValue<'_>,
+        format: super::FormatValue<'_>,
         map: Option<&BTreeMap<String, Value>>,
     ) -> Option<Cow<'_, str>> {
         let s = self
@@ -88,7 +88,7 @@ pub struct Disk {
     pub mount_from: String,
 }
 
-#[allow(clippy::unused_self)]
+#[allow(clippy::unused_self, reason = "For beauty API")]
 impl Disk {
     const fn title(&self) -> &'static str {
         "{size-used} / {size-total} ({size-percentage}) - {filesystem}"

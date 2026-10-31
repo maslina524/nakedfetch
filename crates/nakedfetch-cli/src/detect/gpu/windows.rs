@@ -98,7 +98,7 @@ impl GpuInfo {
         }
 
         let mut info = SP_DEVINFO_DATA {
-            cbSize: mem::size_of::<SP_DEVINFO_DATA>() as u32,
+            cbSize: size_of::<SP_DEVINFO_DATA>() as u32,
             ..SP_DEVINFO_DATA::default()
         };
 

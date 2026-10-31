@@ -216,7 +216,7 @@ fn unfilter_scanline(
             0 => current[i],
             1 => current[i].wrapping_add(a),
             2 => current[i].wrapping_add(b),
-            3 => current[i].wrapping_add(u16::midpoint(a as u16, b as u16) as u8),
+            3 => current[i].wrapping_add(u16::midpoint(u16::from(a), u16::from(b)) as u8),
             4 => current[i].wrapping_add(paeth_predictor(a, b, c)),
             _ => return Err(PngError::UnsupportedFilter),
         };
@@ -303,7 +303,7 @@ impl Png {
             for x in 0..ihdr.width {
                 let pixel_raw = extract_pixel_bytes(&row, x, ihdr.color_type, ihdr.depth);
                 let pixel = Rgba::from(&pixel_raw, ihdr.color_type, ihdr.depth)?;
-                image.set_pixel(x, y, pixel).unwrap();
+                image.set_pixel(x, y, pixel);
             }
 
             prev_row = Some(row);

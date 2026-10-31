@@ -39,8 +39,8 @@ impl Module for Separator {
 impl ModuleFormat for Separator {
     fn format(
         &self,
-        _key: super::FormatValue,
-        _format: super::FormatValue,
+        _key: FormatValue<'_>,
+        _format: FormatValue<'_>,
         _map: Option<&BTreeMap<String, Value>>,
     ) -> Option<Cow<'_, str>> {
         let string = Title::get()

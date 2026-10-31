@@ -103,7 +103,7 @@ impl DatetimeInfo {
 
         let mut day_os_year = 0u16;
         for i in days_in_month.iter().take(time.wMonth as usize - 1) {
-            day_os_year += *i as u16;
+            day_os_year += u16::from(*i);
         }
         day_os_year += time.wDay;
 

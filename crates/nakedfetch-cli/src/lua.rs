@@ -1,3 +1,5 @@
+#![allow(non_camel_case_types, reason = "Types from C")]
+
 use alloc::{borrow::Cow, collections::BTreeMap, ffi::CString, string::String};
 use core::{
     ffi::{CStr, c_char, c_int, c_void},
@@ -23,18 +25,11 @@ cfg_if! {
     }
 }
 
-#[allow(non_camel_case_types)]
 pub type lua_State = *mut c_void;
-
-#[allow(non_camel_case_types)]
 pub type luaL_newstate = unsafe extern "C" fn() -> *mut lua_State;
-#[allow(non_camel_case_types)]
 pub type luaL_openlibs = unsafe extern "C" fn(state: *mut lua_State);
-#[allow(non_camel_case_types)]
 pub type luaL_openselectedlibs = unsafe extern "C" fn(state: *mut lua_State, mask: c_int);
-#[allow(non_camel_case_types)]
 pub type luaL_loadstring = unsafe extern "C" fn(state: *mut lua_State, s: *const c_char) -> c_int;
-#[allow(non_camel_case_types)]
 pub type lua_pcallk = unsafe extern "C" fn(
     state: *mut lua_State,
     nargs: c_int,
@@ -43,12 +38,9 @@ pub type lua_pcallk = unsafe extern "C" fn(
     ctx: isize,
     k: Option<unsafe extern "C" fn(*mut lua_State, c_int, isize)>,
 ) -> c_int;
-#[allow(non_camel_case_types)]
 pub type lua_close = unsafe extern "C" fn(state: *mut lua_State);
-#[allow(non_camel_case_types)]
 pub type lua_tolstring =
     unsafe extern "C" fn(state: *mut lua_State, idx: c_int, len: *mut usize) -> *const c_char;
-#[allow(non_camel_case_types)]
 pub type lua_settop = unsafe extern "C" fn(state: *mut lua_State, idx: c_int);
 
 unsafe extern "C" {
@@ -132,7 +124,7 @@ macro_rules! impl_as_lua_as_f64 {
         $(
             impl AsLua for $typ {
                 fn as_lua(&self) -> LuaType {
-                    #[allow(clippy::cast_precision_loss)]
+                    #[allow(clippy::cast_precision_loss, trivial_numeric_casts, clippy::cast_lossless, reason = "It should not lead to a problem")]
                     LuaType::Number(*self as f64)
                 }
 
@@ -150,7 +142,7 @@ impl_as_lua_debug_string!(
     crate::detect::gpu::GpuType,
     crate::imp::path::Path,
     crate::str::SmolStr,
-    alloc::borrow::Cow<'static, str>
+    Cow<'static, str>
 );
 impl_as_lua_to_string!(crate::detect::datetime::AmPm);
 impl_as_lua_into_f64!(

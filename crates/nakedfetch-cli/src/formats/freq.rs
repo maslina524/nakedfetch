@@ -29,7 +29,7 @@ impl Frequency {
 
     pub fn as_hz(self) -> u64 {
         match self {
-            Self::Hz(h) => h as u64,
+            Self::Hz(h) => u64::from(h),
             Self::MHz(h) => (h * 1000.0) as u64,
             Self::GHz(h) => (h * 1000.0 * 1000.0) as u64,
         }
@@ -37,7 +37,10 @@ impl Frequency {
 }
 
 impl From<Frequency> for f64 {
-    #[allow(clippy::cast_precision_loss)]
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "It should not lead to a problem"
+    )]
     fn from(val: Frequency) -> Self {
         val.as_hz() as Self
     }

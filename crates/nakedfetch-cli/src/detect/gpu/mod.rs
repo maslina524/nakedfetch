@@ -158,7 +158,7 @@ impl GpuInfo {
 
 pub fn temperature(vendor_id: u32) -> Temperature {
     let val = match vendor_id {
-        0x10DE => NvidiaLib::get().gpu_temperature() as f32,
+        0x10DE => f32::from(NvidiaLib::get().gpu_temperature()),
         _ => 0.0,
     };
     Temperature::Celsius(val)

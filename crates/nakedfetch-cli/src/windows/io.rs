@@ -66,7 +66,11 @@ pub fn write(handle: isize, s: &[u8]) {
 }
 
 #[cfg(test)]
-#[allow(clippy::print_with_newline, clippy::print_literal)]
+#[allow(
+    clippy::print_with_newline,
+    clippy::print_literal,
+    reason = "Print test"
+)]
 mod tests {
     use crate::windows::io::{stdout, write};
 

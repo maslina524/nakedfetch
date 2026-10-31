@@ -72,7 +72,7 @@ impl UptimeInfo {
         unsafe {
             GetSystemTimeAsFileTime(&raw mut now_ft);
         }
-        let now_100ns = ((now_ft.dwHighDateTime as u64) << 32) | (now_ft.dwLowDateTime as u64);
+        let now_100ns = (u64::from(now_ft.dwHighDateTime) << 32) | u64::from(now_ft.dwLowDateTime);
         let boot_100ns = now_100ns - ms * 10_000;
 
         let boot_timestamp = boot_100ns

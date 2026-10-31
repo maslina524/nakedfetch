@@ -26,7 +26,7 @@ use crate::{
 static LOADED: AtomicBool = AtomicBool::new(false);
 static EDITED: AtomicBool = AtomicBool::new(false);
 
-static ENTRIES: Mutex<LineBased> = Mutex::new(LineBased::new());
+static ENTRIES: Mutex<LineBased<'_>> = Mutex::new(LineBased::new());
 
 pub fn flush_to_file() {
     if !EDITED.load(Ordering::Acquire) {

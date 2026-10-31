@@ -263,7 +263,7 @@ fn cpuid_has_feature(leaf: u32, subleaf: u32, reg: usize, bit: usize) -> bool {
 fn xgetbv_test(bit: u8) -> bool {
     // SAFETY: The index is always zero, safe
     let xcr0 = unsafe { _xgetbv(0) };
-    (xcr0 >> bit as u64) == 1
+    (xcr0 >> u64::from(bit)) == 1
 }
 
 #[cfg(target_arch = "x86_64")]

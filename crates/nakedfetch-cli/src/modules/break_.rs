@@ -43,8 +43,8 @@ impl Module for Break {
 impl ModuleFormat for Break {
     fn format(
         &self,
-        _key: super::FormatValue,
-        format: super::FormatValue,
+        _key: super::FormatValue<'_>,
+        format: super::FormatValue<'_>,
         _map: Option<&BTreeMap<String, Value>>,
     ) -> Option<Cow<'_, str>> {
         let title_str = format.format.unwrap_or_else(|| self.title());

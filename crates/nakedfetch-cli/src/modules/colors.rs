@@ -41,8 +41,8 @@ impl Module for Colors {
 impl ModuleFormat for Colors {
     fn format(
         &self,
-        _key: super::FormatValue,
-        _format: super::FormatValue,
+        _key: super::FormatValue<'_>,
+        _format: super::FormatValue<'_>,
         map: Option<&BTreeMap<String, Value>>,
     ) -> Option<Cow<'_, str>> {
         let binding = BTreeMap::new();

@@ -9,7 +9,7 @@ use crate::{
 impl MemoryInfo {
     pub fn new() -> Self {
         let mut mem_status = MEMORYSTATUSEX {
-            dwLength: mem::size_of::<MEMORYSTATUSEX>() as u32,
+            dwLength: size_of::<MEMORYSTATUSEX>() as u32,
             ..MEMORYSTATUSEX::default()
         };
 
