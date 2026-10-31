@@ -1,10 +1,9 @@
-use crate::types::{
+use crate::{ntstatus::Ntstatus, types::{
     primitives::{Long, ULong},
     ptr::{ULongPtr, VoidPtr},
-};
+}};
 
 pub type Handle = VoidPtr;
-pub type Ntstatus = i32;
 
 STRUCT! {
     struct KSystemTime {

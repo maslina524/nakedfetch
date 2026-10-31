@@ -1,4 +1,5 @@
-use crate::types::{self as t, Ntstatus, ptr};
+use crate::types::{self as t, ptr};
+use crate::ntstatus::Ntstatus;
 
 #[macro_export]
 macro_rules! link {

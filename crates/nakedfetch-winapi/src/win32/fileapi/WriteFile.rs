@@ -1,9 +1,7 @@
 use core::ptr;
 
 use crate::{
-    AsRawHandle as _, ntdll,
-    types::IoStatusBlock,
-    win32::fileapi::{CanWrite, FileHandle},
+    AsRawHandle as _, ntdll, ntstatus::Ntstatus, types::IoStatusBlock, win32::fileapi::{CanWrite, FileHandle},
 };
 
 /// # Errors
@@ -11,7 +9,7 @@ use crate::{
 /// Mostly it always returns ``Ok()`` with the number of bytes written
 /// in it; situations where ``Err()`` is returned are kernel failures,
 /// for example the disk is full.
-pub fn WriteFile<T: CanWrite>(handle: &FileHandle<T>, buf: &[u8]) -> Result<usize, i32> {
+pub fn WriteFile<T: CanWrite>(handle: &FileHandle<T>, buf: &[u8]) -> Result<usize, Ntstatus> {
     let mut info = IoStatusBlock::default();
 
     // SAFETY: The descriptor, buffer, and its length are always valid
@@ -29,7 +27,7 @@ pub fn WriteFile<T: CanWrite>(handle: &FileHandle<T>, buf: &[u8]) -> Result<usiz
         )
     };
 
-    if status >= 0 {
+    if status.is_success() {
         let written = info.union.pointer;
         Ok(written as usize)
     } else {
