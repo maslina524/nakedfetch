@@ -1,7 +1,9 @@
+use core::mem::ManuallyDrop;
+
 pub use console::ConsoleHandle;
 use winapi::win32::{
     console::{self, GetStdHandle, StdHandle},
-    fileapi::WriteFile,
+    fileapi::{FileHandle, Write, WriteFile},
 };
 
 pub fn stdout() -> ConsoleHandle {
@@ -13,8 +15,9 @@ pub fn stderr() -> ConsoleHandle {
 }
 
 pub fn console_write(handle: ConsoleHandle, buf: &[u8]) -> usize {
-    match WriteFile(&handle.into(), buf) {
+    let filehandle: ManuallyDrop<FileHandle<Write>> = handle.into();
+    match WriteFile(&filehandle, buf) {
         Ok(v) => v,
-        Err(e) => panic!("Failed to weite to the console: {e}"),
+        Err(e) => panic!("Failed to write to the console: {e:?}"),
     }
 }

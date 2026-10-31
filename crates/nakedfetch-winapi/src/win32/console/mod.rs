@@ -1,3 +1,5 @@
+use core::mem::ManuallyDrop;
+
 use crate::{
     AsRawHandle, ntdll,
     types::Handle,
@@ -18,9 +20,9 @@ impl AsRawHandle for ConsoleHandle {
     }
 }
 
-impl From<ConsoleHandle> for FileHandle<Write> {
+impl From<ConsoleHandle> for ManuallyDrop<FileHandle<Write>> {
     fn from(val: ConsoleHandle) -> Self {
-        Self::from_raw(val.as_raw())
+        Self::new(FileHandle::from_raw(val.as_raw()))
     }
 }
 

@@ -8,4 +8,6 @@ mod windows;
 #[cfg(target_os = "windows")]
 use windows as imp;
 
+#[macro_use]
+mod macros;
 pub mod io;
