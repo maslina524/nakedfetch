@@ -1,21 +1,32 @@
 macro_rules! STRUCT {
-    ($(#[$attrs:meta])* struct $name:ident {
+    (Naked $(#[$attrs:meta])* struct $name:ident {
         $($field:ident: $ftype:ty),+ $(,)?
     }) => (
         #[repr(C)]
-        #[derive(Clone)]
         $(#[$attrs])*
         pub struct $name {
             $(pub $field: $ftype,)+
         }
+    );
+    ($(#[$attrs:meta])* struct $name:ident {
+        $($field:ident: $ftype:ty),+ $(,)?
+    }) => {
+        STRUCT! {
+            Naked
+            #[derive(Clone)]
+            $(#[$attrs])*
+            struct $name {
+                $($field: $ftype,)+
+            }
+        }
 
         impl Default for $name {
-            fn default() -> $name {
+            fn default() -> Self {
                 // SAFETY: Guarantee that all fields can be zeroable
                 unsafe { ::core::mem::zeroed() }
             }
         }
-    );
+    }
 }
 
 macro_rules! ENUM {
