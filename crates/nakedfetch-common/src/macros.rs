@@ -1,77 +1,93 @@
 #[macro_export]
-macro_rules! print {
-    ($($tt:tt)+) => {
+macro_rules! fprint {
+    ($($tt:tt)+) => {{
         let mut std = $crate::io::Stdout::new();
         let _ = ::core::fmt::Write::write_fmt(&mut std, ::core::format_args!($($tt)*));
-    };
-    ($lit:literal) => {
+    }};
+    ($lit:literal) => {{
         let mut std = $crate::io::Stdout::new();
         let _ = ::core::fmt::Write::write_str(&mut std, $lit);
-    };
+    }};
 }
 
 #[macro_export]
-macro_rules! println {
-    ($($tt:tt)+) => {
+macro_rules! fprintln {
+    ($($tt:tt)+) => {{
         let mut std = $crate::io::Stdout::new();
         let _ = ::core::fmt::Write::write_fmt(&mut std, ::core::format_args!($($tt)*));
-        $crate::print!("\n");
-    };
-    ($lit:literal) => {
+        $crate::fprint!("\n");
+    }};
+    ($lit:literal) => {{
         let mut std = $crate::io::Stdout::new();
         let _ = ::core::fmt::Write::write_str(&mut std, ::core::concat!($lit, "\n"));
-    };
-    () => {
-        $crate::print!("\n");
-    };
+    }};
+    () => {{
+        $crate::fprint!("\n");
+    }};
 }
 
 #[macro_export]
-macro_rules! eprint {
-    ($($tt:tt)+) => {
+macro_rules! feprint {
+    ($($tt:tt)+) => {{
         let mut std = $crate::io::Stderr::new();
         let _ = ::core::fmt::Write::write_fmt(&mut std, ::core::format_args!($($tt)*));
-    };
-    ($lit:literal) => {
+    }};
+    ($lit:literal) => {{
         let mut std = $crate::io::Stderr::new();
         let _ = ::core::fmt::Write::write_str(&mut std, $lit);
-    };
+    }};
 }
 
 #[macro_export]
-macro_rules! eprintln {
-    ($($tt:tt)+) => {
+macro_rules! feprintln {
+    ($($tt:tt)+) => {{
         let mut std = $crate::io::Stderr::new();
         let _ = ::core::fmt::Write::write_fmt(&mut std, ::core::format_args!($($tt)*));
-        $crate::print!("\n");
-    };
-    ($lit:literal) => {
+        $crate::fprint!("\n");
+    }};
+    ($lit:literal) => {{
         let mut std = $crate::io::Stderr::new();
         let _ = ::core::fmt::Write::write_str(&mut std, ::core::concat!($lit, "\n"));
-    };
-    () => {
-        $crate::eprint!("\n");
-    };
+    }};
+    () => {{
+        $crate::feprint!("\n");
+    }};
+}
+
+#[macro_export]
+macro_rules! formatf {
+    ($($tt:tt)*) => {{
+        let mut string = ::alloc::string::String::with_capacity(32);
+        let _ = ::core::fmt::Write::write_fmt(&mut string, ::core::format_args!($($tt)*));
+        string
+    }};
 }
 
 #[cfg(test)]
 mod tests {
     #[test]
     fn print_macro_test() {
-        crate::print!("Hello Worlddd\n");
-        crate::print!("Hello {}", "Rust\n");
+        crate::fprint!("Hello Worlddd\n");
+        crate::fprint!("Hello {}", "Rust\n");
     }
 
     #[test]
     fn println_macro_test() {
-        crate::println!("Hello Worlddd");
-        crate::println!();
-        crate::println!("Hello {}", "Golang");
+        crate::fprintln!("Hello Worlddd");
+        crate::fprintln!();
+        crate::fprintln!("Hello {}", "Golang");
     }
 
     #[test]
     fn eprint_macros_test() {
-        crate::eprint!("Hello ");
-        crate::eprintln!("{} & {}", "Python", "Haskell");
+        crate::feprint!("Hello ");
+        crate::feprintln!("{} & {}", "Python", "Haskell");
+    }
+
+    #[test]
+    fn format_test() {
+        let std = format!("Hello, {}. 2 + 2 = {}", "World", 2 + 2);
+        let my = crate::formatf!("Hello, {}. 2 + 2 = {}", "World", 2 + 2);
+        assert_eq!(std, my);
     }
 }

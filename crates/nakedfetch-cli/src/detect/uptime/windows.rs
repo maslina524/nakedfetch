@@ -1,8 +1,9 @@
 use alloc::string::String;
 
+use common::formatf;
+
 use crate::{
     detect::uptime::{UPTIME_INFO, UptimeInfo},
-    format,
     windows::link::{
         FILETIME, FileTimeToSystemTime, GetSystemTimeAsFileTime, GetTickCount64,
         QueryUnbiasedInterruptTime, SYSTEMTIME,
@@ -91,9 +92,14 @@ impl UptimeInfo {
         }
 
         (
-            format!(
+            formatf!(
                 "{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
-                st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond
+                st.wYear,
+                st.wMonth,
+                st.wDay,
+                st.wHour,
+                st.wMinute,
+                st.wSecond
             ),
             boot_timestamp,
         )

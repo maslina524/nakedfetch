@@ -1,7 +1,9 @@
 use alloc::{borrow::ToOwned, string::String};
 
+use common::formatf;
+
 use crate::{
-    cfg_if, format,
+    cfg_if,
     formats::{Frequency, MemorySize, Temperature},
     nvidia::NvidiaLib,
 };
@@ -41,7 +43,7 @@ impl GpuType {
             0x8086 => Self::BuiltIn,
             0x1002 => {
                 if pci_address.starts_with("0000:00:") {
-                    let dev_str = format!("{:04x}", device_id);
+                    let dev_str = formatf!("{:04x}", device_id);
                     if dev_str.starts_with("67")
                         || dev_str.starts_with("68")
                         || dev_str.starts_with("69")
@@ -166,12 +168,14 @@ pub fn temperature(vendor_id: u32) -> Temperature {
 
 #[cfg(not(target_os = "android"))]
 pub fn name(vendor_id: u32, device_id: u32) -> String {
+    use common::formatf;
+
     match vendor_id {
         0x10DE => NvidiaLib::get().device_name(),
-        0x15ad => format!("VMware {}", GpuInfo::vmware_name(device_id)),
-        0x1002 => format!("AMD {}", GpuInfo::amd_name(device_id)),
-        0x8086 => format!("Intel {}", GpuInfo::intel_name(device_id)),
-        0x80EE => format!(
+        0x15ad => formatf!("VMware {}", GpuInfo::vmware_name(device_id)),
+        0x1002 => formatf!("AMD {}", GpuInfo::amd_name(device_id)),
+        0x8086 => formatf!("Intel {}", GpuInfo::intel_name(device_id)),
+        0x80EE => formatf!(
             "InnoTek Systemberatung GmbH {}",
             GpuInfo::innotek_name(device_id)
         ),

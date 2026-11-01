@@ -1,7 +1,7 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
 
-// extern crate alloc;
+extern crate alloc;
 
 #[cfg(target_os = "windows")]
 mod windows;
@@ -11,3 +11,5 @@ use windows as imp;
 #[macro_use]
 mod macros;
 pub mod io;
+
+pub mod prelude;

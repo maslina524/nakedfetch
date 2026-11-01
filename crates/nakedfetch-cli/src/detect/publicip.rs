@@ -1,10 +1,10 @@
 use alloc::string::String;
 use core::str::{FromStr as _, SplitN};
 
+use common::formatf;
 use json::{Map, Value};
 
 use crate::{
-    format,
     imp::{
         env,
         fs::{self, Access, File},
@@ -50,7 +50,7 @@ pub fn get() -> PublicIP {
 
     PublicIP {
         ip,
-        location: format!("{city}, {country_code}"),
+        location: formatf!("{city}, {country_code}"),
     }
 }
 
@@ -112,7 +112,7 @@ fn set_cache(hour: u64, map: &Map) -> Option<()> {
 
     let path = path_dir.join("publicip");
     let file = File::create_always(path, Access::Write).ok()?;
-    let formatted = format!("{hour}\n{map}");
+    let formatted = formatf!("{hour}\n{map}");
     file.write(formatted.as_bytes()).ok()?;
 
     Some(())

@@ -7,9 +7,9 @@ use alloc::{
     string::String,
     vec::Vec
 };
+use common::formatf;
 
 use crate::{
-    format,
     logo::LogoInfo,
     imp::env,
     imp::path::Path,
@@ -85,7 +85,7 @@ impl TitleInfo {
     }
 
     fn colored(s: &str) -> String {
-        format!(
+        formatf!(
             "\x1b[1;{}m{}\x1b[0m",
             LogoInfo::get().unwrap().color_title,
             s

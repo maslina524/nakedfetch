@@ -1,18 +1,8 @@
 #[macro_export]
-macro_rules! todo_or_default {
-    ($msg:literal, $default:expr) => {{
-        #[deprecated(note = $msg)]
-        const fn _warn() {}
-        _warn();
-        $default
-    }};
-}
-
-#[macro_export]
 macro_rules! info {
     ($($args:tt)*) => {{
-        $crate::print!("\x1b[1;{}mInfo\x1b[0m: ", $crate::color::FG_BLUE);
-        $crate::println!($($args)*);
+        ::common::fprint!("\x1b[1;{}mInfo\x1b[0m: ", $crate::color::FG_BLUE);
+        ::common::fprintln!($($args)*);
     }};
 }
 
@@ -20,19 +10,19 @@ macro_rules! info {
 macro_rules! warning {
     ($($args:tt)*) => {{
         #[cfg(debug_assertions)]
-        $crate::eprint!("\x1b[1;{}mWarning\x1b[0m:{}:{}: ", $crate::color::FG_YELLOW, file!(), line!());
+        ::common::feprint!("\x1b[1;{}mWarning\x1b[0m:{}:{}: ", $crate::color::FG_YELLOW, file!(), line!());
 
         #[cfg(not(debug_assertions))]
-        $crate::eprint!("\x1b[1;{}mWarning\x1b[0m: ", $crate::color::FG_YELLOW);
+        ::common::feprint!("\x1b[1;{}mWarning\x1b[0m: ", $crate::color::FG_YELLOW);
 
-        $crate::eprintln!($($args)*);
+        ::common::feprintln!($($args)*);
     }};
 }
 
 #[macro_export]
 macro_rules! abort {
     ($($args:tt)*) => {{
-        $crate::eprintln!("\x1b[1;{}mProgram Aborted\x1b[0m", $crate::color::FG_RED);
+        ::common::feprintln!("\x1b[1;{}mProgram Aborted\x1b[0m", $crate::color::FG_RED);
         panic!($($args)*);
     }};
 }
@@ -113,71 +103,6 @@ macro_rules! cfg_if {
     (@__temp_group $( $tokens:tt )* ) => {
         $( $tokens )*
     };
-}
-
-#[macro_export]
-macro_rules! format {
-    ($($tt:tt)*) => {{
-        let mut string = alloc::string::String::with_capacity(16);
-        let mut formatter = $crate::formats::StringFormatter::new(&mut string);
-        let _ = formatter.write_fmt(format_args!($($tt)*));
-        string
-    }};
-}
-
-#[macro_export]
-#[cfg(debug_assertions)]
-macro_rules! dbg {
-    () => {
-        $crate::eprintln!("[{}:{}:{}]", core::file!(), core::line!(), core::column!())
-    };
-    ($flag:ident) => {
-        if $crate::imp::env::contains_in_dbg_args(stringify!($flag)) {
-            $crate::dbg!();
-        }
-    };
-    ($val:expr $(,)?) => {
-        match $val {
-            tmp => {
-                $crate::eprintln!("[{}:{}:{}] {} = {:#?}",
-                    file!(),
-                    line!(),
-                    column!(),
-                    stringify!($val),
-                    &&tmp as &dyn core::fmt::Debug,
-                );
-                tmp
-            }
-        }
-    };
-    ($val:expr $(,)?, $flag:ident) => {
-        if $crate::imp::env::contains_in_dbg_args(stringify!($flag)) {
-            $crate::dbg!($val)
-        } else {
-            $val
-        }
-    };
-    ($($val:expr),+ $(,)?) => {
-        ($($crate::dbg!($val)),+)
-    };
-    ($($val:expr),+ $(,)?, $flag:ident) => {
-        if $crate::imp::env::contains_in_dbg_args(stringify!($flag)) {
-            ($($crate::dbg!($val)),+)
-        } else {
-            ($($val),+)
-        }
-    };
-}
-
-#[macro_export]
-#[cfg(not(debug_assertions))]
-macro_rules! dbg {
-    () => {};
-    ($flag:ident) => {};
-    ($val:expr $(,)?) => {};
-    ($val:expr $(,)?, $flag:ident) => {};
-    ($($val:expr),+ $(,)?) => {};
-    ($($val:expr),+ $(,)?, $flag:ident) => {};
 }
 
 #[macro_export]

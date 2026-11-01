@@ -1,8 +1,9 @@
 use alloc::{string::String, vec::Vec};
 use core::ptr;
 
+use common::formatf;
+
 use crate::{
-    format,
     formats::{MemorySize, Percent, Time},
     modules::Disk,
     warning,
@@ -34,7 +35,7 @@ pub fn get_disks_windows() -> Vec<Disk> {
 }
 
 fn process_disk(letter: char) -> Disk {
-    let mountpoint = format!("{letter}:\\");
+    let mountpoint = formatf!("{letter}:\\");
     let mp_cstr = [letter as u8, b':', b'\\', 0];
 
     let mut free = 0;

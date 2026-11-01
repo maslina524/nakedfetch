@@ -9,9 +9,10 @@ use core::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
+use common::formatf;
+
 use crate::{
     detect::uptime::UptimeInfo,
-    format,
     formats::Frequency,
     imp::{
         fs::{self, Access, File, ReadError},
@@ -45,7 +46,7 @@ pub fn flush_to_file() {
     };
 
     let entries = ENTRIES.lock();
-    if let Err(e) = file.write(format!("{}", *entries).as_bytes()) {
+    if let Err(e) = file.write(formatf!("{}", *entries).as_bytes()) {
         warning!("Failed to write to cache/session: {e}");
     }
 }
@@ -63,7 +64,7 @@ fn load_entries() {
     let actual = UptimeInfo::new().boot_timestamp;
     let path = Path::cache().join("session");
 
-    let fallback = || LineBased::parse(format!("boot_timestamp={actual}"), '=');
+    let fallback = || LineBased::parse(formatf!("boot_timestamp={actual}"), '=');
 
     let mut parsed = match LineBased::parse_file(path, '=') {
         Ok(p) => p,
@@ -81,7 +82,7 @@ fn load_entries() {
     match parsed.get("boot_timestamp").and_then(u64::from_cached) {
         Some(bt) if bt == actual => {},
         _ => {
-            parsed = LineBased::parse(format!("boot_timestamp={actual}"), '=');
+            parsed = LineBased::parse(formatf!("boot_timestamp={actual}"), '=');
         },
     }
 
@@ -146,7 +147,7 @@ impl<T: Display + AsCached + AsLua + Clone + Send + Sync + 'static> AsLua for Se
     const LUA_TYPE: &'static str = T::LUA_TYPE;
 
     fn as_lua(&self) -> LuaType {
-        LuaType::String(format!("{self}"))
+        LuaType::String(formatf!("{self}"))
     }
 }
 

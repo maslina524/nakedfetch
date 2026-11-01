@@ -1,8 +1,9 @@
 use alloc::boxed::Box;
 use core::fmt::{self, Debug, Display};
 
+use common::formatf;
+
 use crate::{
-    format,
     lua::{AsLua, LuaType},
     sync::OnceLock,
 };
@@ -44,6 +45,6 @@ impl<T: Display + AsLua + Send + Sync + 'static> AsLua for LazyField<T> {
     const LUA_TYPE: &'static str = T::LUA_TYPE;
 
     fn as_lua(&self) -> LuaType {
-        LuaType::String(format!("{self}"))
+        LuaType::String(formatf!("{self}"))
     }
 }

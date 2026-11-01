@@ -1,6 +1,6 @@
 use alloc::{borrow::ToOwned, string::String, vec::Vec};
 
-use crate::format;
+use common::formatf;
 
 #[derive(Debug)]
 pub struct Url {
@@ -75,19 +75,19 @@ impl Url {
 impl core::fmt::Display for Url {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         // protocol
-        let mut ret = format!("{}://", self.protocol);
+        let mut ret = formatf!("{}://", self.protocol);
 
         // subdomains
         if !self.subdomains.is_empty() {
-            ret.push_str(&format!("{}.", self.subdomains.join(".")));
+            ret.push_str(&formatf!("{}.", self.subdomains.join(".")));
         }
 
         // domain.tld
-        ret.push_str(&format!("{}.{}", self.domain, self.tld));
+        ret.push_str(&formatf!("{}.{}", self.domain, self.tld));
 
         // port
         if let Some(port) = self.port {
-            ret.push_str(&format!(":{}", port));
+            ret.push_str(&formatf!(":{}", port));
         }
 
         // path

@@ -6,8 +6,10 @@ use core::{
     ptr,
 };
 
+use common::formatf;
+
 use crate::{
-    abort, cfg_if, format,
+    abort, cfg_if,
     formats::{expand_rust_unicode, snake_to_camel_ascii},
     imp::fs::{self, ReadError},
     sync::OnceLock,
@@ -82,7 +84,7 @@ macro_rules! impl_as_lua_debug_string {
         $(
             impl AsLua for $typ {
                 fn as_lua(&self) -> LuaType {
-                    LuaType::String(crate::format!("{self:?}"))
+                    LuaType::String(::common::formatf!("{self:?}"))
                 }
 
                 const LUA_TYPE: &'static str = "string";
@@ -240,7 +242,7 @@ impl LuaLib {
             ret.push_str("    ");
             ret.push_str(&snake_to_camel_ascii(&k));
             ret.push_str(" = ");
-            ret.push_str(&format!("{:?}", v));
+            ret.push_str(&formatf!("{:?}", v));
             ret.push_str(",\n");
         }
 

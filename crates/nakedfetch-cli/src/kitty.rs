@@ -1,8 +1,9 @@
 use core::fmt::Write;
 
+use common::{formatf, io::Stdout};
 use image::Image;
 
-use crate::{base64, format, print::Stdout};
+use crate::base64;
 
 const CHUNK: usize = 4096;
 
@@ -17,21 +18,22 @@ pub fn print_image(
     let raw = image.as_rgba_bytes();
     let b64 = base64::encode(&raw);
 
-    let mut ctrl = format!("a=T,f=32,s={w},v={h},C=1");
+    let mut ctrl = formatf!("a=T,f=32,s={w},v={h},C=1");
     if image_id != 0 {
-        ctrl.push_str(&format!(",i={image_id}"));
+        ctrl.push_str(&formatf!(",i={image_id}"));
     }
     if let Some(c) = cols {
-        ctrl.push_str(&format!(",c={c}"));
+        ctrl.push_str(&formatf!(",c={c}"));
     }
     if let Some(r) = rows {
-        ctrl.push_str(&format!(",r={r}"));
+        ctrl.push_str(&formatf!(",r={r}"));
     }
 
     let bytes = b64.as_bytes();
 
     let mut first = true;
     let mut offset = 0usize;
+    let mut stdout = Stdout::new();
     while offset < bytes.len() {
         let end = (offset + CHUNK).min(bytes.len());
         let more = end < bytes.len();
@@ -39,14 +41,14 @@ pub fn print_image(
 
         if first {
             let ctrl_with_m = format_args!("{ctrl},m={m}");
-            Stdout::get().write_fmt(format_args!("\x1b_G{ctrl_with_m};"))?;
+            stdout.write_fmt(format_args!("\x1b_G{ctrl_with_m};"))?;
             first = false;
         } else {
-            Stdout::get().write_fmt(format_args!("\x1b_Gm={m};"))?;
+            stdout.write_fmt(format_args!("\x1b_Gm={m};"))?;
         }
 
-        Stdout::get().write_bytes(&bytes[offset..end]);
-        Stdout::get().write_bytes(b"\x1b\\");
+        stdout.write_bytes(&bytes[offset..end]);
+        stdout.write_bytes(b"\x1b\\");
 
         offset = end;
     }

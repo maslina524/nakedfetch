@@ -1,7 +1,8 @@
 use core::fmt::{self, Debug, Display, Formatter};
 
+use common::formatf;
+
 use crate::{
-    format,
     lua::{AsLua, LuaType},
     warning,
 };
@@ -66,6 +67,6 @@ impl AsLua for MicroArch {
     const LUA_TYPE: &'static str = "string";
 
     fn as_lua(&self) -> LuaType {
-        LuaType::String(format!("{self:?}"))
+        LuaType::String(formatf!("{self:?}"))
     }
 }

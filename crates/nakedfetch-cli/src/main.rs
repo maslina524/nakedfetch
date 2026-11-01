@@ -13,7 +13,6 @@ mod lua;
 mod macros;
 mod nvidia;
 mod parser;
-mod print;
 mod sync;
 mod url;
 
@@ -41,6 +40,7 @@ extern crate alloc;
 use alloc::{boxed::Box, string::String, vec::Vec};
 use core::{slice::Iter, str::FromStr as _};
 
+use common::prelude::*;
 use image::Image;
 use json::Map;
 
@@ -55,7 +55,6 @@ use crate::{
     logo::{LogoInfo, UILogo},
     modules::{Commit, DocsVtable, FormatValue, Module, Version},
     nvidia::NvidiaLib,
-    print::flush,
     sync::OnceLock,
     url::Url,
 };
@@ -138,28 +137,28 @@ mod panic_impl {
     #[panic_handler]
     #[cfg(not(no_alloc_in_panic))]
     fn panic(info: &PanicInfo<'_>) -> ! {
-        use crate::{eprintln, format};
+        use common::{feprintln, formatf};
 
-        let msg = format!("{}", info.message());
+        let msg = formatf!("{}", info.message());
 
         let location = info
             .location()
-            .map(|l| format!("{}:{}:{}", l.file(), l.line(), l.column()));
+            .map(|l| formatf!("{}:{}:{}", l.file(), l.line(), l.column()));
 
         if let Some(ref loc) = location {
-            eprintln!("\x1b[1m{loc}: {msg}\x1b[0m");
+            feprintln!("\x1b[1m{loc}: {msg}\x1b[0m");
         } else {
-            eprintln!("\x1b[1m{msg}\x1b[0m");
+            feprintln!("\x1b[1m{msg}\x1b[0m");
         }
 
-        let link = format!(
+        let link = formatf!(
             "https://github.com/maslina524/nakedfetch/issues/new?template=panic.yaml&version={}&title={}&target={}&location={}",
             env!("CARGO_PKG_VERSION"),
             msg,
             env!("TARGET"),
             location.unwrap_or_default()
         );
-        eprintln!("Leave an Issue at this [\x1b]8;;{link}\x1b\\link\x1b]8;;\x1b\\]");
+        feprintln!("Leave an Issue at this [\x1b]8;;{link}\x1b\\link\x1b]8;;\x1b\\]");
 
         exit(101)
     }
@@ -193,7 +192,7 @@ fn build_logo_buf(lines: &[(String, usize)], max_len: usize) -> Vec<String> {
         ret.push(" ".repeat(max_len_padding));
     }
     for (line, len) in lines {
-        let string = format!(
+        let string = formatf!(
             "{}{}{}",
             " ".repeat(padding.left),
             line,
@@ -248,7 +247,6 @@ fn build_info_buf(max_len: usize) -> Vec<&'static str> {
 }
 
 pub fn exit(code: u32) -> ! {
-    let _ = flush();
     cfg_if! {
         if #[cfg(target_family = "unix")] {
             unixlib::process::exit(code)
@@ -351,13 +349,13 @@ fn print_help(theme: Option<&str>) -> ! {
         match action {
             "format" => {
                 if let Some(doc) = (vtable.format)() {
-                    println!(
+                    fprintln!(
                         "# In config file: {{ \"type\": \"{ident}\", \"format\": \"{{{}}} or {{1}}\" }}",
                         doc[0].name
                     );
-                    println!("The following variables are passed:");
+                    fprintln!("The following variables are passed:");
                     for i in doc {
-                        println!(
+                        fprintln!(
                             "{:>24} : {:<4} : {}",
                             i.name,
                             i.second,
@@ -365,18 +363,18 @@ fn print_help(theme: Option<&str>) -> ! {
                         );
                     }
                 } else {
-                    println!("Module `{ident}` doesn't support output formatting");
+                    fprintln!("Module `{ident}` doesn't support output formatting");
                 }
             },
             "lua" => {
                 if let Some(doc) = (vtable.lua)() {
-                    println!(
+                    fprintln!(
                         "# In config file: {{ \"type\": \"{ident}\", \"format\": \"lua: return (...).{}\" }}",
                         doc[0].name
                     );
-                    println!("The following variables are passed:");
+                    fprintln!("The following variables are passed:");
                     for i in doc {
-                        println!(
+                        fprintln!(
                             "{:>24} : {:<6} : {}",
                             i.name,
                             i.second,
@@ -384,7 +382,7 @@ fn print_help(theme: Option<&str>) -> ! {
                         );
                     }
                 } else {
-                    println!("Module `{ident}` doesn't support lua");
+                    fprintln!("Module `{ident}` doesn't support lua");
                 }
             },
             "example" => {
@@ -397,16 +395,16 @@ fn print_help(theme: Option<&str>) -> ! {
                     //     "# In config file: {{ \"type\": \"{ident}\",
                     // \"format\": \"lua: return (...).{}\" }}",     doc[0].name
                     // );
-                    println!("The following variables are passed:");
+                    fprintln!("The following variables are passed:");
                     for (name, value) in doc {
-                        println!("{name:>24} : {value}");
+                        fprintln!("{name:>24} : {value}");
                     }
                 } else {
-                    println!("Module `{ident}` doesn't have variables");
+                    fprintln!("Module `{ident}` doesn't have variables");
                 }
             },
             _ => {
-                println!("Incorrect action");
+                fprintln!("Incorrect action");
                 exit(1);
             },
         }
@@ -414,7 +412,7 @@ fn print_help(theme: Option<&str>) -> ! {
         exit(0);
     }
 
-    println!("{HELP}");
+    fprintln!("{HELP}");
 
     exit(0)
 }
@@ -423,9 +421,9 @@ fn print_help(theme: Option<&str>) -> ! {
 fn print_version(method: Option<&str>) -> ! {
     let ver = Version::new();
     match method {
-        None => println!("{} {} ({})", ver.project_name, ver.version, ver.arch),
-        Some("raw") => println!("{}", ver.version),
-        Some("dbg") => println!("{ver:#?}"),
+        None => fprintln!("{} {} ({})", ver.project_name, ver.version, ver.arch),
+        Some("raw") => fprintln!("{}", ver.version),
+        Some("dbg") => fprintln!("{ver:#?}"),
         Some("extended") => {
             let typ = match ver.build_type {
                 "release" => "\x1b[32mrelease\x1b[0m",
@@ -433,23 +431,28 @@ fn print_version(method: Option<&str>) -> ! {
                 _ => unreachable!(),
             };
             let com = Commit::new();
-            println!(
+            fprintln!(
                 "\x1b[1m{} {} ({}) {typ} [\x1b]8;;{}\x1b\\link\x1b]8;;\x1b\\]",
-                ver.project_name, ver.version, ver.arch, ver.release_link
+                ver.project_name,
+                ver.version,
+                ver.arch,
+                ver.release_link
             );
 
             if ver.libc.is_empty() {
-                println!("    {}", ver.compiler);
+                fprintln!("    {}", ver.compiler);
             } else {
-                println!("    {} (libc {})", ver.compiler, ver.libc);
+                fprintln!("    {} (libc {})", ver.compiler, ver.libc);
             }
 
-            println!(
+            fprintln!(
                 "    {} <{}> ({})",
-                com.message, com.date_small, com.sha_short
+                com.message,
+                com.date_small,
+                com.sha_short
             );
         },
-        _ => eprintln!("Unknown method for version, supported: raw, dbg, extended"),
+        _ => feprintln!("Unknown method for version, supported: raw, dbg, extended"),
     }
     exit(0)
 }
@@ -460,9 +463,9 @@ fn print_alloc_report() {
     let rep = AllocationReport::get();
     let total = rep.alloc + rep.dealloc + rep.realloc;
 
-    println!();
-    println!("\x1b[1mAllocation Report\x1b[0m");
-    println!("Total Ops: {total}");
+    fprintln!();
+    fprintln!("\x1b[1mAllocation Report\x1b[0m");
+    fprintln!("Total Ops: {total}");
 
     let total_u = total as u128;
 
@@ -478,7 +481,7 @@ fn print_alloc_report() {
     let realloc_len = realloc_len as usize;
     let dealloc_len = dealloc_len as usize;
 
-    println!(
+    fprintln!(
         "|\x1b[{};1m{}\x1b[{};1m{}\x1b[{};1m{}\x1b[0m|",
         color::FG_YELLOW,
         "=".repeat(alloc_len),
@@ -488,7 +491,7 @@ fn print_alloc_report() {
         "=".repeat(realloc_len),
     );
 
-    println!(
+    fprintln!(
         "\x1b[{}mAlloc: {}   \x1b[{}mDealloc: {}   \x1b[{}mRealloc: {}\x1b[0m\n",
         color::FG_YELLOW,
         rep.alloc,
@@ -498,8 +501,8 @@ fn print_alloc_report() {
         rep.realloc,
     );
 
-    println!("Total Bytes:");
-    println!(
+    fprintln!("Total Bytes:");
+    fprintln!(
         "Allocated: {}   Deallocated: {}   Max In RT: {}",
         MemorySize::from_bytes(rep.alloc_total),
         MemorySize::from_bytes(rep.dealloc_total),
@@ -515,7 +518,7 @@ fn print_none() {
     let info_lines = build_info_buf(w);
 
     for line in info_lines {
-        println!("{line}\x1b[0m");
+        fprintln!("{line}\x1b[0m");
     }
 }
 
@@ -551,22 +554,22 @@ fn print_image(image: &Image) {
         lines_printed = height.max(info_buf.len());
         for i in 0..lines_printed {
             let info_line = info_buf.get(i).map_or("", |s| *s);
-            println!("{empty_logo_line}{info_line}\x1b[0m");
+            fprintln!("{empty_logo_line}{info_line}\x1b[0m");
         }
     } else {
         lines_printed = height + info_buf.len();
         for _ in 0..height {
-            println!("{empty_logo_line}");
+            fprintln!("{empty_logo_line}");
         }
         for line in info_buf {
-            println!("{line}\x1b[0m");
+            fprintln!("{line}\x1b[0m");
         }
     }
 
-    print!("\x1b7\x1b[{lines_printed}A\x1b[{}C", padding.left);
+    fprint!("\x1b7\x1b[{lines_printed}A\x1b[{}C", padding.left);
 
     let _ = kitty::print_image(image, Some(cols), Some(height), 0);
-    print!("\x1b8");
+    fprint!("\x1b8");
 }
 
 fn print_base(logo_name: &str) {
@@ -603,14 +606,14 @@ fn just_print_logo_and_info(logo_lines: &[(String, usize)]) {
                 .map_or(empty_logo_line.as_str(), String::as_str);
 
             let info_line = info_buf.get(i).map_or("", |s| *s);
-            println!("{logo_line}{info_line}\x1b[0m");
+            fprintln!("{logo_line}{info_line}\x1b[0m");
         }
     } else {
         for line in logo_buf {
-            println!("{line}\x1b[0m");
+            fprintln!("{line}\x1b[0m");
         }
         for line in info_buf {
-            println!("{line}\x1b[0m");
+            fprintln!("{line}\x1b[0m");
         }
     }
 }
@@ -629,13 +632,9 @@ use core::ffi;
 #[unsafe(no_mangle)]
 extern "C" fn main(argc: ffi::c_int, argv: *const *const ffi::c_char) -> ffi::c_int {
     use unixlib::api::alloc::init;
-
     init::falloc_init();
     let _ = ARGS.set(imp::env::args_init(argc as usize, argv.cast()));
-
     let ret = nakedfetch_main() as ffi::c_int;
-
-    let _ = flush();
     init::falloc_destroy();
     ret
 }
@@ -645,9 +644,7 @@ extern "C" fn main(argc: ffi::c_int, argv: *const *const ffi::c_char) -> ffi::c_
 #[unsafe(no_mangle)]
 extern "C" fn main() -> ffi::c_int {
     let _ = ARGS.set(env::args_init());
-    let ret = nakedfetch_main();
-    let _ = flush();
-    ret
+    nakedfetch_main()
 }
 
 fn nakedfetch_main() -> i32 {

@@ -1,6 +1,8 @@
 use alloc::string::String;
 
-use crate::{cfg_if, format, sync::OnceLock};
+use common::formatf;
+
+use crate::{cfg_if, sync::OnceLock};
 
 cfg_if! {
     if #[cfg(target_os = "windows")] {
@@ -30,13 +32,13 @@ pub struct UptimeInfo {
 impl UptimeInfo {
     fn formatted(days: u32, hours: u8, mins: u8, secs: u8) -> String {
         if days > 0 {
-            format!("{days} days, {hours} hours, {mins} mins")
+            formatf!("{days} days, {hours} hours, {mins} mins")
         } else if hours > 0 {
-            format!("{hours} hours, {mins} mins")
+            formatf!("{hours} hours, {mins} mins")
         } else if mins > 0 {
-            format!("{mins} mins")
+            formatf!("{mins} mins")
         } else {
-            format!("{secs} seconds")
+            formatf!("{secs} seconds")
         }
     }
 }

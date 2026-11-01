@@ -1,9 +1,9 @@
 use alloc::{borrow::ToOwned, collections::BTreeMap, string::String, vec, vec::Vec};
 
+use common::formatf;
 use json::{Map, Value};
 
 use crate::{
-    format,
     formats::{ColorPlan, Percent, Temperature, format_color},
     modules::Module,
     sync::OnceLock,
@@ -220,7 +220,7 @@ impl Config {
             _ => "0",
         };
 
-        format!("\x1b[{color}m{val}%\x1b[0m")
+        formatf!("\x1b[{color}m{val}%\x1b[0m")
     }
 
     pub fn format_temperature(&self, temp: Temperature) -> String {
@@ -237,7 +237,7 @@ impl Config {
             _ => "0",
         };
 
-        format!("\x1b[{color}m{}°{}\x1b[0m", val.get(), val.symbol())
+        formatf!("\x1b[{color}m{}°{}\x1b[0m", val.get(), val.symbol())
     }
 
     pub fn get_logo_name(&self) -> Option<String> {

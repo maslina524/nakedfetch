@@ -1,10 +1,9 @@
 use alloc::{boxed::Box, string::String, vec::Vec};
 use core::fmt::Write;
 
-use crate::{
-    format,
-    lua::{AsLua, LuaType},
-};
+use common::formatf;
+
+use crate::lua::{AsLua, LuaType};
 
 #[derive(Clone, Copy)]
 pub struct ConcatStr<const N: usize> {
@@ -90,6 +89,6 @@ impl<const N: usize> AsLua for ConcatStr<N> {
     const LUA_TYPE: &'static str = "string";
 
     fn as_lua(&self) -> LuaType {
-        LuaType::String(format!("{self:?}"))
+        LuaType::String(formatf!("{self:?}"))
     }
 }

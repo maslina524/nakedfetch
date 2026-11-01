@@ -1,10 +1,11 @@
 use alloc::{borrow::Cow, string::String};
 
+use common::formatf;
 use proc::{Docs, Module};
 
 use crate::{
     detect::os::OsInfo,
-    format, impl_display_for_module,
+    impl_display_for_module,
     logo::LogoInfo,
     modules::Module,
     str::{ConcatStr, SmolStr},
@@ -52,7 +53,7 @@ impl Module for Os {
         // #[cfg(target_os = "windows")]
         // let pretty_name = format!("{} {} ({})", info.id, info.variant,
         // info.codename); #[cfg(target_family = "unix")]
-        let pretty_name = format!("{} {}", info.name, info.version);
+        let pretty_name = formatf!("{} {}", info.name, info.version);
 
         Self {
             sysname: info.sysname,
@@ -68,7 +69,7 @@ impl Module for Os {
             build_id: String::new(),
             arch: env!("TARGET_ARCH"),
             nerd_emoji: info.nerd,
-            colored_nerd_emoji: format!(
+            colored_nerd_emoji: formatf!(
                 "\x1b[{}m{}\x1b[0m",
                 LogoInfo::get().expect("Unreachable").color_keys,
                 info.nerd

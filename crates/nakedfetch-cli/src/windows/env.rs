@@ -12,8 +12,10 @@ use core::{
     mem, ptr, slice,
 };
 
+use common::formatf;
+
 use crate::{
-    ARGS, abort, format,
+    ARGS, abort,
     str::SmolStr,
     sync::OnceLock,
     w, warning,
@@ -314,7 +316,7 @@ pub fn get_file_product_version(path: impl Into<Path>) -> error::Result<SmolStr>
     let build = (info.dwProductVersionLS >> 16) & 0xFFFF;
     let rev = info.dwProductVersionLS & 0xFFFF;
 
-    Ok(SmolStr::from(format!("{major}.{minor}.{build}.{rev}")))
+    Ok(SmolStr::from(formatf!("{major}.{minor}.{build}.{rev}")))
 }
 
 pub fn format_timestamp(time: u64, format: Option<&str>) -> String {

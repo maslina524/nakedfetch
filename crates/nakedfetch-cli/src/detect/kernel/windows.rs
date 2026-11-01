@@ -2,6 +2,7 @@ use alloc::{
     string::String,
     borrow::ToOwned
 };
+use common::formatf;
 
 use crate::{
     windows::env,
@@ -9,7 +10,6 @@ use crate::{
     windows::link::{SYSTEM_INFO, GetSystemInfo},
     formats::MemorySize,
     detect::kernel::KernelInfo,
-    format
 };
 
 const SYSNAME: &str = "WIN32_NT";
@@ -17,7 +17,7 @@ const SYSNAME: &str = "WIN32_NT";
 impl KernelInfo {
     pub fn new() -> Self {
         let release = Self::release();
-        let formated = format!("{SYSNAME} {release}");
+        let formated = formatf!("{SYSNAME} {release}");
 
         Self { 
             sysname: SYSNAME, 
@@ -41,7 +41,7 @@ impl KernelInfo {
     fn release() -> String {
         let (major, minor, build) = env::get_version();
         let ubr = Self::ubr();
-        format!("{major}.{minor}.{build}.{ubr}")
+        formatf!("{major}.{minor}.{build}.{ubr}")
     }
 
     fn page_size() -> MemorySize {

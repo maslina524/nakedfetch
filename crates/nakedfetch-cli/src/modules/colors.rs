@@ -1,10 +1,11 @@
 use alloc::{borrow::Cow, collections::BTreeMap, string::String};
 
+use common::formatf;
 use json::Value;
 use proc::Docs;
 
 use crate::{
-    format, impl_display_for_module,
+    impl_display_for_module,
     modules::{self, Module, ModuleFormat},
     sync::OnceLock,
 };
@@ -79,7 +80,7 @@ impl ModuleFormat for Colors {
             let r = *r;
             ret.push_str(&padding_left);
             for i in r..=r + 7 {
-                ret.push_str(&format!("\x1b[{i}m{symbol}"));
+                ret.push_str(&formatf!("\x1b[{i}m{symbol}"));
             }
             ret.push_str("\x1b[0m\n");
         }

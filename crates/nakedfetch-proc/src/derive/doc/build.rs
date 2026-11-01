@@ -78,13 +78,13 @@ pub fn example(fields: &[&Field]) -> TokenStream {
         let ident = field.ident.as_ref().unwrap();
 
         quote! {
-            (#name, crate::format!("{}", self.#ident))
+            (#name, ::common::formatf!("{}", self.#ident))
         }
     });
 
     quote! {
         fn strings_example(self) -> Option<alloc::vec::Vec<(&'static str, alloc::string::String)>> {
-            Some(alloc::vec![
+            Some(::alloc::vec![
                 #(#strings),*
             ])
         }

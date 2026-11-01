@@ -1,8 +1,9 @@
 use alloc::{borrow::ToOwned, string::String};
 
+use common::formatf;
+
 use crate::{
     detect::datetime::{AmPm, DatetimeInfo},
-    format,
     windows::{
         error::ErrorCode,
         link::{
@@ -135,7 +136,7 @@ impl DatetimeInfo {
         let hours = tz / 60;
         let mins = tz % 60;
 
-        format!("{symb}{hours:02}{mins:02}")
+        formatf!("{symb}{hours:02}{mins:02}")
     }
 
     fn is_daylight() -> bool {

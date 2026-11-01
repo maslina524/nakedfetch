@@ -1,8 +1,9 @@
 use alloc::{borrow::ToOwned, string::String};
 use core::str::{FromStr, SplitN};
 
+use common::formatf;
+
 use crate::{
-    format,
     formats::{Percent, Temperature},
     imp::{
         env,
@@ -135,7 +136,7 @@ fn set_cache(hour: u64, data: &str) -> Option<()> {
     }
     let path = path_dir.join("weather");
     let file = File::create_always(path, Access::Write).ok()?;
-    let formatted = format!("{hour}\n{data}");
+    let formatted = formatf!("{hour}\n{data}");
     file.write(formatted.as_bytes()).ok()?;
     Some(())
 }
