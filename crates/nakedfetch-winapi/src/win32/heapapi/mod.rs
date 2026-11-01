@@ -2,6 +2,9 @@ use core::{marker::PhantomData, ptr::NonNull};
 
 use crate::{AsRawHandle, ntdll, types::Handle};
 
+mod HeapAlloc;
+pub use HeapAlloc::HeapAlloc;
+
 mod_sealed!();
 pub trait FlagTag: sealed::Sealed {}
 
