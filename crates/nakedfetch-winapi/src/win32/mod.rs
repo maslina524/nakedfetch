@@ -5,3 +5,4 @@ pub mod fileapi;
 pub mod handleapi;
 pub mod heapapi;
 pub mod sysinfoapi;
+pub mod winbase;
