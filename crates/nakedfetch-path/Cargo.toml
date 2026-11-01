@@ -1,0 +1,13 @@
+[package]
+name = "path"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+wtf8 = { path = "../nakedfetch-wtf8" }
+
+[lints]
+workspace = true

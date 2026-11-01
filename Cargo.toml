@@ -12,7 +12,7 @@ members = [
     "crates/nakedfetch-image", 
     "crates/nakedfetch-winapi",
     "crates/nakedfetch-common",
-    "crates/nakedfetch-wtf8",
+    "crates/nakedfetch-wtf8", "crates/nakedfetch-path",
 ]
 
 default-members = ["crates/nakedfetch-cli"]
