@@ -3,13 +3,13 @@
 
 extern crate alloc;
 
+mod components;
+pub use components::Components;
+
+mod os;
 use alloc::string::String;
 
-#[cfg(target_os = "windows")]
-use wtf8::Utf16Iter;
-
-#[cfg(target_os = "windows")]
-type PathInner = wtf8::Wtf8;
+pub use os::*;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Path(PathInner);
@@ -22,7 +22,7 @@ impl Path {
 
     #[must_use]
     #[cfg(target_os = "windows")]
-    pub fn as_utf16(&'_ self) -> Utf16Iter<'_> {
+    pub fn as_utf16(&'_ self) -> wtf8::Utf16Iter<'_> {
         self.0.utf16_with_zero()
     }
 
