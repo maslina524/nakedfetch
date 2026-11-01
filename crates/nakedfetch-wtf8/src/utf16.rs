@@ -1,4 +1,4 @@
-use crate::{CodePointsIter, Wtf8Buf, codepoint::CodePoint};
+use crate::{CodePointsIter, Wtf8, codepoint::CodePoint};
 
 #[derive(Clone, PartialEq, Eq)]
 enum NextAction {
@@ -15,7 +15,7 @@ pub struct Utf16Iter<'wtf8> {
 
 impl<'wtf8> Utf16Iter<'wtf8> {
     #[must_use]
-    pub fn new(wtf8: &'wtf8 Wtf8Buf) -> Self {
+    pub fn new<T: AsRef<Wtf8>>(wtf8: &'wtf8 T) -> Self {
         Self {
             codepoints: CodePointsIter::new(wtf8),
             next: NextAction::None,

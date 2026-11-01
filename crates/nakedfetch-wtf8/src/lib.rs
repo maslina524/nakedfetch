@@ -4,16 +4,14 @@
 extern crate alloc;
 
 mod buf;
+mod codepoint;
+mod utf16;
+
+use alloc::string::String;
 use core::ptr;
 
 pub use buf::Wtf8Buf;
-
-mod codepoint;
 pub use codepoint::CodePointsIter;
-
-mod utf16;
-use alloc::string::String;
-
 pub use utf16::Utf16Iter;
 
 #[repr(transparent)]
@@ -34,7 +32,7 @@ impl Wtf8 {
 
     #[must_use]
     pub fn to_str(&self) -> Option<&str> {
-        core::str::from_utf8(&self.0).ok()
+        str::from_utf8(&self.0).ok()
     }
 
     #[must_use]
@@ -43,20 +41,46 @@ impl Wtf8 {
     }
 }
 
-impl<'a> From<&'a str> for &'a Wtf8 {
-    fn from(s: &'a str) -> Self {
-        Wtf8::from_bytes(s.as_bytes())
+impl AsRef<Self> for Wtf8 {
+    fn as_ref(&self) -> &Self {
+        self
     }
 }
 
-impl<'a> From<&'a [u8]> for &'a Wtf8 {
-    fn from(s: &'a [u8]) -> Self {
-        Wtf8::from_bytes(s)
+impl AsRef<Wtf8> for Wtf8Buf {
+    fn as_ref(&self) -> &Wtf8 {
+        self
     }
 }
 
-impl<'a, const N: usize> From<&'a [u8; N]> for &'a Wtf8 {
-    fn from(bytes: &'a [u8; N]) -> Self {
-        Self::from(&bytes[..])
+impl AsRef<Wtf8> for str {
+    fn as_ref(&self) -> &Wtf8 {
+        Wtf8::from_bytes(self.as_bytes())
+    }
+}
+
+impl AsRef<Wtf8> for [u8] {
+    fn as_ref(&self) -> &Wtf8 {
+        Wtf8::from_bytes(self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Wtf8;
+
+    #[test]
+    fn valid_utf8_for_wtf8_test() {
+        let text = "Hello World!";
+        let wtf8 = Wtf8::from_bytes(text.as_bytes());
+        assert_eq!(wtf8.to_str(), Some(text));
+
+        let text = "Привет мир!";
+        let wtf8: &Wtf8 = text.as_ref();
+        assert_eq!(wtf8.to_str(), Some(text));
+
+        let text = "你好世界！";
+        let wtf8: &Wtf8 = text.as_ref();
+        assert_eq!(wtf8.to_str(), Some(text));
     }
 }

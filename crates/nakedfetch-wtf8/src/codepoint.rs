@@ -1,4 +1,4 @@
-use crate::Wtf8Buf;
+use crate::Wtf8;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CodePoint {
@@ -14,9 +14,9 @@ pub struct CodePointsIter<'wtf8> {
 
 impl<'wtf8> CodePointsIter<'wtf8> {
     #[must_use]
-    pub fn new(wtf8: &'wtf8 Wtf8Buf) -> Self {
+    pub fn new<T: AsRef<Wtf8>>(wtf8: &'wtf8 T) -> Self {
         Self {
-            bytes: wtf8.as_bytes(),
+            bytes: wtf8.as_ref().as_bytes(),
             pos: 0,
         }
     }
