@@ -6,6 +6,9 @@ pub use CreateFile::*;
 mod GetFileAttributes;
 pub use GetFileAttributes::*;
 
+mod ReadFile;
+pub use ReadFile::*;
+
 mod WriteFile;
 pub use WriteFile::*;
 
@@ -119,6 +122,25 @@ mod tests {
             CreateOptions::new().synchronize(),
         )
         .expect("Failed to open file");
+    }
+
+    #[test]
+    fn read_file_test() {
+        let handle: FileHandle<Read> = CreateFile(
+            "Cargo.toml",
+            FileShare::ReadWrite,
+            FileDispose::OpenAlways,
+            FileAttributes::new(),
+            CreateOptions::new().synchronize(),
+        )
+        .expect("Failed to open file");
+
+        let mut buf = [0u8; 1024];
+        let readed = ReadFile(&handle, &mut buf, 1024, None).expect("Failed to read file");
+        assert!(readed > 0);
+
+        let string = str::from_utf8(&buf).expect("Incorrect file read");
+        assert!(string.contains("[package]"));
     }
 
     #[test]

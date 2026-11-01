@@ -31,8 +31,8 @@ pub fn WriteFile<T: CanWrite>(handle: &FileHandle<T>, buf: &[u8]) -> Result<usiz
     };
 
     if status.is_success() {
-        let written = info.union.pointer;
-        Ok(written as usize)
+        let written = info.information as usize;
+        Ok(written)
     } else {
         Err(status)
     }

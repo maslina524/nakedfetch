@@ -5,6 +5,7 @@ use crate::{
 };
 
 link!("ntdll" fn NtWriteFile(fileHandle: t::Handle, event: t::Handle, apcRoutine: ptr::IoApcRoutinePtr, apcContext: ptr::VoidPtr, ioStatusBlock: *mut t::IoStatusBlock, buffer: ptr::VoidPtr, length: prim::ULong, byteOffset: ptr::LargeIntegerPtr, key: ptr::ULongPtr) -> Ntstatus);
+link!("ntdll" fn NtReadFile(fileHandle: t::Handle, event: t::Handle, apcRoutine: ptr::IoApcRoutinePtr, apcContext: ptr::VoidPtr, ioStatusBlock: *mut t::IoStatusBlock, buffer: ptr::VoidPtr, length: prim::ULong, byteOffset: ptr::LargeIntegerPtr, key: ptr::ULongPtr) -> Ntstatus);
 link!("ntdll" fn NtClose(handle: t::Handle) -> Ntstatus);
 link!("ntdll" safe fn RtlGetCurrentPeb() -> &'static Peb);
 link!("ntdll" fn RtlAllocateHeap(hHeap: t::Handle, dwFlags: prim::ULong, dwBytes: usize) -> ptr::VoidPtr);

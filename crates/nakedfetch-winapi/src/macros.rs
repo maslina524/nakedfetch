@@ -34,7 +34,7 @@ macro_rules! ENUM {
         $($variant:ident $(= $discr:expr)?),* $(,)?
     }) => (
         #[repr(i32)]
-        #[derive(Clone, Copy)]
+        #[derive(Debug, Clone)]
         $(#[$attrs])*
         pub enum $name {
             $($variant $(= $discr)?),*
@@ -51,9 +51,9 @@ macro_rules! UNION {
         $($field:ident: $ftype:ty),+ $(,)?
     }) => (
         #[repr(C)]
-        #[derive(Clone)]
+        #[derive(Clone, Copy)]
         $(#[$attrs])*
-        pub struct $name {
+        pub union $name {
             $(pub $field: $ftype,)+
         }
 

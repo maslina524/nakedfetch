@@ -24,7 +24,6 @@ impl KSystemTime {
 }
 
 STRUCT! {
-    #[derive(Debug)]
     struct IoStatusBlock {
         union: IoStatusBlockInner,
         information: ULongPtr,
@@ -64,7 +63,6 @@ STRUCT! {
 }
 
 UNION! {
-    #[derive(Debug)]
     union IoStatusBlockInner {
         status: Ntstatus,
         pointer: VoidPtr,
