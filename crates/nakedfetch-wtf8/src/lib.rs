@@ -5,3 +5,6 @@ extern crate alloc;
 
 mod buf;
 pub use buf::Wtf8Buf;
+
+mod codepoint;
+pub use codepoint::CodePointsIter;

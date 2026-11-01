@@ -70,6 +70,10 @@ mod tests {
         let text = "Привет мир!";
         let wtf8 = Wtf8Buf::from(text);
         assert_eq!(wtf8.to_str(), Some(text));
+
+        let text = "你好世界！";
+        let wtf8 = Wtf8Buf::from(text);
+        assert_eq!(wtf8.to_str(), Some(text));
     }
 
     #[test]
@@ -86,6 +90,14 @@ mod tests {
         let wtf8 = Wtf8Buf::from(bytes);
         assert_eq!(
             format!("Привет мир! {}", char::REPLACEMENT_CHARACTER),
+            wtf8.to_string_lossy()
+        );
+
+        let mut bytes = "你好世界！ ".as_bytes().to_vec();
+        bytes.push(b'\xED');
+        let wtf8 = Wtf8Buf::from(bytes);
+        assert_eq!(
+            format!("你好世界！ {}", char::REPLACEMENT_CHARACTER),
             wtf8.to_string_lossy()
         );
     }
