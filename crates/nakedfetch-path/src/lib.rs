@@ -11,11 +11,10 @@ use core::ptr;
 
 pub use components::Components;
 
-mod error;
 mod os;
 use alloc::string::String;
 
-pub use error::PathBuildError;
+// pub use error::PathBuildError;
 pub use os::*;
 
 #[repr(transparent)]
@@ -23,8 +22,9 @@ pub use os::*;
 pub struct Path(PathInner);
 
 impl Path {
-    #[allow(clippy::should_implement_trait, reason = "Bad lifetime")]
-    pub fn from_str(s: &str) -> &Self {
+    #[must_use]
+    pub const fn from_str(s: &str) -> &Self {
+        // SAFETY: Layout of str == [u8] == Wtf8 == Path
         unsafe { &*(ptr::from_ref(s) as *const Self) }
     }
 
@@ -69,6 +69,19 @@ impl AsRef<Self> for Path {
 impl AsRef<Path> for str {
     fn as_ref(&self) -> &Path {
         Path::from_str(self)
+    }
+}
+
+impl AsRef<Path> for PathInner {
+    fn as_ref(&self) -> &Path {
+        // SAFETY: Layout of Wtf8 == Path
+        unsafe { &*(ptr::from_ref(self) as *const Path) }
+    }
+}
+
+impl AsRef<PathInner> for Path {
+    fn as_ref(&self) -> &PathInner {
+        &self.0
     }
 }
 

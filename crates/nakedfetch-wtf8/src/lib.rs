@@ -8,10 +8,10 @@ mod codepoint;
 mod utf16;
 
 use alloc::string::String;
-use core::ptr;
+use core::{ops::Index, ptr};
 
 pub use buf::Wtf8Buf;
-pub use codepoint::CodePointsIter;
+pub use codepoint::{CodePoint, CodePointsIter};
 pub use utf16::Utf16Iter;
 
 #[repr(transparent)]
@@ -82,6 +82,17 @@ impl AsRef<Wtf8> for str {
 impl AsRef<Wtf8> for [u8] {
     fn as_ref(&self) -> &Wtf8 {
         Wtf8::from_bytes(self)
+    }
+}
+
+impl<I> Index<I> for Wtf8
+where
+    [u8]: Index<I, Output = [u8]>,
+{
+    type Output = Self;
+
+    fn index(&self, index: I) -> &Self {
+        self.0[index].as_ref()
     }
 }
 

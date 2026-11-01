@@ -86,7 +86,7 @@ impl Wtf8Buf {
         };
         match cp {
             CodePoint::Char(cp_char) => cp_char == ch,
-            _ => false,
+            CodePoint::Surrogate(_) => false,
         }
     }
 }
