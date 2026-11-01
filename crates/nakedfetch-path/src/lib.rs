@@ -6,9 +6,11 @@ extern crate alloc;
 mod components;
 pub use components::Components;
 
+mod error;
 mod os;
 use alloc::string::String;
 
+pub use error::PathBuildError;
 pub use os::*;
 
 #[derive(Debug, PartialEq, Eq)]

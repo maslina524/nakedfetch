@@ -1,5 +1,6 @@
 pub use crate::os::*;
 
+#[derive(Clone)]
 pub struct Components<'path> {
     source: &'path str,
     pos: usize,
@@ -7,7 +8,7 @@ pub struct Components<'path> {
 
 impl<'path> Components<'path> {
     #[must_use]
-    pub const fn new(source: &'path str) -> Self {
+    pub(crate) const fn new(source: &'path str) -> Self {
         Self { source, pos: 0 }
     }
 }
@@ -22,7 +23,7 @@ impl<'path> Iterator for Components<'path> {
         let start = self.pos;
 
         for (off, &b) in self.source.as_bytes()[start..].iter().enumerate() {
-            if SEPARATOR.contains(&b) {
+            if SEPARATOR.contains(&char::from(b)) {
                 self.pos = start + off + 1;
                 return Some(&self.source[start..start + off]);
             }
@@ -30,6 +31,15 @@ impl<'path> Iterator for Components<'path> {
 
         self.pos = self.source.len();
         Some(&self.source[start..])
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let sum = self
+            .source
+            .chars()
+            .filter(|ch| SEPARATOR.contains(ch))
+            .count();
+        (0, Some(sum))
     }
 }
 
