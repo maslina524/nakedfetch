@@ -78,6 +78,17 @@ impl Wtf8Buf {
         self.0.truncate(new_len);
         Some(ret)
     }
+
+    #[must_use]
+    pub fn ends_with_char(&self, ch: char) -> bool {
+        let Some(cp) = self.codepoints().next_back() else {
+            return false;
+        };
+        match cp {
+            CodePoint::Char(cp_char) => cp_char == ch,
+            _ => false,
+        }
+    }
 }
 
 impl Deref for Wtf8Buf {
