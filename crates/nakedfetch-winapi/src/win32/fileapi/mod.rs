@@ -3,6 +3,9 @@ use core::marker::PhantomData;
 mod CreateFile;
 pub use CreateFile::*;
 
+mod GetFileAttributes;
+pub use GetFileAttributes::*;
+
 mod WriteFile;
 pub use WriteFile::*;
 
@@ -116,5 +119,19 @@ mod tests {
             CreateOptions::new().synchronize(),
         )
         .expect("Failed to open file");
+    }
+
+    #[test]
+    fn get_file_attrs_test() {
+        let attrs = GetFileAttributes("Cargo.toml").expect("Failed to get file attrs");
+        assert_eq!(
+            attrs,
+            ItemAttributes {
+                is_readonly: false,
+                is_hidden: false,
+                is_system: false,
+                typ: ItemType::File
+            }
+        );
     }
 }

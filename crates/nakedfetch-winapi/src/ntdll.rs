@@ -13,3 +13,4 @@ link!("ntdll" fn RtlReAllocateHeap(hHeap: t::Handle, dwFlags: prim::ULong, lpMem
 link!("ntdll" fn RtlDosPathNameToNtPathName_U(DosFileName: ptr::WideStrConstPtr, NtFileName: *mut t::RawUnicodeString, FilePart: *mut ptr::WideStrPtr, RelativeName: ptr::VoidPtr) -> Boolean);
 link!("ntdll" fn RtlFreeUnicodeString(UnicodeString: *mut t::RawUnicodeString) -> ());
 link!("ntdll" fn NtCreateFile(FileHandle: *mut t::Handle, DesiredAccess: prim::ULong, ObjectAttributes: *mut t::ObjectAttributes, IoStatusBlock: *mut t::IoStatusBlock, AllocationSize: ptr::LargeIntegerPtr, FileAttributes: prim::ULong, ShareAccess: prim::ULong, CreateDisposition: prim::ULong, CreateOptions: prim::ULong, EaBuffer: ptr::VoidPtr, EaLength: prim::ULong) -> Ntstatus);
+link!("ntdll" fn NtQueryAttributesFile(ObjectAttributes: *mut t::ObjectAttributes, FileInformation: *mut t::FileBasicInfo) -> Ntstatus);

@@ -1,7 +1,7 @@
 use crate::{
     ntstatus::Ntstatus,
     types::{
-        primitives::{Long, ULong, UShort},
+        primitives::{LargeInteger, Long, ULong, UShort},
         ptr::{ULongPtr, VoidPtr, WideStrPtr},
     },
 };
@@ -49,6 +49,17 @@ STRUCT! {
         attributes: ULong,
         security_descriptor: *mut (),
         security_quality_of_service: *mut ()
+    }
+}
+
+STRUCT! {
+    #[derive(Debug)]
+    struct FileBasicInfo {
+        creation_time: LargeInteger,
+        last_access_time: LargeInteger,
+        last_write_time: LargeInteger,
+        change_time: LargeInteger,
+        file_attributes: ULong,
     }
 }
 
