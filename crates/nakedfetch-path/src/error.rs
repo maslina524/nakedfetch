@@ -18,8 +18,12 @@ impl fmt::Display for PathBuildError {
 impl Error for PathBuildError {}
 
 pub fn check(comps: Components<'_>) -> Result<(), PathBuildError> {
-    fn check_valid_chars(comp: &str) -> Result<(), PathBuildError> {
+    fn check_valid_chars(comp: &str, is_first: &mut bool) -> Result<(), PathBuildError> {
         for ch in comp.chars() {
+            if !*is_first && ch == ':' {
+                return Err(PathBuildError::InvalidSymbol(ch));
+            }
+
             if INVALID_SYMBOLS.contains(&ch) {
                 return Err(PathBuildError::InvalidSymbol(ch));
             }
@@ -27,6 +31,7 @@ pub fn check(comps: Components<'_>) -> Result<(), PathBuildError> {
                 return Err(PathBuildError::InvalidSymbol(ch));
             }
         }
+        *is_first = false;
         Ok(())
     }
 
@@ -34,8 +39,9 @@ pub fn check(comps: Components<'_>) -> Result<(), PathBuildError> {
         list.iter().any(|x| x.eq_ignore_ascii_case(s))
     }
 
+    let mut is_first = true;
     for comp in comps {
-        check_valid_chars(comp)?;
+        check_valid_chars(comp, &mut is_first)?;
 
         let slice = comp.rfind('.').map_or(comp, |idx| &comp[..idx]);
         if matches_ignore_case(slice, &INVALID_NAMES) {
