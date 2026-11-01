@@ -1,8 +1,19 @@
-use alloc::{string::String, vec::Vec};
+use alloc::vec::Vec;
+use core::{ops::Deref, ptr};
 
+use crate::Wtf8;
+
+#[repr(transparent)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Wtf8Buf(Vec<u8>);
 
 impl Wtf8Buf {
+    #[must_use]
+    pub const fn as_wtf8(&self) -> &Wtf8 {
+        // SAFETY: Layout of [u8] == Wtf8
+        unsafe { &*(ptr::from_ref(self.0.as_slice()) as *const Wtf8) }
+    }
+
     pub fn push_char(&mut self, c: char) {
         let mut buf = [0u8; 4];
         self.0.extend_from_slice(c.encode_utf8(&mut buf).as_bytes());
@@ -16,20 +27,13 @@ impl Wtf8Buf {
         self.0.push(0x80 | ((cp >> 6) & 0x3F) as u8);
         self.0.push(0x80 | (cp & 0x3F) as u8);
     }
+}
 
-    #[must_use]
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.0
-    }
+impl Deref for Wtf8Buf {
+    type Target = Wtf8;
 
-    #[must_use]
-    pub fn to_str(&self) -> Option<&str> {
-        core::str::from_utf8(&self.0).ok()
-    }
-
-    #[must_use]
-    pub fn to_string_lossy(&self) -> String {
-        String::from_utf8_lossy(&self.0).into_owned()
+    fn deref(&self) -> &Self::Target {
+        self.as_wtf8()
     }
 }
 
