@@ -1,7 +1,10 @@
 use core::marker::PhantomData;
 
+mod CreateFile;
+pub use CreateFile::*;
+
 mod WriteFile;
-pub use WriteFile::WriteFile;
+pub use WriteFile::*;
 
 use crate::{AsRawHandle, types::Handle, win32::handleapi};
 
@@ -74,7 +77,7 @@ impl<Access> Drop for FileHandle<Access> {
 
 #[cfg(test)]
 mod tests {
-    use super::WriteFile;
+    use super::*;
     use crate::{
         AsRawHandle,
         win32::fileapi::{FileHandle, Write},
@@ -101,5 +104,17 @@ mod tests {
         let bytes = "Привет Мир!!!\n".as_bytes();
         let written = WriteFile(&handle, bytes).expect("Failed to write to the console, Ntstatus");
         assert_eq!(written, bytes.len());
+    }
+
+    #[test]
+    fn create_file_test() {
+        let _: FileHandle<Read> = CreateFile(
+            "Cargo.toml",
+            FileShare::ReadWrite,
+            FileDispose::OpenAlways,
+            FileAttributes::new(),
+            CreateOptions::new().synchronize(),
+        )
+        .expect("Failed to open file");
     }
 }

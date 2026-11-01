@@ -40,6 +40,18 @@ STRUCT! {
     }
 }
 
+STRUCT! {
+    #[derive(Debug)]
+    struct ObjectAttributes {
+        length: ULong,
+        root_directory: Handle,
+        object_name: *const RawUnicodeString,
+        attributes: ULong,
+        security_descriptor: *mut (),
+        security_quality_of_service: *mut ()
+    }
+}
+
 UNION! {
     #[derive(Debug)]
     union IoStatusBlockInner {
