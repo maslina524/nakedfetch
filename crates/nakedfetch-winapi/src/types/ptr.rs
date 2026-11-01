@@ -12,3 +12,7 @@ pub type IoApcRoutinePtr = *mut ();
 pub type HeapPtr = *mut ();
 pub type PebLdrDataRef = &'static ();
 pub type RtlUserProcessParametersRef = &'static RtlUserProcessParameters;
+
+// Strings
+pub type WideStrPtr = *mut u16;
+pub type WideStrConstPtr = *const u16;

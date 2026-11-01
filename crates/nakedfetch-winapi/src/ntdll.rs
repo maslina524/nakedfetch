@@ -10,3 +10,5 @@ link!("ntdll" safe fn RtlGetCurrentPeb() -> &'static Peb);
 link!("ntdll" fn RtlAllocateHeap(hHeap: t::Handle, dwFlags: primitives::ULong, dwBytes: usize) -> ptr::VoidPtr);
 link!("ntdll" fn RtlFreeHeap(hHeap: t::Handle, dwFlags: primitives::ULong, lpMem: ptr::VoidPtr) -> Boolean);
 link!("ntdll" fn RtlReAllocateHeap(hHeap: t::Handle, dwFlags: primitives::ULong, lpMem: ptr::VoidPtr, size: usize) -> ptr::VoidPtr);
+link!("ntdll" fn RtlDosPathNameToNtPathName_U(DosFileName: ptr::WideStrConstPtr, NtFileName: *mut t::RawUnicodeString, FilePart: *mut ptr::WideStrPtr, RelativeName: ptr::VoidPtr) -> Boolean);
+link!("ntdll" fn RtlFreeUnicodeString(UnicodeString: *mut t::RawUnicodeString) -> ());

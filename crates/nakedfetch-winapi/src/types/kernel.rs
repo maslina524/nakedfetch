@@ -1,8 +1,8 @@
 use crate::{
     ntstatus::Ntstatus,
     types::{
-        primitives::{Long, ULong},
-        ptr::{ULongPtr, VoidPtr},
+        primitives::{Long, ULong, UShort},
+        ptr::{ULongPtr, VoidPtr, WideStrPtr},
     },
 };
 
@@ -28,6 +28,15 @@ STRUCT! {
     struct IoStatusBlock {
         union: IoStatusBlockInner,
         information: ULongPtr,
+    }
+}
+
+STRUCT! {
+    #[derive(Debug)]
+    struct RawUnicodeString {
+        length: UShort,
+        maximum_length: UShort,
+        buffer: WideStrPtr
     }
 }
 
