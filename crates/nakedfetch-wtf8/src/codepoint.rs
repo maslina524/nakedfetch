@@ -6,12 +6,14 @@ pub enum CodePoint {
     Surrogate(u16),
 }
 
+#[derive(Clone)]
 pub struct CodePointsIter<'wtf8> {
     bytes: &'wtf8 [u8],
     pos: usize,
 }
 
 impl<'wtf8> CodePointsIter<'wtf8> {
+    #[must_use]
     pub fn new(wtf8: &'wtf8 Wtf8Buf) -> Self {
         Self {
             bytes: wtf8.as_bytes(),
@@ -125,7 +127,7 @@ mod tests {
 
     #[test]
     fn surrogate_code_points_test() {
-        let wtf8 = Wtf8Buf::from(b"\xED\xA0\x80".as_slice());
+        let wtf8 = Wtf8Buf::from(b"\xED\xA0\x80");
         let v: Vec<_> = CodePointsIter::new(&wtf8).collect();
         assert!(matches!(v[..], [CodePoint::Surrogate(0xD800)]));
 
@@ -140,7 +142,7 @@ mod tests {
             assert_eq!(v, vec![CodePoint::Surrogate(hi as u16)]);
         }
 
-        let wtf8 = Wtf8Buf::from(b"Hi\xED\xA0\x80!\xC3\xA9".as_slice());
+        let wtf8 = Wtf8Buf::from(b"Hi\xED\xA0\x80!\xC3\xA9");
         let v: Vec<_> = CodePointsIter::new(&wtf8).collect();
         assert_eq!(
             v,
