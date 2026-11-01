@@ -6,25 +6,112 @@ pub enum CodePoint {
     Surrogate(u16),
 }
 
+impl CodePoint {
+    #[must_use]
+    pub const fn wtf8_len(self) -> usize {
+        match self {
+            Self::Surrogate(_) => 3,
+            Self::Char(c) => c.len_utf8(),
+        }
+    }
+}
+
+impl Default for CodePoint {
+    fn default() -> Self {
+        Self::Char(char::from(0))
+    }
+}
+
 #[derive(Clone)]
 pub struct CodePointsIter<'wtf8> {
     bytes: &'wtf8 [u8],
     pos: usize,
+    end: usize,
 }
 
 impl<'wtf8> CodePointsIter<'wtf8> {
     #[must_use]
-    pub fn new<T: AsRef<Wtf8>>(wtf8: &'wtf8 T) -> Self {
+    pub fn new<T: AsRef<Wtf8> + ?Sized>(wtf8: &'wtf8 T) -> Self {
+        let bytes = wtf8.as_ref().as_bytes();
         Self {
-            bytes: wtf8.as_ref().as_bytes(),
+            bytes,
             pos: 0,
+            end: bytes.len(),
         }
     }
 
-    fn pop(&mut self) -> Option<u8> {
-        let val = self.bytes.get(self.pos).copied();
-        self.pos += 1;
-        val
+    fn decode_at(&self, start: usize) -> Option<(CodePoint, usize)> {
+        let bytes = self.bytes;
+        let max = self.end;
+        let first = *bytes.get(start).filter(|_| start < max)?;
+
+        if first < 0x80 {
+            return Some((CodePoint::Char(first as char), 1));
+        }
+        if (0xC2..=0xDF).contains(&first) {
+            let b1 = start + 1;
+            if b1 >= max {
+                return None;
+            }
+            let s1 = bytes[b1];
+            if s1 & 0xC0 != 0x80 {
+                return None;
+            }
+            let val = ((u32::from(first) & 0x1F) << 6) | (u32::from(s1) & 0x3F);
+            return Some((CodePoint::Char(char::from_u32(val)?), 2));
+        }
+        if (0xE0..=0xEF).contains(&first) {
+            let b2 = start + 2;
+            if b2 >= max {
+                return None;
+            }
+            let s1 = bytes[start + 1];
+            let s2 = bytes[b2];
+
+            if s1 & 0xC0 != 0x80 || s2 & 0xC0 != 0x80 {
+                return None;
+            }
+            if first == 0xE0 && s1 < 0xA0 {
+                return None;
+            }
+
+            let val = ((u32::from(first) & 0x0F) << 12)
+                | ((u32::from(s1) & 0x3F) << 6)
+                | (u32::from(s2) & 0x3F);
+            let cp = if (0xD800..=0xDFFF).contains(&val) {
+                CodePoint::Surrogate(val as u16)
+            } else {
+                CodePoint::Char(char::from_u32(val)?)
+            };
+
+            return Some((cp, 3));
+        }
+        if (0xF0..=0xF4).contains(&first) {
+            let b3 = start + 3;
+            if b3 >= max {
+                return None;
+            }
+            let s1 = bytes[start + 1];
+            let s2 = bytes[start + 2];
+            let s3 = bytes[b3];
+
+            if s1 & 0xC0 != 0x80 || s2 & 0xC0 != 0x80 || s3 & 0xC0 != 0x80 {
+                return None;
+            }
+            if first == 0xF0 && s1 < 0x90 {
+                return None;
+            }
+            if first == 0xF4 && s1 > 0x8F {
+                return None;
+            }
+
+            let val = ((u32::from(first) & 0x07) << 18)
+                | ((u32::from(s1) & 0x3F) << 12)
+                | ((u32::from(s2) & 0x3F) << 6)
+                | (u32::from(s3) & 0x3F);
+            return Some((CodePoint::Char(char::from_u32(val)?), 4));
+        }
+        None
     }
 }
 
@@ -32,79 +119,49 @@ impl Iterator for CodePointsIter<'_> {
     type Item = CodePoint;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let first_byte = self.pop()?;
-        if first_byte < 0x80 {
-            // U+0000..U+007F
-            let cp = CodePoint::Char(char::from(first_byte));
-            Some(cp)
-        } else if (0xC2..=0xDF).contains(&first_byte) {
-            // U+0080..U+07FF
-            let second_byte = self.pop()?;
-            if second_byte & 0xC0 != 0x80 {
-                return None;
-            }
-
-            let val = ((u32::from(first_byte) & 0x1F) << 6) | (u32::from(second_byte) & 0x3F);
-            let cp = CodePoint::Char(char::from_u32(val)?);
-            Some(cp)
-        } else if (0xE0..=0xEF).contains(&first_byte) {
-            // U+0800..U+FFFF
-            let second_byte = self.pop()?;
-            let third_byte = self.pop()?;
-
-            if second_byte & 0xC0 != 0x80 || third_byte & 0xC0 != 0x80 {
-                return None;
-            }
-
-            if first_byte == 0xE0 && second_byte < 0xA0 {
-                return None;
-            }
-
-            let val = ((u32::from(first_byte) & 0x0F) << 12)
-                | ((u32::from(second_byte) & 0x3F) << 6)
-                | (u32::from(third_byte) & 0x3F);
-
-            let cp = if (0xD800..=0xDFFF).contains(&val) {
-                CodePoint::Surrogate(val as u16)
-            } else {
-                CodePoint::Char(char::from_u32(val)?)
-            };
-            Some(cp)
-        } else if (0xF0..=0xF4).contains(&first_byte) {
-            // U+10000..U+10FFFF
-            let second_byte = self.pop()?;
-            let third_byte = self.pop()?;
-            let fourth_byte = self.pop()?;
-
-            if second_byte & 0xC0 != 0x80 || third_byte & 0xC0 != 0x80 || fourth_byte & 0xC0 != 0x80
-            {
-                return None;
-            }
-
-            if first_byte == 0xF0 && second_byte < 0x90 {
-                return None;
-            }
-            if first_byte == 0xF4 && second_byte > 0x8F {
-                return None;
-            }
-
-            let val = ((u32::from(first_byte) & 0x07) << 18)
-                | ((u32::from(second_byte) & 0x3F) << 12)
-                | ((u32::from(third_byte) & 0x3F) << 6)
-                | (u32::from(fourth_byte) & 0x3F);
-
-            let cp = CodePoint::Char(char::from_u32(val)?);
+        if self.pos >= self.end {
+            return None;
+        }
+        if let Some((cp, len)) = self.decode_at(self.pos) {
+            self.pos += len;
             Some(cp)
         } else {
+            self.pos = self.end;
             None
         }
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let len = self.bytes.len();
-        (len / 4, Some(len))
+        let remaining = self.end.saturating_sub(self.pos);
+        (remaining.div_ceil(4), Some(remaining))
     }
 }
+
+impl DoubleEndedIterator for CodePointsIter<'_> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.pos >= self.end {
+            return None;
+        }
+
+        let mut start = self.end - 1;
+        while start > self.pos && (self.bytes[start] & 0xC0) == 0x80 {
+            start -= 1;
+        }
+
+        match self.decode_at(start) {
+            Some((cp, len)) if start + len == self.end => {
+                self.end = start;
+                Some(cp)
+            },
+            _ => {
+                self.pos = self.end;
+                None
+            },
+        }
+    }
+}
+
+impl core::iter::FusedIterator for CodePointsIter<'_> {}
 
 #[cfg(test)]
 mod tests {

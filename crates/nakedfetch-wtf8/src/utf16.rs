@@ -15,7 +15,7 @@ pub struct Utf16Iter<'wtf8> {
 
 impl<'wtf8> Utf16Iter<'wtf8> {
     #[must_use]
-    pub fn new<T: AsRef<Wtf8>>(wtf8: &'wtf8 T) -> Self {
+    pub fn new<T: AsRef<Wtf8> + ?Sized>(wtf8: &'wtf8 T) -> Self {
         Self {
             codepoints: CodePointsIter::new(wtf8),
             next: NextAction::None,

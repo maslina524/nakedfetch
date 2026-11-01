@@ -39,6 +39,26 @@ impl Wtf8 {
     pub fn to_string_lossy(&self) -> String {
         String::from_utf8_lossy(&self.0).into_owned()
     }
+
+    #[must_use]
+    pub fn codepoints(&'_ self) -> CodePointsIter<'_> {
+        CodePointsIter::new(self)
+    }
+
+    #[must_use]
+    pub fn utf16_with_zero(&'_ self) -> Utf16Iter<'_> {
+        Utf16Iter::new(self)
+    }
+
+    #[must_use]
+    pub const fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 }
 
 impl AsRef<Self> for Wtf8 {

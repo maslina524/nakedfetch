@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 use core::{ops::Deref, ptr};
 
-use crate::Wtf8;
+use crate::{Wtf8, codepoint::CodePoint};
 
 #[repr(transparent)]
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -53,6 +53,31 @@ impl Wtf8Buf {
         self.0.push(0x80 | ((cp >> 6) & 0x3F) as u8);
         self.0.push(0x80 | (cp & 0x3F) as u8);
     }
+
+    pub fn pop(&mut self) -> Option<CodePoint> {
+        let cp = self.codepoints().next_back()?;
+        let len = self.len() - cp.wtf8_len();
+        self.0.truncate(len);
+        Some(cp)
+    }
+
+    pub fn pop_n<const N: usize>(&mut self) -> Option<[CodePoint; N]> {
+        let mut ret = [CodePoint::Char('\0'); N];
+        let mut new_len = self.0.len();
+
+        {
+            let mut iter = self.codepoints();
+
+            for i in (0..N).rev() {
+                let cp = iter.next_back()?;
+                new_len -= cp.wtf8_len();
+                ret[i] = cp;
+            }
+        }
+
+        self.0.truncate(new_len);
+        Some(ret)
+    }
 }
 
 impl Deref for Wtf8Buf {
@@ -89,7 +114,7 @@ impl<const N: usize> From<&[u8; N]> for Wtf8Buf {
 
 #[cfg(test)]
 mod tests {
-    use crate::Wtf8Buf;
+    use crate::{Wtf8Buf, codepoint::CodePoint};
 
     #[test]
     fn valid_utf8_for_wtf8_test() {
@@ -140,5 +165,29 @@ mod tests {
         wtf8.push_str("World");
         wtf8.push_char('!');
         assert_eq!(wtf8.as_str(), Some("Привет World!"));
+    }
+
+    #[test]
+    fn pop_wtf8buf_test() {
+        let mut wtf8 = Wtf8Buf::from("Привет Мир 👋");
+
+        assert_eq!(wtf8.pop(), Some(CodePoint::Char('👋')));
+        assert_eq!(wtf8.as_str(), Some("Привет Мир "));
+
+        assert_eq!(wtf8.pop(), Some(CodePoint::Char(' ')));
+        assert_eq!(wtf8.as_str(), Some("Привет Мир"));
+
+        assert_eq!(
+            wtf8.pop_n::<3>(),
+            Some([
+                CodePoint::Char('М'),
+                CodePoint::Char('и'),
+                CodePoint::Char('р')
+            ])
+        );
+        assert_eq!(wtf8.as_str(), Some("Привет "));
+
+        assert_eq!(wtf8.pop(), Some(CodePoint::Char(' ')));
+        assert_eq!(wtf8.as_str(), Some("Привет"));
     }
 }
