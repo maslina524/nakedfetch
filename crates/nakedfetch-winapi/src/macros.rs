@@ -89,3 +89,20 @@ macro_rules! mod_sealed {
         }
     };
 }
+
+macro_rules! link {
+    ($library:literal $($link_name:literal)? $(#[$doc:meta])? fn $($function:tt)*) => (
+        #[link(name = $library)]
+        unsafe extern "system" {
+            $(#[link_name=$link_name])?
+            pub fn $($function)*;
+        }
+    );
+    ($library:literal $($link_name:literal)? $(#[$doc:meta])? safe fn $($function:tt)*) => (
+        #[link(name = $library)]
+        unsafe extern "system" {
+            $(#[link_name=$link_name])?
+            pub safe fn $($function)*;
+        }
+    );
+}

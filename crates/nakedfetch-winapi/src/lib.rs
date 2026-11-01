@@ -5,12 +5,12 @@ use crate::types::Handle;
 
 #[macro_use]
 mod macros;
-
 mod native;
-mod ntdll;
 mod ntstatus;
-pub mod types;
 
+pub mod kernel32;
+pub mod ntdll;
+pub mod types;
 pub mod win32;
 
 pub trait AsRawHandle {
