@@ -55,7 +55,6 @@ link!("kernel32" "system" fn GetLogicalDrives() -> u32);
 link!("kernel32" "system" fn GetLogicalProcessorInformation(buffer : *mut SYSTEM_LOGICAL_PROCESSOR_INFORMATION, returnedlength : *mut u32) -> BOOL);
 link!("kernel32" "system" fn GetNumaHighestNodeNumber(highestnodenumber : *mut u32) -> BOOL);
 link!("kernel32" "system" fn GetProcAddress(hmodule : HMODULE, lpprocname : PCSTR) -> FARPROC);
-link!("kernel32" "system" fn GetProcessHeap() -> HANDLE);
 link!("user32" "system" fn GetRawInputDeviceInfoW(hdevice : HANDLE, uicommand : RAW_INPUT_DEVICE_INFO_COMMAND, pdata : *mut core::ffi::c_void, pcbsize : *mut u32) -> u32);
 link!("user32" "system" fn GetRawInputDeviceList(prawinputdevicelist : *mut RAWINPUTDEVICELIST, puinumdevices : *mut u32, cbsize : u32) -> u32);
 link!("kernel32" "system" fn GetStdHandle(nstdhandle : STD_HANDLE) -> HANDLE);
@@ -70,9 +69,6 @@ link!("secur32" "system" fn GetUserNameExW(nameformat : EXTENDED_NAME_FORMAT, lp
 link!("advapi32" "system" fn GetUserNameW(lpbuffer : PWSTR, pcbbuffer : *mut u32) -> BOOL);
 link!("kernel32" "system" fn GetVolumeInformationA(lprootpathname : PCSTR, lpvolumenamebuffer : PSTR, nvolumenamesize : u32, lpvolumeserialnumber : *mut u32, lpmaximumcomponentlength : *mut u32, lpfilesystemflags : *mut u32, lpfilesystemnamebuffer : PSTR, nfilesystemnamesize : u32) -> BOOL);
 link!("kernel32" "system" fn GlobalMemoryStatusEx(lpbuffer : *mut MEMORYSTATUSEX) -> BOOL);
-link!("kernel32" "system" fn HeapAlloc(hheap : HANDLE, dwflags : HEAP_FLAGS, dwbytes : usize) -> *mut core::ffi::c_void);
-link!("kernel32" "system" fn HeapFree(hheap : HANDLE, dwflags : HEAP_FLAGS, lpmem : *const core::ffi::c_void) -> BOOL);
-link!("kernel32" "system" fn HeapReAlloc(hheap : HANDLE, dwflags : HEAP_FLAGS, lpmem : *const core::ffi::c_void, dwbytes : usize) -> *mut core::ffi::c_void);
 link!("kernel32" "system" fn LoadLibraryA(lplibfilename : PCSTR) -> HMODULE);
 link!("kernel32" "system" fn LoadLibraryW(lplibfilename : PCWSTR) -> HMODULE);
 link!("kernel32" "system" fn LocalFree(hmem : HLOCAL) -> HLOCAL);

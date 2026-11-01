@@ -3,13 +3,13 @@ use core::{marker::PhantomData, ptr::NonNull};
 use crate::{AsRawHandle, ntdll, types::Handle};
 
 mod HeapAlloc;
-pub use HeapAlloc::HeapAlloc;
+pub use HeapAlloc::*;
 
 mod HeapFree;
-pub use HeapFree::HeapFree;
+pub use HeapFree::*;
 
 mod HeapReAlloc;
-pub use HeapReAlloc::HeapReAlloc;
+pub use HeapReAlloc::*;
 
 mod_sealed!();
 pub trait FlagTag: sealed::Sealed {}

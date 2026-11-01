@@ -6,6 +6,10 @@ use core::{
     },
 };
 
+#[cfg(target_os = "windows")]
+use common::allocator::Allocator as AllocatorInner;
+
+#[cfg(target_family = "unix")]
 use crate::imp::allocator::AllocatorInner;
 
 static ALLOC_COUNTER: AtomicUsize = AtomicUsize::new(0);
