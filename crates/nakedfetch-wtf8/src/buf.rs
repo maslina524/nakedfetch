@@ -29,6 +29,11 @@ impl Wtf8Buf {
         str::from_utf8(&self.0).ok()
     }
 
+    #[must_use]
+    pub const fn as_mut_ptr(&mut self) -> *mut u8 {
+        (&raw mut self.0).cast()
+    }
+
     pub fn push_char_buf(&mut self, c: char, buf: &mut [u8; 4]) {
         self.0.extend_from_slice(c.encode_utf8(buf).as_bytes());
     }
@@ -57,7 +62,7 @@ impl Wtf8Buf {
     pub fn pop(&mut self) -> Option<CodePoint> {
         let cp = self.codepoints().next_back()?;
         let len = self.len() - cp.wtf8_len();
-        self.0.truncate(len);
+        self.truncate(len);
         Some(cp)
     }
 
@@ -75,7 +80,7 @@ impl Wtf8Buf {
             }
         }
 
-        self.0.truncate(new_len);
+        self.truncate(new_len);
         Some(ret)
     }
 
@@ -88,6 +93,10 @@ impl Wtf8Buf {
             CodePoint::Char(cp_char) => cp_char == ch,
             CodePoint::Surrogate(_) => false,
         }
+    }
+
+    pub fn truncate(&mut self, len: usize) {
+        self.0.truncate(len);
     }
 }
 

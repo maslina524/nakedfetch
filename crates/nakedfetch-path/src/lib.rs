@@ -34,6 +34,11 @@ impl Path {
     }
 
     #[must_use]
+    pub const fn as_ptr(&self) -> *const u8 {
+        self.0.as_ptr().cast()
+    }
+
+    #[must_use]
     #[cfg(target_os = "windows")]
     pub fn as_utf16(&'_ self) -> wtf8::Utf16Iter<'_> {
         self.0.utf16_with_zero()
@@ -57,6 +62,11 @@ impl Path {
     #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.0.is_empty()
+    }
+
+    #[must_use]
+    pub fn components(&'_ self) -> Components<'_> {
+        Components::new(self)
     }
 }
 

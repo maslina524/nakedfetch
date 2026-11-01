@@ -31,6 +31,11 @@ impl Wtf8 {
     }
 
     #[must_use]
+    pub const fn as_ptr(&self) -> *const u8 {
+        (&raw const self.0).cast()
+    }
+
+    #[must_use]
     pub fn to_str(&self) -> Option<&str> {
         str::from_utf8(&self.0).ok()
     }
