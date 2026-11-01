@@ -50,6 +50,10 @@ impl Wtf8Buf {
         }
     }
 
+    pub fn push_wtf8<T: AsRef<Wtf8>>(&mut self, s: &T) {
+        self.0.extend(&s.as_ref().0);
+    }
+
     pub fn push_surrogate(&mut self, surrogate: u16) {
         debug_assert!((0xD800..=0xDFFF).contains(&surrogate));
 

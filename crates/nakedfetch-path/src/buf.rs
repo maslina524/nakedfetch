@@ -55,6 +55,7 @@ impl PathBuf {
 
         self.0.truncate(path_off);
 
+        // SAFETY: Just rebuilding the reference, the lifetime is the same
         let s = unsafe {
             let ptr = self.as_ptr().add(path_off);
             let bytes = slice::from_raw_parts(ptr, path_len);
@@ -62,6 +63,20 @@ impl PathBuf {
         };
 
         Some(Path::from_str(s))
+    }
+
+    #[must_use]
+    pub fn join<T: AsRef<Path>>(self, path: T) -> Self {
+        self.join_inner(path.as_ref())
+    }
+
+    fn join_inner(mut self, path: &Path) -> Self {
+        if !self.has_trailing_sep() {
+            self.0.push_char('/');
+        }
+
+        self.0.push_wtf8(&path.as_os_str());
+        self
     }
 }
 
@@ -93,7 +108,7 @@ impl From<&str> for PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use crate::PathBuf;
+    use crate::{Path, PathBuf};
 
     #[test]
     fn pop_pathbuf_test() {
@@ -110,5 +125,22 @@ mod tests {
 
         assert_eq!(pathbuf.pop(), None);
         assert_eq!(pathbuf.to_str(), Some(""));
+    }
+
+    #[test]
+    fn join_pathbuf_test() {
+        let mut pathbuf = PathBuf::from("C:/Hello/World");
+
+        pathbuf = pathbuf.join("Learn");
+        assert_eq!(pathbuf.as_os_str(), "C:/Hello/World/Learn".as_ref());
+
+        pathbuf.pop();
+        assert_eq!(pathbuf.as_os_str(), "C:/Hello/World/".as_ref());
+
+        pathbuf.pop();
+        assert_eq!(pathbuf.as_os_str(), "C:/Hello/".as_ref());
+
+        pathbuf = pathbuf.join(Path::from_str("Rust"));
+        assert_eq!(pathbuf.as_os_str(), "C:/Hello/Rust".as_ref());
     }
 }
