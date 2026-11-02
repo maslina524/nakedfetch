@@ -87,9 +87,9 @@ impl Facility {
 
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Ntstatus(u32);
+pub struct NtStatus(u32);
 
-impl Ntstatus {
+impl NtStatus {
     #[must_use]
     pub const fn new(status: i32) -> Self {
         Self(status.cast_unsigned())
@@ -143,13 +143,13 @@ impl Ntstatus {
     }
 }
 
-impl fmt::Display for Ntstatus {
+impl fmt::Display for NtStatus {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:x}", self.into_inner())
     }
 }
 
-impl fmt::Debug for Ntstatus {
+impl fmt::Debug for NtStatus {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Ntstatus")
             .field("code", &self.code())
@@ -160,7 +160,7 @@ impl fmt::Debug for Ntstatus {
     }
 }
 
-impl From<i32> for Ntstatus {
+impl From<i32> for NtStatus {
     fn from(value: i32) -> Self {
         Self::new(value)
     }
@@ -170,11 +170,11 @@ impl From<i32> for Ntstatus {
 mod tests {
     use super::*;
 
-    const SUCCESS: Ntstatus = Ntstatus::new(0);
-    const TIMEOUT: Ntstatus = Ntstatus::new(0x0102);
-    const OBJECT_NAME_EXISTS: Ntstatus = Ntstatus::new(0x4000_0000);
-    const BUFFER_OVERFLOW: Ntstatus = Ntstatus::new(0x8000_0005u32.cast_signed());
-    const INVALID_HANDLE: Ntstatus = Ntstatus::new(0xC000_0008u32.cast_signed());
+    const SUCCESS: NtStatus = NtStatus::new(0);
+    const TIMEOUT: NtStatus = NtStatus::new(0x0102);
+    const OBJECT_NAME_EXISTS: NtStatus = NtStatus::new(0x4000_0000);
+    const BUFFER_OVERFLOW: NtStatus = NtStatus::new(0x8000_0005u32.cast_signed());
+    const INVALID_HANDLE: NtStatus = NtStatus::new(0xC000_0008u32.cast_signed());
 
     #[test]
     fn is_success_test() {

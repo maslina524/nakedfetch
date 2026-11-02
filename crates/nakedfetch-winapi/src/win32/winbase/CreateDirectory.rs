@@ -4,7 +4,7 @@ use path::Path;
 
 use crate::{
     ntdll,
-    ntstatus::Ntstatus,
+    ntstatus::NtStatus,
     types::{IoStatusBlock, ObjectAttributes},
     unicode::UnicodeString,
     win32::fileapi::{FileAttributes, FileDispose},
@@ -25,7 +25,7 @@ const FILE_SYNCHRONOUS_IO_NONALERT: u32 = 1 << 5;
 #[derive(Debug, Clone, Copy)]
 pub enum CreateError {
     UnicodePathAllocate,
-    FailedToCreate(Ntstatus),
+    FailedToCreate(NtStatus),
 }
 
 /// # Errors

@@ -1,5 +1,5 @@
 use crate::{
-    ntstatus::Ntstatus,
+    ntstatus::NtStatus,
     types::{
         primitives::{LargeInteger, Long, ULong, UShort},
         ptr::{ULongPtr, VoidPtr, WideStrPtr},
@@ -64,7 +64,7 @@ STRUCT! {
 
 UNION! {
     union IoStatusBlockInner {
-        status: Ntstatus,
+        status: NtStatus,
         pointer: VoidPtr,
     }
 }

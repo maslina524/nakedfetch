@@ -1,6 +1,6 @@
-use crate::{AsRawHandle, ntdll, ntstatus::Ntstatus};
+use crate::{AsRawHandle, ntdll, ntstatus::NtStatus};
 
-pub fn CloseHandle<T: AsRawHandle>(handle: &mut T) -> Ntstatus {
+pub fn CloseHandle<T: AsRawHandle>(handle: &mut T) -> NtStatus {
     // SAFETY: Handle is valid, safe
     unsafe { ntdll::NtClose(handle.as_raw()) }
 }

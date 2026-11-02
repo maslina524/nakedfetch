@@ -2,7 +2,7 @@ use core::ptr;
 
 use crate::{
     AsRawHandle, ntdll,
-    ntstatus::Ntstatus,
+    ntstatus::NtStatus,
     types::IoStatusBlock,
     win32::fileapi::{CanRead, FileHandle},
 };
@@ -19,7 +19,7 @@ pub fn ReadFile<A: CanRead>(
     buf: &mut [u8],
     read: usize,
     offset: Option<usize>,
-) -> Result<usize, Ntstatus> {
+) -> Result<usize, NtStatus> {
     assert!(read <= buf.len());
     read_file_inner(handle.as_raw(), buf, read, offset)
 }
@@ -29,7 +29,7 @@ fn read_file_inner(
     buf: &mut [u8],
     read: usize,
     offset: Option<usize>,
-) -> Result<usize, Ntstatus> {
+) -> Result<usize, NtStatus> {
     let mut offset_val = 0;
     let offset_ptr = offset.map_or(ptr::null_mut(), |o| {
         offset_val = o;

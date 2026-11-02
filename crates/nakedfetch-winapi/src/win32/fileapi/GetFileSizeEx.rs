@@ -1,6 +1,6 @@
 use crate::{
     AsRawHandle, ntdll,
-    ntstatus::Ntstatus,
+    ntstatus::NtStatus,
     types::{
         Handle, IoStatusBlock,
         class::{FileInformation, FileStandartInformation},
@@ -11,11 +11,11 @@ use crate::{
 /// # Errors
 ///
 /// Err when the kernel fails to correctly retrieve information about the file.
-pub fn GetFileSizeEx<A: FileAccess>(handle: &FileHandle<A>) -> Result<usize, Ntstatus> {
+pub fn GetFileSizeEx<A: FileAccess>(handle: &FileHandle<A>) -> Result<usize, NtStatus> {
     get_file_size_ex(handle.as_raw())
 }
 
-fn get_file_size_ex(raw: Handle) -> Result<usize, Ntstatus> {
+fn get_file_size_ex(raw: Handle) -> Result<usize, NtStatus> {
     let mut info = FileStandartInformation::default();
     let mut io = IoStatusBlock::default();
 

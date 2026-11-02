@@ -4,7 +4,7 @@ use path::Path;
 
 use crate::{
     AsRawHandle, ntdll,
-    ntstatus::Ntstatus,
+    ntstatus::NtStatus,
     types::{Handle, IoStatusBlock, ObjectAttributes},
     unicode::UnicodeString,
     win32::fileapi::{FileAccess, FileHandle},
@@ -42,7 +42,7 @@ pub enum FileDispose {
 #[derive(Debug, Clone, Copy)]
 pub enum CreateFileError {
     UnicodePathAllocate,
-    FailedToCreate(Ntstatus),
+    FailedToCreate(NtStatus),
 }
 
 #[repr(transparent)]

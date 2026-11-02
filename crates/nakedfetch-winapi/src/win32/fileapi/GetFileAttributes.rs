@@ -2,7 +2,7 @@ use path::Path;
 
 use crate::{
     ntdll,
-    ntstatus::Ntstatus,
+    ntstatus::NtStatus,
     types::{FileBasicInfo, ObjectAttributes},
     unicode::UnicodeString,
 };
@@ -31,7 +31,7 @@ impl ItemAttributes {
 #[derive(Debug, Clone, Copy)]
 pub enum FileAttributesError {
     UnicodePathAllocate,
-    QueryAttributes(Ntstatus),
+    QueryAttributes(NtStatus),
 }
 
 /// # Errors
