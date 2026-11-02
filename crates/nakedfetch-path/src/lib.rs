@@ -68,6 +68,19 @@ impl Path {
     pub fn components(&'_ self) -> Components<'_> {
         Components::new(self)
     }
+
+    #[must_use]
+    pub fn parent(&self) -> Option<&Self> {
+        let last = self.components().next_back()?;
+        let offset = last.as_ptr() as usize - self.as_ptr() as usize;
+
+        if offset == 0 {
+            return None;
+        }
+
+        let bytes = &self.0.as_bytes()[..offset];
+        Some(PathInner::from_bytes(bytes).as_ref())
+    }
 }
 
 impl AsRef<Self> for Path {
@@ -103,5 +116,11 @@ mod tests {
     fn path_to_str_test() {
         let path = Path::from_str("C:/User/rustling");
         assert_eq!(path.to_str(), Some("C:/User/rustling"));
+    }
+
+    #[test]
+    fn parent_test() {
+        let path = Path::from_str("C:/Hello/World/Learn/Rust/");
+        assert_eq!(path.parent(), Some("C:/Hello/World/Learn/".as_ref()));
     }
 }

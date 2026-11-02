@@ -194,6 +194,47 @@ pub fn create_dir<T: AsRef<Path>>(path: T) -> Result<(), fs::FileCreateError> {
     fs::create_dir(path.as_ref())
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CreateDirsError {
+    Create(fs::FileCreateError),
+    Exists(fs::FileExistsError),
+}
+
+impl fmt::Display for CreateDirsError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl From<fs::FileCreateError> for CreateDirsError {
+    fn from(value: fs::FileCreateError) -> Self {
+        Self::Create(value)
+    }
+}
+
+impl From<fs::FileExistsError> for CreateDirsError {
+    fn from(value: fs::FileExistsError) -> Self {
+        Self::Exists(value)
+    }
+}
+
+/// # Errors
+///
+/// `Err` if the system fails to create dirs.
+pub fn create_dirs<T: AsRef<Path>>(path: T) -> Result<(), CreateDirsError> {
+    create_dirs_inner(path.as_ref())
+}
+
+fn create_dirs_inner(path: &Path) -> Result<(), CreateDirsError> {
+    if !exists(path)? {
+        if let Some(parent) = path.parent() {
+            create_dirs(parent)?;
+        }
+        create_dir(path)?;
+    }
+    Ok(())
+}
+
 /// # Errors
 ///
 /// `Err` if the system fails to check file exists or no.
@@ -301,6 +342,16 @@ mod tests {
         assert!(fs::exists(path).expect("fs::exists failed"));
 
         fs::remove_dir(path).expect("fs::remove_dir failed");
+    }
+
+    #[test]
+    fn create_dirs_test() {
+        let path = "Common-Fs-File-CreateDir-1/2/3/4/5";
+        super::create_dirs(path).expect("Failed to create dir");
+
+        assert!(fs::exists(path).expect("fs::exists failed"));
+
+        fs::remove_dir_all("Common-Fs-File-CreateDir-1").expect("fs::remove_dir failed");
     }
 
     #[test]
