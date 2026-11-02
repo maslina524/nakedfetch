@@ -180,12 +180,18 @@ impl From<FromUtf8Error> for FileReadToStringError {
 
 /// # Errors
 ///
-/// `Err` if the system fails to open, read the file, or convert the bytes to
-/// UTF8.
+/// `Err` if the system fails to open, read the file as UTF8.
 pub fn read_to_string<T: AsRef<Path>>(path: T) -> Result<String, FileReadToStringError> {
     let file = File::<AccessRead>::open(path)?;
     let buf = file.read()?;
     String::from_utf8(buf).map_err(Into::into)
+}
+
+/// # Errors
+///
+/// `Err` if the system fails to create dir.
+pub fn create_dir<T: AsRef<Path>>(path: T) -> Result<(), fs::FileCreateError> {
+    fs::create_dir(path.as_ref())
 }
 
 #[cfg(test)]
@@ -278,5 +284,15 @@ mod tests {
         let file = File::<AccessRead>::open(path).expect("Failed to open file");
         let size = file.file_size().expect("Failed to get size");
         assert!(size > 0);
+    }
+
+    #[test]
+    fn create_dir_test() {
+        let path = "Common-Fs-File-CreateDir-1";
+        super::create_dir(path).expect("Failed to create dir");
+
+        assert!(fs::exists(path).expect("fs::exists failed"));
+
+        fs::remove_dir(path).expect("fs::remove_dir failed");
     }
 }

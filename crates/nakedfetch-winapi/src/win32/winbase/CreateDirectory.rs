@@ -23,7 +23,7 @@ const FILE_DIRECTORY_FILE: u32 = 1;
 const FILE_SYNCHRONOUS_IO_NONALERT: u32 = 1 << 5;
 
 #[derive(Debug, Clone, Copy)]
-pub enum CreateError {
+pub enum CreateDirError {
     UnicodePathAllocate,
     FailedToCreate(NtStatus),
 }
@@ -32,12 +32,16 @@ pub enum CreateError {
 ///
 /// On error returns `CreateDirError`, which is either a Unicode string
 /// allocation error or a `NtCreateFile` call error (Ntstatus).
-pub fn CreateDirectory<T: AsRef<Path>>(path: T, flags: FileAttributes) -> Result<(), CreateError> {
+pub fn CreateDirectory<T: AsRef<Path>>(
+    path: T,
+    flags: FileAttributes,
+) -> Result<(), CreateDirError> {
     create_directory_inner(path.as_ref(), flags)
 }
 
-fn create_directory_inner(path: &Path, flags: FileAttributes) -> Result<(), CreateError> {
-    let unicode = UnicodeString::from_path(path).map_err(|_| CreateError::UnicodePathAllocate)?;
+fn create_directory_inner(path: &Path, flags: FileAttributes) -> Result<(), CreateDirError> {
+    let unicode =
+        UnicodeString::from_path(path).map_err(|_| CreateDirError::UnicodePathAllocate)?;
 
     let mut attrs = ObjectAttributes {
         length: size_of::<ObjectAttributes>() as u32,
@@ -64,7 +68,7 @@ fn create_directory_inner(path: &Path, flags: FileAttributes) -> Result<(), Crea
         )
     };
     if !ret.is_success() {
-        return Err(CreateError::FailedToCreate(ret));
+        return Err(CreateDirError::FailedToCreate(ret));
     }
 
     // SAFETY: Don't use a wrapper since we're working with a "raw" handle
