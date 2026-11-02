@@ -194,6 +194,13 @@ pub fn create_dir<T: AsRef<Path>>(path: T) -> Result<(), fs::FileCreateError> {
     fs::create_dir(path.as_ref())
 }
 
+/// # Errors
+///
+/// `Err` if the system fails to check file exists or no.
+pub fn exists<T: AsRef<Path>>(path: T) -> Result<bool, fs::FileExistsError> {
+    fs::exists(path.as_ref())
+}
+
 #[cfg(test)]
 mod tests {
     use core::fmt::Write as _;
@@ -294,5 +301,12 @@ mod tests {
         assert!(fs::exists(path).expect("fs::exists failed"));
 
         fs::remove_dir(path).expect("fs::remove_dir failed");
+    }
+
+    #[test]
+    fn exists_test() {
+        assert!(super::exists("Cargo.toml").expect("Failed to check exists"));
+        assert!(super::exists("src").expect("Failed to check exists"));
+        assert!(!super::exists("NotExists").expect("Failed to check exists"));
     }
 }

@@ -9,8 +9,8 @@ use winapi::{
     ntstatus::NtStatus,
     win32::{
         fileapi::{
-            CreateFile, CreateFileError, CreateOptions, FileAttributes, FileDispose, FileShare,
-            GetFileSizeEx, ReadFile, WriteFile,
+            CreateFile, CreateFileError, CreateOptions, FileAttributes, FileAttributesError,
+            FileDispose, FileShare, GetFileAttributes, GetFileSizeEx, ReadFile, WriteFile,
         },
         winbase::{CreateDirError, CreateDirectory},
     },
@@ -272,4 +272,58 @@ pub fn create_dir(path: &Path) -> Result<(), FileCreateError> {
     }
 
     CreateDirectory(path, FileAttributes::new()).map_err(map_err)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileExistsError {
+    BadUnicode,
+    AccessDenied,
+    AccessPending,
+    InvalidParam,
+    InvalidName,
+    NotADir,
+    NoSystemResource,
+    BadPrivilege,
+    Crc,
+    IoDeviceError,
+    Unknown(NtStatus),
+}
+
+impl fmt::Display for FileExistsError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for FileExistsError {}
+
+pub fn exists(path: &Path) -> Result<bool, FileExistsError> {
+    const fn map_err(err: FileAttributesError) -> Result<bool, FileExistsError> {
+        use super::fs::FileExistsError as FEE;
+
+        let nt = match err {
+            FileAttributesError::UnicodePathAllocate => return Err(FEE::BadUnicode),
+            FileAttributesError::QueryAttributes(nt) => nt,
+        };
+
+        match nt.into_inner() {
+            0xC000_0034 | 0xC000_003A | 0xC000_000F | 0xC000_00BE => Ok(false),
+
+            0xC000_0022 => Err(FEE::AccessDenied),
+            0xC000_0056 => Err(FEE::AccessPending),
+            0xC000_000D => Err(FEE::InvalidParam),
+            0xC000_0033 | 0xC000_003B => Err(FEE::InvalidName),
+            0xC000_0103 => Err(FEE::NotADir),
+            0xC000_009A | 0xC000_0017 => Err(FEE::NoSystemResource),
+            0xC000_0061 => Err(FEE::BadPrivilege),
+            0xC000_003F => Err(FEE::Crc),
+            0xC000_009D => Err(FEE::IoDeviceError),
+            _ => Err(FEE::Unknown(nt)),
+        }
+    }
+
+    match GetFileAttributes(path) {
+        Ok(_) => Ok(true),
+        Err(e) => map_err(e),
+    }
 }
