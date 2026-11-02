@@ -1,7 +1,7 @@
 use crate::{
     native::peb::Peb,
     ntstatus::Ntstatus,
-    types::{self as t, Boolean, primitives as prim, ptr},
+    types::{self as t, Boolean, class, primitives as prim, ptr},
 };
 
 link!("ntdll" fn NtWriteFile(fileHandle: t::Handle, event: t::Handle, apcRoutine: ptr::IoApcRoutinePtr, apcContext: ptr::VoidPtr, ioStatusBlock: *mut t::IoStatusBlock, buffer: ptr::VoidPtr, length: prim::ULong, byteOffset: ptr::LargeIntegerPtr, key: ptr::ULongPtr) -> Ntstatus);
@@ -15,3 +15,4 @@ link!("ntdll" fn RtlDosPathNameToNtPathName_U(DosFileName: ptr::WideStrConstPtr,
 link!("ntdll" fn RtlFreeUnicodeString(UnicodeString: *mut t::RawUnicodeString) -> ());
 link!("ntdll" fn NtCreateFile(FileHandle: *mut t::Handle, DesiredAccess: prim::ULong, ObjectAttributes: *mut t::ObjectAttributes, IoStatusBlock: *mut t::IoStatusBlock, AllocationSize: ptr::LargeIntegerPtr, FileAttributes: prim::ULong, ShareAccess: prim::ULong, CreateDisposition: prim::ULong, CreateOptions: prim::ULong, EaBuffer: ptr::VoidPtr, EaLength: prim::ULong) -> Ntstatus);
 link!("ntdll" fn NtQueryAttributesFile(ObjectAttributes: *mut t::ObjectAttributes, FileInformation: *mut t::FileBasicInfo) -> Ntstatus);
+link!("ntdll" fn NtQueryInformationFile(FileHandle: t::Handle, IoStatusBlock: *mut t::IoStatusBlock, FileInformation: ptr::VoidPtr, Length: prim::ULong, FileInformationClass: class::FileInformation) -> Ntstatus);

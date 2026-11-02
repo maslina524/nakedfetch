@@ -6,6 +6,9 @@ pub use CreateFile::*;
 mod GetFileAttributes;
 pub use GetFileAttributes::*;
 
+mod GetFileSizeEx;
+pub use GetFileSizeEx::*;
+
 mod ReadFile;
 pub use ReadFile::*;
 
@@ -155,5 +158,30 @@ mod tests {
                 typ: ItemType::File
             }
         );
+    }
+
+    #[test]
+    fn get_file_size_test() {
+        unsafe extern "system" {
+            safe fn GetFileSizeEx(hFile: *mut (), lpFileSize: *mut i64) -> i32;
+        }
+
+        let handle: FileHandle<Read> = CreateFile(
+            "Cargo.toml",
+            FileShare::ReadWrite,
+            FileDispose::OpenAlways,
+            FileAttributes::new(),
+            CreateOptions::new().synchronize(),
+        )
+        .expect("Failed to open file");
+
+        let mut winapi = 0;
+        assert!(
+            GetFileSizeEx(handle.as_raw(), &raw mut winapi) != 0,
+            "WinAPI failed"
+        );
+        let my = super::GetFileSizeEx(&handle).expect("Failed to get file size");
+
+        assert_eq!(winapi as usize, my);
     }
 }

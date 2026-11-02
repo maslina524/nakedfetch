@@ -1,4 +1,5 @@
 pub mod chars;
+pub mod class;
 pub mod primitives;
 pub mod ptr;
 
