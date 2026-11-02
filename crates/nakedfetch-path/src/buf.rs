@@ -4,7 +4,7 @@ use core::{fmt, ops::Deref, ptr, slice};
 use crate::{Path, PathBufInner};
 
 #[repr(transparent)]
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq)]
 pub struct PathBuf(PathBufInner);
 
 impl PathBuf {
@@ -81,12 +81,6 @@ impl PathBuf {
     }
 }
 
-impl fmt::Display for PathBuf {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
 impl Deref for PathBuf {
     type Target = Path;
 
@@ -107,6 +101,18 @@ impl AsRef<Path> for PathBuf {
     }
 }
 
+impl<const N: usize> From<&[u8; N]> for PathBuf {
+    fn from(s: &[u8; N]) -> Self {
+        Self(PathBufInner::from(s))
+    }
+}
+
+impl From<&[u8]> for PathBuf {
+    fn from(s: &[u8]) -> Self {
+        Self(PathBufInner::from(s))
+    }
+}
+
 impl From<&str> for PathBuf {
     fn from(s: &str) -> Self {
         Self(PathBufInner::from(s))
@@ -116,6 +122,18 @@ impl From<&str> for PathBuf {
 impl From<String> for PathBuf {
     fn from(s: String) -> Self {
         Self(PathBufInner::from(s))
+    }
+}
+
+impl fmt::Display for PathBuf {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl fmt::Debug for PathBuf {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.0)
     }
 }
 
@@ -155,5 +173,25 @@ mod tests {
 
         pathbuf = pathbuf.join(Path::from_str("Rust"));
         assert_eq!(pathbuf.as_os_str(), "C:/Hello/Rust".as_ref());
+    }
+
+    #[test]
+    fn display_for_pathbuf_test() {
+        let path = PathBuf::from(b"C:/Hello/World\xED");
+        let formatted = format!("{path}");
+        assert_eq!(
+            formatted,
+            format!("C:/Hello/World{}", char::REPLACEMENT_CHARACTER)
+        );
+    }
+
+    #[test]
+    fn debug_for_pathbuf_test() {
+        let path = PathBuf::from(b"C:/Hello/World\xED");
+        let formatted = format!("{path:?}");
+        assert_eq!(
+            formatted,
+            format!("\"C:/Hello/World{}\"", char::REPLACEMENT_CHARACTER)
+        );
     }
 }

@@ -18,14 +18,19 @@ use alloc::string::String;
 pub use os::*;
 
 #[repr(transparent)]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 pub struct Path(PathInner);
 
 impl Path {
     #[must_use]
+    pub const fn from_bytes(bytes: &[u8]) -> &Self {
+        // SAFETY: Layout of [u8] == Wtf8 == Path
+        unsafe { &*(ptr::from_ref(bytes) as *const Self) }
+    }
+
+    #[must_use]
     pub const fn from_str(s: &str) -> &Self {
-        // SAFETY: Layout of str == [u8] == Wtf8 == Path
-        unsafe { &*(ptr::from_ref(s) as *const Self) }
+        Self::from_bytes(s.as_bytes())
     }
 
     #[must_use]
@@ -83,12 +88,6 @@ impl Path {
     }
 }
 
-impl fmt::Display for Path {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
 impl AsRef<Self> for Path {
     fn as_ref(&self) -> &Self {
         self
@@ -120,6 +119,18 @@ impl AsRef<PathInner> for Path {
     }
 }
 
+impl fmt::Display for Path {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self.0)
+    }
+}
+
+impl fmt::Debug for Path {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", &self.0)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::Path;
@@ -134,5 +145,25 @@ mod tests {
     fn parent_test() {
         let path = Path::from_str("C:/Hello/World/Learn/Rust/");
         assert_eq!(path.parent(), Some("C:/Hello/World/Learn/".as_ref()));
+    }
+
+    #[test]
+    fn display_for_path_test() {
+        let path = Path::from_bytes(b"C:/Hello/World\xED");
+        let formatted = format!("{path}");
+        assert_eq!(
+            formatted,
+            format!("C:/Hello/World{}", char::REPLACEMENT_CHARACTER)
+        );
+    }
+
+    #[test]
+    fn debug_for_path_test() {
+        let path = Path::from_bytes(b"C:/Hello/World\xED");
+        let formatted = format!("{path:?}");
+        assert_eq!(
+            formatted,
+            format!("\"C:/Hello/World{}\"", char::REPLACEMENT_CHARACTER)
+        );
     }
 }

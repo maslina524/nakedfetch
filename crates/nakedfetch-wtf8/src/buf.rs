@@ -245,7 +245,7 @@ mod tests {
     }
 
     #[test]
-    fn display_for_pathbuf_test() {
+    fn display_for_wtf8buf_test() {
         let path = Wtf8Buf::from(b"C:/Hello/World\xED");
         let formatted = format!("{path}");
         assert_eq!(
@@ -255,7 +255,7 @@ mod tests {
     }
 
     #[test]
-    fn debug_for_pathbuf_test() {
+    fn debug_for_wtf8buf_test() {
         let path = Wtf8Buf::from(b"C:/Hello/World\xED");
         let formatted = format!("{path:?}");
         assert_eq!(

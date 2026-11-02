@@ -149,7 +149,7 @@ mod tests {
     }
 
     #[test]
-    fn display_for_path_test() {
+    fn display_for_wtf8_test() {
         let path = Wtf8::from_bytes(b"C:/Hello/World\xED");
         let formatted = format!("{path}");
         assert_eq!(
@@ -159,7 +159,7 @@ mod tests {
     }
 
     #[test]
-    fn debug_for_path_test() {
+    fn debug_for_wtf8_test() {
         let path = Wtf8::from_bytes(b"C:/Hello/World\xED");
         let formatted = format!("{path:?}");
         assert_eq!(
