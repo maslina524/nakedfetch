@@ -8,10 +8,10 @@ use crate::types::Handle;
 #[macro_use]
 mod macros;
 mod native;
-mod ntstatus;
 
 pub mod kernel32;
 pub mod ntdll;
+pub mod ntstatus;
 pub mod types;
 pub mod unicode;
 pub mod win32;
