@@ -7,13 +7,16 @@ use core::fmt;
 
 use path::Path;
 
-use crate::imp::fs;
-pub use crate::imp::fs::{AccessAll, AccessCanRead, AccessCanWrite, AccessRead, AccessWrite};
+pub use crate::imp::fs::{
+    AccessAll, AccessCanRead, AccessCanWrite, AccessRead, AccessWrite, FileCreateError,
+    FileExistsError, FileHandle, FileReadError, FileSizeError,
+};
+use crate::{imp::fs, windows::handle};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FileSizeReadError {
-    Size(fs::FileSizeError),
-    Read(fs::FileReadError),
+    Size(FileSizeError),
+    Read(FileReadError),
 }
 
 impl fmt::Display for FileSizeReadError {
@@ -22,40 +25,57 @@ impl fmt::Display for FileSizeReadError {
     }
 }
 
-impl From<fs::FileSizeError> for FileSizeReadError {
-    fn from(value: fs::FileSizeError) -> Self {
+impl From<FileSizeError> for FileSizeReadError {
+    fn from(value: FileSizeError) -> Self {
         Self::Size(value)
     }
 }
 
-impl From<fs::FileReadError> for FileSizeReadError {
-    fn from(value: fs::FileReadError) -> Self {
+impl From<FileReadError> for FileSizeReadError {
+    fn from(value: FileReadError) -> Self {
         Self::Read(value)
     }
 }
 
-pub struct File<A: fs::Access>(fs::FileHandle<A>);
+pub struct File<A: fs::Access>(FileHandle<A>);
 
 impl<A: fs::Access> File<A> {
     /// # Errors
     ///
     /// Error if the system failed to open the file correctly.
-    pub fn create_new<T: AsRef<Path>>(path: T) -> Result<Self, fs::FileCreateError> {
+    pub fn create_new_or_rewrite<T: AsRef<Path>>(path: T) -> Result<Self, FileCreateError> {
+        fs::create_or_rewrite_file(path.as_ref()).map(Self)
+    }
+
+    /// # Errors
+    ///
+    /// Error if the system failed to open the file correctly.
+    pub fn create_new<T: AsRef<Path>>(path: T) -> Result<Self, FileCreateError> {
         fs::create_file(path.as_ref()).map(Self)
     }
 
     /// # Errors
     ///
     /// Error if the system failed to open the file correctly.
-    pub fn open<T: AsRef<Path>>(path: T) -> Result<Self, fs::FileCreateError> {
+    pub fn open<T: AsRef<Path>>(path: T) -> Result<Self, FileCreateError> {
         fs::open_file(path.as_ref()).map(Self)
     }
 
     /// # Errors
     ///
     /// Error if the system failed to get size of file correctly.
-    pub fn file_size(&self) -> Result<usize, fs::FileSizeError> {
+    pub fn file_size(&self) -> Result<usize, FileSizeError> {
         fs::size_of_file(&self.0)
+    }
+
+    #[must_use]
+    pub const fn as_handle(&self) -> &FileHandle<A> {
+        &self.0
+    }
+
+    #[must_use]
+    pub fn as_raw_handle(&self) -> *mut () {
+        handle::as_raw_handle(&self.0)
     }
 }
 
@@ -68,7 +88,7 @@ impl<A: AccessCanRead> File<A> {
         buf: &mut [u8],
         start: usize,
         count: usize,
-    ) -> Result<usize, fs::FileReadError> {
+    ) -> Result<usize, FileReadError> {
         fs::read_file(&self.0, buf, start, count)
     }
 
@@ -109,9 +129,9 @@ impl<A: AccessCanWrite> fmt::Write for File<A> {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FileCreateReadError {
-    Create(fs::FileCreateError),
-    Size(fs::FileSizeError),
-    Read(fs::FileReadError),
+    Create(FileCreateError),
+    Size(FileSizeError),
+    Read(FileReadError),
 }
 
 impl fmt::Display for FileCreateReadError {
@@ -120,8 +140,8 @@ impl fmt::Display for FileCreateReadError {
     }
 }
 
-impl From<fs::FileCreateError> for FileCreateReadError {
-    fn from(value: fs::FileCreateError) -> Self {
+impl From<FileCreateError> for FileCreateReadError {
+    fn from(value: FileCreateError) -> Self {
         Self::Create(value)
     }
 }
@@ -145,9 +165,9 @@ pub fn read<T: AsRef<Path>>(path: T) -> Result<Vec<u8>, FileCreateReadError> {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum FileReadToStringError {
-    Create(fs::FileCreateError),
-    Size(fs::FileSizeError),
-    Read(fs::FileReadError),
+    Create(FileCreateError),
+    Size(FileSizeError),
+    Read(FileReadError),
     Utf8(FromUtf8Error),
 }
 
@@ -157,8 +177,8 @@ impl fmt::Display for FileReadToStringError {
     }
 }
 
-impl From<fs::FileCreateError> for FileReadToStringError {
-    fn from(value: fs::FileCreateError) -> Self {
+impl From<FileCreateError> for FileReadToStringError {
+    fn from(value: FileCreateError) -> Self {
         Self::Create(value)
     }
 }
@@ -190,14 +210,14 @@ pub fn read_to_string<T: AsRef<Path>>(path: T) -> Result<String, FileReadToStrin
 /// # Errors
 ///
 /// `Err` if the system fails to create dir.
-pub fn create_dir<T: AsRef<Path>>(path: T) -> Result<(), fs::FileCreateError> {
+pub fn create_dir<T: AsRef<Path>>(path: T) -> Result<(), FileCreateError> {
     fs::create_dir(path.as_ref())
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CreateDirsError {
-    Create(fs::FileCreateError),
-    Exists(fs::FileExistsError),
+    Create(FileCreateError),
+    Exists(FileExistsError),
 }
 
 impl fmt::Display for CreateDirsError {
@@ -206,14 +226,14 @@ impl fmt::Display for CreateDirsError {
     }
 }
 
-impl From<fs::FileCreateError> for CreateDirsError {
-    fn from(value: fs::FileCreateError) -> Self {
+impl From<FileCreateError> for CreateDirsError {
+    fn from(value: FileCreateError) -> Self {
         Self::Create(value)
     }
 }
 
-impl From<fs::FileExistsError> for CreateDirsError {
-    fn from(value: fs::FileExistsError) -> Self {
+impl From<FileExistsError> for CreateDirsError {
+    fn from(value: FileExistsError) -> Self {
         Self::Exists(value)
     }
 }
@@ -238,7 +258,7 @@ fn create_dirs_inner(path: &Path) -> Result<(), CreateDirsError> {
 /// # Errors
 ///
 /// `Err` if the system fails to check file exists or no.
-pub fn exists<T: AsRef<Path>>(path: T) -> Result<bool, fs::FileExistsError> {
+pub fn exists<T: AsRef<Path>>(path: T) -> Result<bool, FileExistsError> {
     fs::exists(path.as_ref())
 }
 
@@ -253,7 +273,8 @@ mod tests {
     fn create_new_file_test() {
         let path = "Common-Fs-File-CreateNew-1.txt";
         {
-            let _ = File::<AccessRead>::create_new(path).expect("Failed to crate new file");
+            let _ =
+                File::<AccessRead>::create_new_or_rewrite(path).expect("Failed to crate new file");
             assert!(fs::exists(path).expect("fs::exits failed"));
         }
 
@@ -264,7 +285,8 @@ mod tests {
     fn write_bytes_file_test() {
         let path = "Common-Fs-File-WriteBytes-1.txt";
         {
-            let mut file = File::<AccessWrite>::create_new(path).expect("Failed to crate new file");
+            let mut file =
+                File::<AccessWrite>::create_new_or_rewrite(path).expect("Failed to crate new file");
             assert!(fs::exists(path).expect("fs::exits failed"));
 
             let bytes = b"Some bytes";
@@ -279,7 +301,8 @@ mod tests {
     fn fmt_write_file_test() {
         let path = "Common-Fs-File-FmtWrite-1.txt";
         {
-            let mut file = File::<AccessWrite>::create_new(path).expect("Failed to crate new file");
+            let mut file =
+                File::<AccessWrite>::create_new_or_rewrite(path).expect("Failed to crate new file");
             assert!(fs::exists(path).expect("fs::exits failed"));
 
             file.write_fmt(format_args!("Hello {}; 2 + 2 = {}", "World", 2 + 2))

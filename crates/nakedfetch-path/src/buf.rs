@@ -1,4 +1,5 @@
-use core::{ops::Deref, ptr, slice};
+use alloc::string::String;
+use core::{fmt, ops::Deref, ptr, slice};
 
 use crate::{Path, PathBufInner};
 
@@ -80,6 +81,12 @@ impl PathBuf {
     }
 }
 
+impl fmt::Display for PathBuf {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
 impl Deref for PathBuf {
     type Target = Path;
 
@@ -102,6 +109,12 @@ impl AsRef<Path> for PathBuf {
 
 impl From<&str> for PathBuf {
     fn from(s: &str) -> Self {
+        Self(PathBufInner::from(s))
+    }
+}
+
+impl From<String> for PathBuf {
+    fn from(s: String) -> Self {
         Self(PathBufInner::from(s))
     }
 }

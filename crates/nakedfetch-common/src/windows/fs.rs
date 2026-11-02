@@ -2,15 +2,16 @@ use core::{error::Error, fmt};
 
 use path::Path;
 pub use winapi::win32::fileapi::{
-    All as AccessAll, CanRead as AccessCanRead, CanWrite as AccessCanWrite, FileAccess as Access,
-    FileHandle, Read as AccessRead, Write as AccessWrite,
+    All as AccessAll, CanRead as AccessCanRead, CanWrite as AccessCanWrite, CreateFileError,
+    FileAccess as Access, FileAttributesError, FileHandle, Read as AccessRead,
+    Write as AccessWrite,
 };
 use winapi::{
     ntstatus::NtStatus,
     win32::{
         fileapi::{
-            CreateFile, CreateFileError, CreateOptions, FileAttributes, FileAttributesError,
-            FileDispose, FileShare, GetFileAttributes, GetFileSizeEx, ReadFile, WriteFile,
+            CreateFile, CreateOptions, FileAttributes, FileDispose, FileShare, GetFileAttributes,
+            GetFileSizeEx, ReadFile, WriteFile,
         },
         winbase::{CreateDirError, CreateDirectory},
     },
@@ -83,8 +84,12 @@ fn create_with_dispose<A: Access>(
     .map_err(map_err)
 }
 
-pub fn create_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateError> {
+pub fn create_or_rewrite_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateError> {
     create_with_dispose(path, FileDispose::CreateAlways)
+}
+
+pub fn create_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateError> {
+    create_with_dispose(path, FileDispose::CreateNew)
 }
 
 pub fn open_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateError> {

@@ -7,7 +7,7 @@ mod buf;
 pub use buf::PathBuf;
 
 mod components;
-use core::ptr;
+use core::{fmt, ptr};
 
 pub use components::Components;
 
@@ -83,6 +83,12 @@ impl Path {
     }
 }
 
+impl fmt::Display for Path {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
 impl AsRef<Self> for Path {
     fn as_ref(&self) -> &Self {
         self
@@ -90,6 +96,12 @@ impl AsRef<Self> for Path {
 }
 
 impl AsRef<Path> for str {
+    fn as_ref(&self) -> &Path {
+        Path::from_str(self)
+    }
+}
+
+impl AsRef<Path> for String {
     fn as_ref(&self) -> &Path {
         Path::from_str(self)
     }

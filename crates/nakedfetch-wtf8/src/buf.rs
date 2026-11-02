@@ -1,4 +1,4 @@
-use alloc::vec::Vec;
+use alloc::{string::String, vec::Vec};
 use core::{ops::Deref, ptr};
 
 use crate::{Wtf8, codepoint::CodePoint};
@@ -121,6 +121,12 @@ impl From<&str> for Wtf8Buf {
 impl From<Vec<u8>> for Wtf8Buf {
     fn from(s: Vec<u8>) -> Self {
         Self(s)
+    }
+}
+
+impl From<String> for Wtf8Buf {
+    fn from(s: String) -> Self {
+        Self(s.into_bytes())
     }
 }
 
