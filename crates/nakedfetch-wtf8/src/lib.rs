@@ -8,14 +8,18 @@ mod codepoint;
 mod utf16;
 
 use alloc::string::String;
-use core::{ops::Index, ptr};
+use core::{
+    fmt::{self, Write as _},
+    ops::Index,
+    ptr,
+};
 
 pub use buf::Wtf8Buf;
 pub use codepoint::{CodePoint, CodePointsIter};
 pub use utf16::Utf16Iter;
 
 #[repr(transparent)]
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 pub struct Wtf8([u8]);
 
 impl Wtf8 {
@@ -23,6 +27,11 @@ impl Wtf8 {
     pub const fn from_bytes(bytes: &[u8]) -> &Self {
         // SAFETY: Layout of [u8] == Wtf8
         unsafe { &*(ptr::from_ref(bytes) as *const Self) }
+    }
+
+    #[must_use]
+    pub const fn from_str(bytes: &str) -> &Self {
+        Self::from_bytes(bytes.as_bytes())
     }
 
     #[must_use]
@@ -101,6 +110,25 @@ where
     }
 }
 
+impl fmt::Display for Wtf8 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let iter = self.0.utf8_chunks();
+        for chunk in iter {
+            f.write_str(chunk.valid())?;
+            if !chunk.invalid().is_empty() {
+                f.write_char(char::REPLACEMENT_CHARACTER)?;
+            }
+        }
+        Ok(())
+    }
+}
+
+impl fmt::Debug for Wtf8 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "\"{self}\"")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::Wtf8;
@@ -118,5 +146,25 @@ mod tests {
         let text = "你好世界！";
         let wtf8: &Wtf8 = text.as_ref();
         assert_eq!(wtf8.to_str(), Some(text));
+    }
+
+    #[test]
+    fn display_for_path_test() {
+        let path = Wtf8::from_bytes(b"C:/Hello/World\xED");
+        let formatted = format!("{path}");
+        assert_eq!(
+            formatted,
+            format!("C:/Hello/World{}", char::REPLACEMENT_CHARACTER)
+        );
+    }
+
+    #[test]
+    fn debug_for_path_test() {
+        let path = Wtf8::from_bytes(b"C:/Hello/World\xED");
+        let formatted = format!("{path:?}");
+        assert_eq!(
+            formatted,
+            format!("\"C:/Hello/World{}\"", char::REPLACEMENT_CHARACTER)
+        );
     }
 }

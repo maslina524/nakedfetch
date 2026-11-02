@@ -1,10 +1,14 @@
 use alloc::{string::String, vec::Vec};
-use core::{ops::Deref, ptr};
+use core::{
+    fmt::{self, Write as _},
+    ops::Deref,
+    ptr,
+};
 
 use crate::{Wtf8, codepoint::CodePoint};
 
 #[repr(transparent)]
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Default, Clone, PartialEq, Eq)]
 pub struct Wtf8Buf(Vec<u8>);
 
 impl Wtf8Buf {
@@ -142,6 +146,25 @@ impl<const N: usize> From<&[u8; N]> for Wtf8Buf {
     }
 }
 
+impl fmt::Display for Wtf8Buf {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let iter = self.0.utf8_chunks();
+        for chunk in iter {
+            f.write_str(chunk.valid())?;
+            if !chunk.invalid().is_empty() {
+                f.write_char(char::REPLACEMENT_CHARACTER)?;
+            }
+        }
+        Ok(())
+    }
+}
+
+impl fmt::Debug for Wtf8Buf {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "\"{self}\"")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{Wtf8Buf, codepoint::CodePoint};
@@ -219,5 +242,25 @@ mod tests {
 
         assert_eq!(wtf8.pop(), Some(CodePoint::Char(' ')));
         assert_eq!(wtf8.as_str(), Some("Привет"));
+    }
+
+    #[test]
+    fn display_for_pathbuf_test() {
+        let path = Wtf8Buf::from(b"C:/Hello/World\xED");
+        let formatted = format!("{path}");
+        assert_eq!(
+            formatted,
+            format!("C:/Hello/World{}", char::REPLACEMENT_CHARACTER)
+        );
+    }
+
+    #[test]
+    fn debug_for_pathbuf_test() {
+        let path = Wtf8Buf::from(b"C:/Hello/World\xED");
+        let formatted = format!("{path:?}");
+        assert_eq!(
+            formatted,
+            format!("\"C:/Hello/World{}\"", char::REPLACEMENT_CHARACTER)
+        );
     }
 }
