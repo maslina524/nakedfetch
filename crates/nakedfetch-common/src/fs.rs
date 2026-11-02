@@ -1,10 +1,38 @@
-use alloc::vec::Vec;
+use alloc::{
+    string::{FromUtf8Error, String},
+    vec,
+    vec::Vec,
+};
 use core::fmt;
 
 use path::Path;
 
 use crate::imp::fs;
 pub use crate::imp::fs::{AccessAll, AccessCanRead, AccessCanWrite, AccessRead, AccessWrite};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileSizeReadError {
+    Size(fs::FileSizeError),
+    Read(fs::FileReadError),
+}
+
+impl fmt::Display for FileSizeReadError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl From<fs::FileSizeError> for FileSizeReadError {
+    fn from(value: fs::FileSizeError) -> Self {
+        Self::Size(value)
+    }
+}
+
+impl From<fs::FileReadError> for FileSizeReadError {
+    fn from(value: fs::FileReadError) -> Self {
+        Self::Read(value)
+    }
+}
 
 pub struct File<A: fs::Access>(fs::FileHandle<A>);
 
@@ -47,15 +75,12 @@ impl<A: AccessCanRead> File<A> {
     /// # Errors
     ///
     /// Error if the system failed to read the file correctly.
-    pub fn read(&self) -> Result<Vec<u8>, fs::FileReadError> {
-        let size = self
-            .file_size()
-            .map_err(|_| fs::FileReadError::BufTooSmall)?;
+    pub fn read(&self) -> Result<Vec<u8>, FileSizeReadError> {
+        let size = self.file_size()?;
 
-        let mut buf = Vec::with_capacity(size);
-        let written = fs::read_file(&self.0, buf.as_mut(), 0, size)?;
-        // SAFETY: Set the length equal to the number of bytes read, safe
-        unsafe { buf.set_len(written) };
+        let mut buf = vec![0u8; size];
+        let bytes_read = fs::read_file(&self.0, &mut buf, 0, size)?;
+        buf.truncate(bytes_read);
 
         Ok(buf)
     }
@@ -80,6 +105,87 @@ impl<A: AccessCanWrite> fmt::Write for File<A> {
             .map(|_| ())
             .map_err(|_| fmt::Error)
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileCreateReadError {
+    Create(fs::FileCreateError),
+    Size(fs::FileSizeError),
+    Read(fs::FileReadError),
+}
+
+impl fmt::Display for FileCreateReadError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl From<fs::FileCreateError> for FileCreateReadError {
+    fn from(value: fs::FileCreateError) -> Self {
+        Self::Create(value)
+    }
+}
+
+impl From<FileSizeReadError> for FileCreateReadError {
+    fn from(value: FileSizeReadError) -> Self {
+        match value {
+            FileSizeReadError::Size(e) => Self::Size(e),
+            FileSizeReadError::Read(e) => Self::Read(e),
+        }
+    }
+}
+
+/// # Errors
+///
+/// `Err` if the system fails to open or read the file.
+pub fn read<T: AsRef<Path>>(path: T) -> Result<Vec<u8>, FileCreateReadError> {
+    let file = File::<AccessRead>::open(path)?;
+    file.read().map_err(Into::into)
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum FileReadToStringError {
+    Create(fs::FileCreateError),
+    Size(fs::FileSizeError),
+    Read(fs::FileReadError),
+    Utf8(FromUtf8Error),
+}
+
+impl fmt::Display for FileReadToStringError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl From<fs::FileCreateError> for FileReadToStringError {
+    fn from(value: fs::FileCreateError) -> Self {
+        Self::Create(value)
+    }
+}
+
+impl From<FileSizeReadError> for FileReadToStringError {
+    fn from(value: FileSizeReadError) -> Self {
+        match value {
+            FileSizeReadError::Size(e) => Self::Size(e),
+            FileSizeReadError::Read(e) => Self::Read(e),
+        }
+    }
+}
+
+impl From<FromUtf8Error> for FileReadToStringError {
+    fn from(value: FromUtf8Error) -> Self {
+        Self::Utf8(value)
+    }
+}
+
+/// # Errors
+///
+/// `Err` if the system fails to open, read the file, or convert the bytes to
+/// UTF8.
+pub fn read_to_string<T: AsRef<Path>>(path: T) -> Result<String, FileReadToStringError> {
+    let file = File::<AccessRead>::open(path)?;
+    let buf = file.read()?;
+    String::from_utf8(buf).map_err(Into::into)
 }
 
 #[cfg(test)]
@@ -150,5 +256,27 @@ mod tests {
                 .expect("Failed to read bytes");
             assert_eq!(&std[10..30], buf);
         }
+    }
+
+    #[test]
+    fn read_and_read_to_string_test() {
+        let path = "Cargo.toml";
+
+        let std = fs::read(path).expect("fs::read_to_string failed");
+
+        let bytes = super::read(path).expect("Failed to read file");
+        let string = super::read_to_string(path).expect("Failed to read file or convert Utf8");
+
+        assert_eq!(std, bytes);
+        assert_eq!(std, string.as_bytes());
+    }
+
+    #[test]
+    fn file_size_test() {
+        let path = "Cargo.toml";
+
+        let file = File::<AccessRead>::open(path).expect("Failed to open file");
+        let size = file.file_size().expect("Failed to get size");
+        assert!(size > 0);
     }
 }
