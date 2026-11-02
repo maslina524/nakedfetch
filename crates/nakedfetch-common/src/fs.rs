@@ -1,3 +1,4 @@
+use alloc::vec::Vec;
 use core::fmt;
 
 use path::Path;
@@ -21,6 +22,13 @@ impl<A: fs::Access> File<A> {
     pub fn open<T: AsRef<Path>>(path: T) -> Result<Self, fs::FileCreateError> {
         fs::open_file(path.as_ref()).map(Self)
     }
+
+    /// # Errors
+    ///
+    /// Error if the system failed to get size of file correctly.
+    pub fn file_size(&self) -> Result<usize, fs::FileSizeError> {
+        fs::size_of_file(&self.0)
+    }
 }
 
 impl<A: AccessCanRead> File<A> {
@@ -34,6 +42,22 @@ impl<A: AccessCanRead> File<A> {
         count: usize,
     ) -> Result<usize, fs::FileReadError> {
         fs::read_file(&self.0, buf, start, count)
+    }
+
+    /// # Errors
+    ///
+    /// Error if the system failed to read the file correctly.
+    pub fn read(&self) -> Result<Vec<u8>, fs::FileReadError> {
+        let size = self
+            .file_size()
+            .map_err(|_| fs::FileReadError::BufTooSmall)?;
+
+        let mut buf = Vec::with_capacity(size);
+        let written = fs::read_file(&self.0, buf.as_mut(), 0, size)?;
+        // SAFETY: Set the length equal to the number of bytes read, safe
+        unsafe { buf.set_len(written) };
+
+        Ok(buf)
     }
 }
 

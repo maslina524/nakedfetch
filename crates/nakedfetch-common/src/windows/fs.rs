@@ -9,7 +9,7 @@ use winapi::{
     ntstatus::NtStatus,
     win32::fileapi::{
         CreateFile, CreateFileError, CreateOptions, FileAttributes, FileDispose, FileShare,
-        ReadFile, WriteFile,
+        GetFileSizeEx, ReadFile, WriteFile,
     },
 };
 
@@ -159,7 +159,7 @@ impl fmt::Display for FileReadError {
 
 impl Error for FileReadError {}
 
-const fn map_ntstatus(nt: NtStatus) -> FileReadError {
+const fn map_read_file(nt: NtStatus) -> FileReadError {
     use super::fs::FileReadError as FRE;
 
     match nt.into_inner() {
@@ -185,5 +185,58 @@ pub fn read_file<A: AccessCanRead>(
     if buf.len() < count {
         return Err(FileReadError::BufTooSmall);
     }
-    ReadFile(handle, buf, count, Some(start)).map_err(map_ntstatus)
+    ReadFile(handle, buf, count, Some(start)).map_err(map_read_file)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileSizeError {
+    InvalidHandle,
+    FileClosed,
+    AccessDenied,
+    InvalidParam,
+    InvalidDeviceRequest,
+    InvalidInfoClass,
+    InfoLengthMismatch,
+    NotImplemented,
+    NotSupported,
+    FileInvalid,
+    NoSuchFile,
+    NotEnoughMemory,
+    Crc,
+    IoDeviceError,
+    Unknown(NtStatus),
+}
+
+impl fmt::Display for FileSizeError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for FileSizeError {}
+
+const fn map_size_of_file(nt: NtStatus) -> FileSizeError {
+    use super::fs::FileSizeError as FSE;
+
+    match nt.into_inner() {
+        0xC000_0008 => FSE::InvalidHandle,
+        0xC000_0128 => FSE::FileClosed,
+        0xC000_0022 => FSE::AccessDenied,
+        0xC000_000D => FSE::InvalidParam,
+        0xC000_0010 => FSE::InvalidDeviceRequest,
+        0xC000_0003 => FSE::InvalidInfoClass,
+        0xC000_0004 => FSE::InfoLengthMismatch,
+        0xC000_0002 => FSE::NotImplemented,
+        0xC000_00BB => FSE::NotSupported,
+        0xC000_0098 => FSE::FileInvalid,
+        0xC000_000F => FSE::NoSuchFile,
+        0xC000_009A | 0xC000_0017 => FSE::NotEnoughMemory,
+        0xC000_003F => FSE::Crc,
+        0xC000_009D => FSE::IoDeviceError,
+        _ => FSE::Unknown(nt),
+    }
+}
+
+pub fn size_of_file<A: Access>(handle: &FileHandle<A>) -> Result<usize, FileSizeError> {
+    GetFileSizeEx(handle).map_err(map_size_of_file)
 }
