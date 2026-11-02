@@ -9,6 +9,7 @@ use winapi::{
     ntstatus::NtStatus,
     win32::fileapi::{
         CreateFile, CreateFileError, CreateOptions, FileAttributes, FileDispose, FileShare,
+        WriteFile,
     },
 };
 
@@ -74,4 +75,52 @@ pub fn create_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateEr
         CreateOptions::new().synchronize(),
     )
     .map_err(map_create_file)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileWriteError {
+    InvalidHandle,
+    NotEnoughMemory,
+    WriteProtect,
+    NotReady,
+    Crc,
+    WriteFault,
+    AccessDenied,
+    InvalidParam,
+    NoData,
+    DiskFull,
+    Unknonw(NtStatus),
+}
+
+impl fmt::Display for FileWriteError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for FileWriteError {}
+
+const fn map_write_file(nt: NtStatus) -> FileWriteError {
+    use super::fs::FileWriteError as FWE;
+
+    match nt.into_inner() {
+        0xC000_0008 => FWE::InvalidHandle,
+        0xC000_009A | 0xC000_0017 => FWE::NotEnoughMemory,
+        0xC000_00A2 => FWE::WriteProtect,
+        0xC000_026E | 0xC000_00A3 => FWE::NotReady,
+        0xC000_003F => FWE::Crc,
+        0xC000_009C => FWE::WriteFault,
+        0xC000_0022 => FWE::AccessDenied,
+        0xC000_000D => FWE::InvalidParam,
+        0xC000_00F2 | 0xC000_00AE => FWE::NoData,
+        0xC000_007F => FWE::DiskFull,
+        _ => FWE::Unknonw(nt),
+    }
+}
+
+pub fn write_file<A: AccessCanWrite>(
+    handle: &FileHandle<A>,
+    buf: &[u8],
+) -> Result<usize, FileWriteError> {
+    WriteFile(handle, buf).map_err(map_write_file)
 }
