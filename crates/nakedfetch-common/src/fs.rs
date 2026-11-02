@@ -14,6 +14,27 @@ impl<A: fs::Access> File<A> {
     pub fn create_new<T: AsRef<Path>>(path: T) -> Result<Self, fs::FileCreateError> {
         fs::create_file(path.as_ref()).map(Self)
     }
+
+    /// # Errors
+    ///
+    /// Error if the system failed to open the file correctly.
+    pub fn open<T: AsRef<Path>>(path: T) -> Result<Self, fs::FileCreateError> {
+        fs::open_file(path.as_ref()).map(Self)
+    }
+}
+
+impl<A: AccessCanRead> File<A> {
+    /// # Errors
+    ///
+    /// Error if the system failed to read the file correctly.
+    pub fn read_part(
+        &self,
+        buf: &mut [u8],
+        start: usize,
+        count: usize,
+    ) -> Result<usize, fs::FileReadError> {
+        fs::read_file(&self.0, buf, start, count)
+    }
 }
 
 impl<A: AccessCanWrite> File<A> {
@@ -86,5 +107,24 @@ mod tests {
         }
 
         fs::remove_file(path).expect("fs::remove_file failed");
+    }
+
+    #[test]
+    fn read_part_file_test() {
+        let path = "Cargo.toml";
+        {
+            let file = File::<AccessRead>::open(path).expect("Failed to crate new file");
+
+            let mut buf = [0u8; 20];
+            let std = fs::read(path).expect("fs::read failed");
+
+            file.read_part(&mut buf, 10, 20)
+                .expect("Failed to read bytes");
+            assert_eq!(&std[10..30], buf);
+
+            file.read_part(&mut buf, 10, 20)
+                .expect("Failed to read bytes");
+            assert_eq!(&std[10..30], buf);
+        }
     }
 }

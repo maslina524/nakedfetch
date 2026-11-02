@@ -9,7 +9,7 @@ use winapi::{
     ntstatus::NtStatus,
     win32::fileapi::{
         CreateFile, CreateFileError, CreateOptions, FileAttributes, FileDispose, FileShare,
-        WriteFile,
+        ReadFile, WriteFile,
     },
 };
 
@@ -66,15 +66,26 @@ const fn map_create_file(err: CreateFileError) -> FileCreateError {
     }
 }
 
-pub fn create_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateError> {
+fn create_with_dispose<A: Access>(
+    path: &Path,
+    dispose: FileDispose,
+) -> Result<FileHandle<A>, FileCreateError> {
     CreateFile(
         path,
         FileShare::Read,
-        FileDispose::CreateAlways,
+        dispose,
         FileAttributes::new(),
         CreateOptions::new().synchronize(),
     )
     .map_err(map_create_file)
+}
+
+pub fn create_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateError> {
+    create_with_dispose(path, FileDispose::CreateAlways)
+}
+
+pub fn open_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateError> {
+    create_with_dispose(path, FileDispose::OpenExisting)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -123,4 +134,56 @@ pub fn write_file<A: AccessCanWrite>(
     buf: &[u8],
 ) -> Result<usize, FileWriteError> {
     WriteFile(handle, buf).map_err(map_write_file)
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileReadError {
+    BufTooSmall,
+    InvalidHandle,
+    EndOfFile,
+    NotEnoughMemory,
+    NotReady,
+    Crc,
+    ReadFault,
+    AccessDenied,
+    InvalidParam,
+    NoData,
+    Unknown(NtStatus),
+}
+
+impl fmt::Display for FileReadError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for FileReadError {}
+
+const fn map_ntstatus(nt: NtStatus) -> FileReadError {
+    use super::fs::FileReadError as FRE;
+
+    match nt.into_inner() {
+        0xC000_0008 => FRE::InvalidHandle,
+        0xC000_0011 => FRE::EndOfFile,
+        0xC000_009A | 0xC000_0017 => FRE::NotEnoughMemory,
+        0xC000_026E | 0xC000_00A3 => FRE::NotReady,
+        0xC000_003F => FRE::Crc,
+        0xC000_009D => FRE::ReadFault,
+        0xC000_0022 => FRE::AccessDenied,
+        0xC000_000D => FRE::InvalidParam,
+        0xC000_00F2 | 0xC000_00AE => FRE::NoData,
+        _ => FRE::Unknown(nt),
+    }
+}
+
+pub fn read_file<A: AccessCanRead>(
+    handle: &FileHandle<A>,
+    buf: &mut [u8],
+    start: usize,
+    count: usize,
+) -> Result<usize, FileReadError> {
+    if buf.len() < count {
+        return Err(FileReadError::BufTooSmall);
+    }
+    ReadFile(handle, buf, count, Some(start)).map_err(map_ntstatus)
 }
