@@ -6,13 +6,12 @@ use core::{
     ptr,
 };
 
-use common::formatf;
+use common::{formatf, sync::OnceLock};
 
 use crate::{
     abort, cfg_if,
     formats::{expand_rust_unicode, snake_to_camel_ascii},
     imp::fs::{self, ReadError},
-    sync::OnceLock,
     warning,
 };
 

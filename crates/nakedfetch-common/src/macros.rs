@@ -63,6 +63,27 @@ macro_rules! formatf {
     }};
 }
 
+#[macro_export]
+macro_rules! warning {
+    ($($args:tt)*) => {{
+        #[cfg(debug_assertions)]
+        $crate::feprint!("\x1b[1;33mWarning\x1b[0m:{}:{}: ", file!(), line!());
+
+        #[cfg(not(debug_assertions))]
+        $crate::feprint!("\x1b[1;33mWarning\x1b[0m: ");
+
+        $crate::feprintln!($($args)*);
+    }};
+}
+
+#[macro_export]
+macro_rules! abort {
+    ($($args:tt)*) => {{
+        $crate::feprintln!("\x1b[1;31mProgram Aborted\x1b[0m");
+        panic!($($args)*);
+    }};
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

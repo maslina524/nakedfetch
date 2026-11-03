@@ -9,7 +9,7 @@ use core::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use common::formatf;
+use common::{formatf, sync::Mutex, warning};
 
 use crate::{
     detect::uptime::UptimeInfo,
@@ -20,8 +20,6 @@ use crate::{
     },
     lua::{AsLua, LuaType},
     parser::LineBased,
-    sync::Mutex,
-    warning,
 };
 
 static LOADED: AtomicBool = AtomicBool::new(false);

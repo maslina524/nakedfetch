@@ -1,3 +1,4 @@
+use common::sync::OnceLock;
 use proc::{Docs, Module};
 
 use crate::{
@@ -6,7 +7,6 @@ use crate::{
     impl_display_for_module,
     modules::Module,
     str::ConcatStr,
-    sync::OnceLock,
 };
 
 static WEATHER: OnceLock<Weather> = OnceLock::new();

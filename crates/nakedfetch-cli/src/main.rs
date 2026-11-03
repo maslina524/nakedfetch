@@ -38,7 +38,7 @@ extern crate alloc;
 use alloc::{boxed::Box, string::String, vec::Vec};
 use core::{slice::Iter, str::FromStr as _};
 
-use common::prelude::*;
+use common::{prelude::*, sync::OnceLock};
 use image::{Image, Png};
 use json::Map;
 
@@ -52,7 +52,6 @@ use crate::{
     logo::{LogoInfo, UILogo},
     modules::{Commit, DocsVtable, FormatValue, Module, Version},
     nvidia::NvidiaLib,
-    sync::OnceLock,
     url::Url,
 };
 

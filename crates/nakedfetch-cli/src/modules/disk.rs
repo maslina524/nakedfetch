@@ -1,5 +1,6 @@
 use alloc::{borrow::Cow, collections::BTreeMap, string::String, vec::Vec};
 
+use common::sync::OnceLock;
 use json::Value;
 use proc::{Docs, Module};
 
@@ -8,7 +9,6 @@ use crate::{
     formats::{MemorySize, Percent, Time},
     impl_display_for_module,
     modules::{self, Module, ModuleFormat},
-    sync::OnceLock,
 };
 
 static DISK_LIST: OnceLock<DiskList> = OnceLock::new();

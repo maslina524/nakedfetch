@@ -1,13 +1,12 @@
 use alloc::{borrow::Cow, collections::BTreeMap, string::String};
 
-use common::formatf;
+use common::{formatf, sync::OnceLock};
 use json::Value;
 use proc::Docs;
 
 use crate::{
     impl_display_for_module,
     modules::{self, Module, ModuleFormat},
-    sync::OnceLock,
 };
 
 static COLORS: OnceLock<Colors> = OnceLock::new();

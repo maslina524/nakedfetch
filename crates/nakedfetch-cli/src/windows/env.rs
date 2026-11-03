@@ -12,13 +12,12 @@ use core::{
     mem, ptr, slice,
 };
 
-use common::formatf;
+use common::{abort, formatf, sync::OnceLock, warning};
 
 use crate::{
-    ARGS, abort,
+    ARGS,
     str::SmolStr,
-    sync::OnceLock,
-    w, warning,
+    w,
     windows::{
         encoding::{
             self, EncodeError, Utf16Len, Utf16ToUtf8, utf16le_to_utf8, wide, wide_without_alloc,

@@ -1,5 +1,6 @@
 use alloc::string::String;
 
+use common::sync::OnceLock;
 use proc::{Docs, Module};
 
 use crate::{
@@ -7,7 +8,6 @@ use crate::{
     formats::{MemorySize, Percent},
     impl_display_for_module,
     modules::Module,
-    sync::OnceLock,
 };
 
 static MEMORY: OnceLock<Memory> = OnceLock::new();

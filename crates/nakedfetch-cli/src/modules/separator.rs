@@ -1,12 +1,12 @@
 use alloc::{borrow::Cow, collections::BTreeMap, string::String};
 
+use common::sync::OnceLock;
 use json::Value;
 use proc::Docs;
 
 use crate::{
     formats, impl_display_for_module,
     modules::{self, FormatValue, Module, ModuleFormat, Title},
-    sync::OnceLock,
 };
 
 static SEPARATOR: OnceLock<Separator> = OnceLock::new();

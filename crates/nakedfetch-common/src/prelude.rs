@@ -1,1 +1,1 @@
-pub use crate::{feprint, feprintln, formatf, fprint, fprintln};
+pub use crate::{abort, feprint, feprintln, formatf, fprint, fprintln, warning};

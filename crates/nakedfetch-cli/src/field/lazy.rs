@@ -1,12 +1,9 @@
 use alloc::boxed::Box;
 use core::fmt::{self, Debug, Display};
 
-use common::formatf;
+use common::{formatf, sync::OnceLock};
 
-use crate::{
-    lua::{AsLua, LuaType},
-    sync::OnceLock,
-};
+use crate::lua::{AsLua, LuaType};
 
 pub struct LazyField<T> {
     value: OnceLock<T>,

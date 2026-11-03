@@ -1,32 +1,3 @@
-#[macro_export]
-macro_rules! info {
-    ($($args:tt)*) => {{
-        ::common::fprint!("\x1b[1;{}mInfo\x1b[0m: ", $crate::color::FG_BLUE);
-        ::common::fprintln!($($args)*);
-    }};
-}
-
-#[macro_export]
-macro_rules! warning {
-    ($($args:tt)*) => {{
-        #[cfg(debug_assertions)]
-        ::common::feprint!("\x1b[1;{}mWarning\x1b[0m:{}:{}: ", $crate::color::FG_YELLOW, file!(), line!());
-
-        #[cfg(not(debug_assertions))]
-        ::common::feprint!("\x1b[1;{}mWarning\x1b[0m: ", $crate::color::FG_YELLOW);
-
-        ::common::feprintln!($($args)*);
-    }};
-}
-
-#[macro_export]
-macro_rules! abort {
-    ($($args:tt)*) => {{
-        ::common::feprintln!("\x1b[1;{}mProgram Aborted\x1b[0m", $crate::color::FG_RED);
-        panic!($($args)*);
-    }};
-}
-
 #[cfg(target_os = "windows")]
 #[macro_export]
 macro_rules! get_fn {
@@ -129,13 +100,4 @@ macro_rules! w {
         }
         to_utf16::<{ count($s) }>($s)
     }};
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn warning_test() {
-        warning!("Example warn");
-        warning!("Formatted msg: 2 + 2 = {}", 2 + 2);
-    }
 }

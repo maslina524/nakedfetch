@@ -1,5 +1,6 @@
 use alloc::{borrow::Cow, string::String};
 
+use common::sync::OnceLock;
 use proc::{Docs, Module};
 
 use crate::{
@@ -7,7 +8,6 @@ use crate::{
     formats::{Frequency, MicroArch, Temperature},
     impl_display_for_module,
     modules::Module,
-    sync::OnceLock,
 };
 
 static CPU: OnceLock<Cpu> = OnceLock::new();

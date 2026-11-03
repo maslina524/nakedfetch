@@ -6,7 +6,9 @@ use core::{
     ptr,
 };
 
-use crate::{abort, cfg_if, get_fn, sync::OnceLock, warning};
+use common::{abort, sync::OnceLock};
+
+use crate::{cfg_if, get_fn, warning};
 
 cfg_if! {
     if #[cfg(target_os = "windows")] {

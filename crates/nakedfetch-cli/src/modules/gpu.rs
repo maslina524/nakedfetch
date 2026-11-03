@@ -1,5 +1,6 @@
 use alloc::string::String;
 
+use common::sync::OnceLock;
 use proc::{Docs, Module};
 
 use crate::{
@@ -8,7 +9,6 @@ use crate::{
     formats::{Frequency, MemorySize, Percent, Temperature},
     impl_display_for_module,
     modules::Module,
-    sync::OnceLock,
 };
 
 static GPU: OnceLock<Gpu> = OnceLock::new();

@@ -1,6 +1,6 @@
 use alloc::{borrow::Cow, string::String};
 
-use common::formatf;
+use common::{formatf, sync::OnceLock};
 use proc::{Docs, Module};
 
 use crate::{
@@ -9,7 +9,6 @@ use crate::{
     logo::LogoInfo,
     modules::Module,
     str::{ConcatStr, SmolStr},
-    sync::OnceLock,
 };
 
 static OS: OnceLock<Os> = OnceLock::new();

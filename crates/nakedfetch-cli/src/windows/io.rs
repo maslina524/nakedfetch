@@ -4,12 +4,11 @@ use core::{
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use crate::{
-    sync::OnceLock,
-    windows::{
-        error::ErrorCode,
-        link::{GetStdHandle, SetConsoleOutputCP, WriteFile},
-    },
+use common::sync::OnceLock;
+
+use crate::windows::{
+    error::ErrorCode,
+    link::{GetStdHandle, SetConsoleOutputCP, WriteFile},
 };
 
 const STDOUT: u32 = u32::MAX - 10;

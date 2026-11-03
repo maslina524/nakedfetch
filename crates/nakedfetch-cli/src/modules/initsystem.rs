@@ -1,5 +1,6 @@
 use alloc::borrow::Cow;
 
+use common::sync::OnceLock;
 use proc::{Docs, Module};
 
 use crate::{
@@ -9,7 +10,6 @@ use crate::{
     impl_display_for_module,
     modules::Module,
     str::SmolStr,
-    sync::OnceLock,
 };
 
 static INITSYSTEM: OnceLock<Initsystem> = OnceLock::new();

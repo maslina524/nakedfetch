@@ -1,6 +1,7 @@
+use common::sync::OnceLock;
 use proc::{Docs, Module};
 
-use crate::{impl_display_for_module, modules::Module, sync::OnceLock};
+use crate::{impl_display_for_module, modules::Module};
 
 static COMMIT: OnceLock<Commit> = OnceLock::new();
 

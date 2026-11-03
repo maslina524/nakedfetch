@@ -1,13 +1,11 @@
 use alloc::{borrow::ToOwned, collections::BTreeMap, string::String, vec, vec::Vec};
 
-use common::formatf;
+use common::{formatf, sync::OnceLock, warning};
 use json::{Map, Value};
 
 use crate::{
     formats::{ColorPlan, Percent, Temperature, format_color},
     modules::Module,
-    sync::OnceLock,
-    warning,
 };
 
 static PRESET: OnceLock<Config> = OnceLock::new();

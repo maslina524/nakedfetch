@@ -1,8 +1,7 @@
+use common::sync::OnceLock;
 use proc::{Docs, Module};
 
-use crate::{
-    detect::board, impl_display_for_module, modules::Module, str::SmolStr, sync::OnceLock,
-};
+use crate::{detect::board, impl_display_for_module, modules::Module, str::SmolStr};
 
 static BOARD: OnceLock<Board> = OnceLock::new();
 

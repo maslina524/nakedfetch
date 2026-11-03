@@ -6,9 +6,10 @@
 use alloc::{string::String, vec::Vec};
 use core::fmt::Write;
 
+use common::{abort, sync::OnceLock};
 use image::Image;
 
-use crate::{abort, color, formats::char_width, sync::OnceLock};
+use crate::{color, formats::char_width};
 
 macro_rules! logo_mod {
     ($($letter:ident),* $(,)?) => {

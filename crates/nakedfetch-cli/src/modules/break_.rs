@@ -4,13 +4,13 @@ use alloc::{
     string::String,
 };
 
+use common::sync::OnceLock;
 use json::Value;
 use proc::Docs;
 
 use crate::{
     impl_display_for_module,
     modules::{self, Module, ModuleFormat},
-    sync::OnceLock,
 };
 
 static BREAK: OnceLock<Break> = OnceLock::new();
