@@ -8,9 +8,10 @@ mod codepoint;
 mod smol;
 mod utf16;
 
-use alloc::string::String;
+use alloc::{string::String, sync::Arc};
 use core::{
     fmt::{self, Write as _},
+    mem,
     ops::Index,
     ptr,
 };
@@ -32,8 +33,8 @@ impl Wtf8 {
     }
 
     #[must_use]
-    pub const fn from_str(bytes: &str) -> &Self {
-        Self::from_bytes(bytes.as_bytes())
+    pub const fn from_str(s: &str) -> &Self {
+        Self::from_bytes(s.as_bytes())
     }
 
     #[must_use]
@@ -101,6 +102,14 @@ impl AsRef<Wtf8> for [u8] {
     }
 }
 
+impl From<&Wtf8> for Arc<Wtf8> {
+    fn from(value: &Wtf8) -> Self {
+        let arc_slice: Arc<[u8]> = Arc::from(&value.0[..]);
+        // SAFETY: Layout of [u8] == Wtf8
+        unsafe { mem::transmute::<Arc<[u8]>, Self>(arc_slice) }
+    }
+}
+
 impl<I> Index<I> for Wtf8
 where
     [u8]: Index<I, Output = [u8]>,
@@ -133,6 +142,8 @@ impl fmt::Debug for Wtf8 {
 
 #[cfg(test)]
 mod tests {
+    use alloc::sync::Arc;
+
     use crate::Wtf8;
 
     #[test]
@@ -168,5 +179,16 @@ mod tests {
             formatted,
             format!("\"C:/Hello/World{}\"", char::REPLACEMENT_CHARACTER)
         );
+    }
+
+    #[test]
+    fn arc_wtf8_test() {
+        let path = Wtf8::from_bytes(b"C:/Hello/World");
+
+        let arc: Arc<Wtf8> = path.into();
+        let copied = arc.clone();
+
+        assert_eq!(path, arc.as_ref());
+        assert_eq!(path, copied.as_ref());
     }
 }
