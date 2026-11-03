@@ -5,6 +5,7 @@ extern crate alloc;
 
 mod buf;
 mod codepoint;
+mod smol;
 mod utf16;
 
 use alloc::string::String;
@@ -16,6 +17,7 @@ use core::{
 
 pub use buf::Wtf8Buf;
 pub use codepoint::{CodePoint, CodePointsIter};
+pub use smol::SmolWtf8;
 pub use utf16::Utf16Iter;
 
 #[repr(transparent)]
