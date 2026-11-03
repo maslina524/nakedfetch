@@ -1,28 +1,26 @@
 use alloc::string::String;
 use core::{fmt, ops::Deref, ptr, slice};
 
-use wtf8::Wtf8;
-
-use crate::{Path, PathBufInner};
+use crate::{OsString, Path};
 
 #[repr(transparent)]
 #[derive(Default, PartialEq, Eq)]
-pub struct PathBuf(PathBufInner);
+pub struct PathBuf(OsString);
 
 impl PathBuf {
     #[must_use]
     pub const fn new() -> Self {
-        Self(PathBufInner::new())
+        Self(OsString::new())
     }
 
     #[must_use]
     pub fn with_capacity(cap: usize) -> Self {
-        Self(PathBufInner::with_capacity(cap))
+        Self(OsString::with_capacity(cap))
     }
 
     #[must_use]
     pub const fn as_path(&self) -> &Path {
-        // SAFETY: Layout of Wtf8 == Path
+        // SAFETY: Layout of OsStr == Path
         unsafe { &*(ptr::from_ref(self.0.as_wtf8()) as *const Path) }
     }
 
@@ -32,7 +30,7 @@ impl PathBuf {
     }
 
     #[must_use]
-    pub fn into_os_string(self) -> PathBufInner {
+    pub fn into_os_string(self) -> OsString {
         self.0
     }
 
@@ -78,7 +76,7 @@ impl PathBuf {
             self.0.push_char('/');
         }
 
-        self.0.push_wtf8(&path.as_wtf8());
+        self.0.push_wtf8(&path.as_os_str());
         self
     }
 }
@@ -105,25 +103,25 @@ impl AsRef<Path> for PathBuf {
 
 impl<const N: usize> From<&[u8; N]> for PathBuf {
     fn from(s: &[u8; N]) -> Self {
-        Self(PathBufInner::from(s))
+        Self(OsString::from(s))
     }
 }
 
 impl From<&[u8]> for PathBuf {
     fn from(s: &[u8]) -> Self {
-        Self(PathBufInner::from(s))
+        Self(OsString::from(s))
     }
 }
 
 impl From<&str> for PathBuf {
     fn from(s: &str) -> Self {
-        Self(PathBufInner::from(s))
+        Self(OsString::from(s))
     }
 }
 
 impl From<String> for PathBuf {
     fn from(s: String) -> Self {
-        Self(PathBufInner::from(s))
+        Self(OsString::from(s))
     }
 }
 
@@ -141,7 +139,7 @@ impl fmt::Debug for PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Path, PathBuf};
+    use crate::{OsStr, Path, PathBuf};
 
     #[test]
     fn pop_pathbuf_test() {
@@ -165,16 +163,16 @@ mod tests {
         let mut pathbuf = PathBuf::from("C:/Hello/World");
 
         pathbuf = pathbuf.join("Learn");
-        assert_eq!(pathbuf.as_wtf8(), "C:/Hello/World/Learn".as_ref());
+        assert_eq!(pathbuf.as_os_str(), OsStr::from_str("C:/Hello/World/Learn"));
 
         pathbuf.pop();
-        assert_eq!(pathbuf.as_wtf8(), "C:/Hello/World/".as_ref());
+        assert_eq!(pathbuf.as_os_str(), OsStr::from_str("C:/Hello/World/"));
 
         pathbuf.pop();
-        assert_eq!(pathbuf.as_wtf8(), "C:/Hello/".as_ref());
+        assert_eq!(pathbuf.as_os_str(), OsStr::from_str("C:/Hello/"));
 
         pathbuf = pathbuf.join(Path::from_str("Rust"));
-        assert_eq!(pathbuf.as_wtf8(), "C:/Hello/Rust".as_ref());
+        assert_eq!(pathbuf.as_os_str(), OsStr::from_str("C:/Hello/Rust"));
     }
 
     #[test]

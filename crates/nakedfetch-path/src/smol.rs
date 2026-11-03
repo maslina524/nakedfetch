@@ -1,11 +1,12 @@
 use alloc::sync::Arc;
-use core::{fmt, ops::Deref, ptr};
+use core::{fmt, ops::Deref};
 
 use wtf8::{SmolWtf8, Wtf8};
 
 use crate::{Path, PathBuf};
 
 #[repr(transparent)]
+#[derive(Default, Clone)]
 pub struct SmolPath(SmolWtf8);
 
 impl SmolPath {
@@ -31,13 +32,12 @@ impl SmolPath {
 
     #[must_use]
     pub fn as_path(&self) -> &Path {
-        Path::from_inner(self.0.as_wtf8())
+        Path::from_os_str(self.0.as_wtf8())
     }
 
     #[must_use]
     pub fn as_bytes(&self) -> &[u8] {
-        // SAFETY: Layout of Wtf8 == [u8]
-        unsafe { &*(ptr::from_ref(self.as_wtf8()) as *const [u8]) }
+        self.as_wtf8().as_bytes()
     }
 }
 
@@ -49,15 +49,27 @@ impl Deref for SmolPath {
     }
 }
 
+impl AsRef<Self> for SmolPath {
+    fn as_ref(&self) -> &Self {
+        self
+    }
+}
+
+impl AsRef<Path> for SmolPath {
+    fn as_ref(&self) -> &Path {
+        self
+    }
+}
+
 impl From<&Path> for SmolPath {
     fn from(value: &Path) -> Self {
-        Self(SmolWtf8::from(value.as_wtf8()))
+        Self(SmolWtf8::from(value.as_os_str()))
     }
 }
 
 impl From<PathBuf> for SmolPath {
     fn from(value: PathBuf) -> Self {
-        Self(SmolWtf8::from(value.as_wtf8()))
+        Self(SmolWtf8::from(value.as_os_str()))
     }
 }
 
@@ -69,7 +81,7 @@ impl From<&str> for SmolPath {
 
 impl From<Arc<Path>> for SmolPath {
     fn from(value: Arc<Path>) -> Self {
-        Self(SmolWtf8::from(value.as_wtf8()))
+        Self(SmolWtf8::from(value.as_os_str()))
     }
 }
 

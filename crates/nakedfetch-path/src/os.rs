@@ -1,7 +1,7 @@
 #[cfg(target_os = "windows")]
 mod windows {
-    pub type PathInner = wtf8::Wtf8;
-    pub type PathBufInner = wtf8::Wtf8Buf;
+    pub type OsStr = wtf8::Wtf8;
+    pub type OsString = wtf8::Wtf8Buf;
 
     pub static SEPARATOR: [char; 2] = ['/', '\\'];
     pub static INVALID_SYMBOLS: [char; 5] = ['<', '>', '|', '?', '*'];

@@ -18,12 +18,12 @@ use core::{fmt, ptr};
 
 #[repr(transparent)]
 #[derive(PartialEq, Eq)]
-pub struct Path(PathInner);
+pub struct Path(OsStr);
 
 impl Path {
     #[must_use]
     pub const fn from_bytes(bytes: &[u8]) -> &Self {
-        // SAFETY: Layout of [u8] == Wtf8 == Path
+        // SAFETY: Layout of [u8] == OsStr == Path
         unsafe { &*(ptr::from_ref(bytes) as *const Self) }
     }
 
@@ -33,12 +33,12 @@ impl Path {
     }
 
     #[must_use]
-    pub const fn from_inner(s: &PathInner) -> &Self {
+    pub const fn from_os_str(s: &OsStr) -> &Self {
         Self::from_bytes(s.as_bytes())
     }
 
     #[must_use]
-    pub const fn as_wtf8(&self) -> &PathInner {
+    pub const fn as_os_str(&self) -> &OsStr {
         &self.0
     }
 
@@ -93,7 +93,7 @@ impl Path {
         }
 
         let bytes = &self.0.as_bytes()[..offset];
-        Some(PathInner::from_bytes(bytes).as_ref())
+        Some(OsStr::from_bytes(bytes).as_ref())
     }
 }
 
@@ -115,15 +115,15 @@ impl AsRef<Path> for String {
     }
 }
 
-impl AsRef<Path> for PathInner {
+impl AsRef<Path> for OsStr {
     fn as_ref(&self) -> &Path {
         // SAFETY: Layout of Wtf8 == Path
         unsafe { &*(ptr::from_ref(self) as *const Path) }
     }
 }
 
-impl AsRef<PathInner> for Path {
-    fn as_ref(&self) -> &PathInner {
+impl AsRef<OsStr> for Path {
+    fn as_ref(&self) -> &OsStr {
         &self.0
     }
 }
