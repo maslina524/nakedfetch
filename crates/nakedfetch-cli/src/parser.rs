@@ -1,7 +1,8 @@
 use alloc::{borrow::ToOwned, collections::BTreeMap, string::String, vec::Vec};
 use core::fmt::Display;
 
-use crate::imp::{fs, path::Path};
+use common::fs;
+use path::Path;
 
 pub struct LineBased<'lb> {
     inner: BTreeMap<&'lb str, &'lb str>,
@@ -16,20 +17,23 @@ impl<'lb> LineBased<'lb> {
         }
     }
 
-    pub fn parse_os_release() -> Result<Self, fs::ReadError> {
+    pub fn parse_os_release() -> Result<Self, fs::FileReadToStringError> {
         Self::parse_file("/etc/os-release", '=')
     }
 
-    pub fn parse_cpu_info() -> Result<Self, fs::ReadError> {
+    pub fn parse_cpu_info() -> Result<Self, fs::FileReadToStringError> {
         Self::parse_file("/proc/cpuinfo", ':')
     }
 
-    pub fn parse_mem_info() -> Result<Self, fs::ReadError> {
+    pub fn parse_mem_info() -> Result<Self, fs::FileReadToStringError> {
         Self::parse_file("/proc/meminfo", ':')
     }
 
-    pub fn parse_file(path: impl Into<Path>, split: char) -> Result<Self, fs::ReadError> {
-        let string = fs::read_to_string(path)?;
+    pub fn parse_file<T: AsRef<Path>>(
+        path: T,
+        split: char,
+    ) -> Result<Self, fs::FileReadToStringError> {
+        let string = fs::read_to_string(path.as_ref())?;
         Ok(Self::parse(string, split))
     }
 

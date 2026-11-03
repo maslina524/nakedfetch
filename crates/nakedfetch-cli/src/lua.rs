@@ -6,12 +6,15 @@ use core::{
     ptr,
 };
 
-use common::{formatf, sync::OnceLock};
+use common::{
+    formatf,
+    fs::{self, FileCreateError as FCErr, FileReadToStringError as FRTSErr},
+    sync::OnceLock,
+};
 
 use crate::{
     abort, cfg_if,
     formats::{expand_rust_unicode, snake_to_camel_ascii},
-    imp::fs::{self, ReadError},
     warning,
 };
 
@@ -141,7 +144,7 @@ impl_as_lua_debug_string!(
     str,
     char,
     crate::detect::gpu::GpuType,
-    crate::imp::path::Path,
+    path::Path,
     crate::str::SmolStr,
     Cow<'static, str>
 );
@@ -178,19 +181,13 @@ impl core::fmt::Debug for LuaType {
 pub fn open_lua_file(code: &str) -> Cow<'_, str> {
     match fs::read_to_string(code.trim()) {
         Ok(c) => Cow::Owned(c),
-        Err(e) => match e {
-            ReadError::Code(e) => {
-                if e.is_file_not_found() {
-                    Cow::Borrowed(code)
-                } else {
-                    warning!("Failed to open file: {e}");
-                    Cow::Owned(String::new())
-                }
-            },
-            ReadError::Utf8(e) => {
-                warning!("Failed to open the file as Utf8: {e}");
+        Err(e) => {
+            if e == FRTSErr::Create(FCErr::InvalidName) {
+                Cow::Borrowed(code)
+            } else {
+                warning!("Failed to open the file: {e}");
                 Cow::Owned(String::new())
-            },
+            }
         },
     }
 }

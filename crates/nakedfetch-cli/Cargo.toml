@@ -8,6 +8,7 @@ repository.workspace = true
 
 [dependencies]
 common = { path = "../nakedfetch-common" }
+path = { path = "../nakedfetch-path" }
 proc = { path = "../nakedfetch-proc" }
 json = { path = "../nakedfetch-json" }
 huffman = { path = "../nakedfetch-huffman" }

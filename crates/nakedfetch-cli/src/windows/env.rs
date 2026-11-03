@@ -12,7 +12,13 @@ use core::{
     mem, ptr, slice,
 };
 
-use common::{abort, formatf, sync::OnceLock, warning};
+use common::{
+    abort, formatf,
+    fs::{AccessRead, File},
+    sync::OnceLock,
+    warning,
+};
+use path::Path;
 
 use crate::{
     ARGS,
@@ -23,7 +29,6 @@ use crate::{
             self, EncodeError, Utf16Len, Utf16ToUtf8, utf16le_to_utf8, wide, wide_without_alloc,
         },
         error::{self, ErrorCode},
-        fs::{Access, File},
         link::{
             CONSOLE_SCREEN_BUFFER_INFO, CloseHandle, CommandLineToArgvW, CreateToolhelp32Snapshot,
             EnumProcesses, ExpandEnvironmentStringsW, FILETIME, FileTimeToLocalFileTime,
@@ -32,7 +37,6 @@ use crate::{
             GetSystemTimeAsFileTime, OSVERSIONINFOW, PROCESSENTRY32, Process32First, Process32Next,
             RtlGetVersion, SYSTEMTIME, VerQueryValueW,
         },
-        path::Path,
         regedit::{self, Hkey, Regedit},
     },
 };
@@ -175,9 +179,8 @@ pub fn get_version() -> (u32, u32, u32) {
 
 pub fn terminal_handle() -> isize {
     *TERMINAL_HANDLE.get_or_init(|| {
-        let file = File::open("CONOUT$", Access::Read).unwrap();
-        let handle = file.as_handle();
-        assert!(!handle.is_null());
+        let file = File::<AccessRead>::open("CONOUT$").unwrap();
+        let handle = file.as_raw_handle();
         mem::forget(file);
         handle as isize
     })
@@ -271,9 +274,12 @@ pub fn args() -> &'static Vec<String> {
     ARGS.get().expect("Unreachable")
 }
 
-pub fn get_file_product_version(path: impl Into<Path>) -> error::Result<SmolStr> {
-    let path_str = path.into().into_inner();
-    let path_wide = wide(&path_str);
+pub fn get_file_product_version<T: AsRef<Path>>(path: T) -> error::Result<SmolStr> {
+    get_file_product_version_inner(path.as_ref())
+}
+
+pub fn get_file_product_version_inner(path: &Path) -> error::Result<SmolStr> {
+    let path_wide: Vec<u16> = path.as_utf16().collect();
 
     // SAFETY: Completely safe
     let buf_size = unsafe { GetFileVersionInfoSizeW(path_wide.as_ptr(), ptr::null_mut()) };

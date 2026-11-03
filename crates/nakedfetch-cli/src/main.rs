@@ -38,7 +38,11 @@ extern crate alloc;
 use alloc::{boxed::Box, string::String, vec::Vec};
 use core::{slice::Iter, str::FromStr as _};
 
-use common::{prelude::*, sync::OnceLock};
+use common::{
+    fs::{self, FileCreateError as FCErr, FileCreateReadError as FCRErr},
+    prelude::*,
+    sync::OnceLock,
+};
 use image::{Image, Png};
 use json::Map;
 
@@ -48,7 +52,7 @@ use crate::{
     detect::os,
     field::cached,
     formats::{MemorySize, SplittedAnsiIter},
-    imp::{env, fs, http::Request},
+    imp::{env, http::Request},
     logo::{LogoInfo, UILogo},
     modules::{Commit, DocsVtable, FormatValue, Module, Version},
     nvidia::NvidiaLib,
@@ -323,13 +327,14 @@ fn get_logo_name_and_custom(val: &str) -> (Box<str>, UILogo) {
                 (id, UILogo::Preset)
             }
         },
-        Err(e) if e.is_file_not_found() => (
-            val.to_lowercase().replace('_', " ").into_boxed_str(),
-            UILogo::Preset,
-        ),
         Err(e) => {
-            warning!("Failed to use logo from fs: {e}");
-            (id, UILogo::Preset)
+            if e == FCRErr::Create(FCErr::InvalidName) {
+                let ready_id = val.to_lowercase().replace('_', " ").into_boxed_str();
+                (ready_id, UILogo::Preset)
+            } else {
+                warning!("Failed to use logo from fs: {e}");
+                (id, UILogo::Preset)
+            }
         },
     }
 }
