@@ -54,9 +54,71 @@ impl Iterator for Utf16Iter<'_> {
     }
 }
 
+pub struct DecodeUtf16Iter<I>
+where
+    I: Iterator<Item = u16>,
+{
+    iter: I,
+    next: Option<u16>,
+}
+
+impl<I: Iterator<Item = u16>> DecodeUtf16Iter<I> {
+    #[must_use]
+    pub const fn new(iter: I) -> Self {
+        Self { iter, next: None }
+    }
+}
+
+impl<I: Iterator<Item = u16>> Iterator for DecodeUtf16Iter<I> {
+    type Item = CodePoint;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let first = match self.next.take() {
+            Some(unit) => unit,
+            None => self.iter.next()?,
+        };
+
+        if !(0xD800..=0xDFFF).contains(&first) {
+            // SAFETY: Valid char
+            let ch = unsafe { char::from_u32_unchecked(u32::from(first)) };
+            return Some(CodePoint::Char(ch));
+        }
+
+        if (0xDC00..=0xDFFF).contains(&first) {
+            return Some(CodePoint::Surrogate(first));
+        }
+
+        let Some(second) = self.next.take().or_else(|| self.iter.next()) else {
+            return Some(CodePoint::Surrogate(first));
+        };
+
+        if (0xDC00..=0xDFFF).contains(&second) {
+            let hi = u32::from(first) - 0xD800;
+            let lo = u32::from(second) - 0xDC00;
+            let scalar = 0x10000 + (hi << 10) + lo;
+            // SAFETY: Valid scalar
+            let ch = unsafe { char::from_u32_unchecked(scalar) };
+            Some(CodePoint::Char(ch))
+        } else {
+            self.next = Some(second);
+            Some(CodePoint::Surrogate(first))
+        }
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let extra = usize::from(self.next.is_some());
+
+        let (lo, hi) = self.iter.size_hint();
+        let lower = lo.saturating_add(extra).div_ceil(2);
+        let upper = hi.and_then(|h| h.checked_add(extra));
+
+        (lower, upper)
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{Utf16Iter, Wtf8Buf};
+    use crate::{CodePoint, Utf16Iter, Wtf8Buf, utf16::DecodeUtf16Iter};
 
     fn build_utf16_std(s: &str) -> Vec<u16> {
         let iter = s.encode_utf16();
@@ -90,6 +152,23 @@ mod tests {
                 u16::from(b'!'),
                 0x00E9,
                 0
+            ]
+        );
+    }
+
+    #[test]
+    fn decode_utf16_test() {
+        let units = [0xD83D, 0xDE00, 0xD800, 0x0041, 0xDC00];
+
+        let v: Vec<_> = DecodeUtf16Iter::new(units.into_iter()).collect();
+
+        assert_eq!(
+            v,
+            vec![
+                CodePoint::Char('😀'),
+                CodePoint::Surrogate(0xD800),
+                CodePoint::Char('A'),
+                CodePoint::Surrogate(0xDC00),
             ]
         );
     }

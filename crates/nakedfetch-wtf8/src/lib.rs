@@ -19,7 +19,7 @@ use core::{
 pub use buf::Wtf8Buf;
 pub use codepoint::{CodePoint, CodePointsIter};
 pub use smol::SmolWtf8;
-pub use utf16::Utf16Iter;
+pub use utf16::*;
 
 #[repr(transparent)]
 pub struct Wtf8([u8]);
