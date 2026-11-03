@@ -33,8 +33,18 @@ impl Path {
     }
 
     #[must_use]
-    pub const fn as_os_str(&self) -> &PathInner {
+    pub const fn from_inner(s: &PathInner) -> &Self {
+        Self::from_bytes(s.as_bytes())
+    }
+
+    #[must_use]
+    pub const fn as_wtf8(&self) -> &PathInner {
         &self.0
+    }
+
+    #[must_use]
+    pub const fn as_bytes(&self) -> &[u8] {
+        self.0.as_bytes()
     }
 
     #[must_use]

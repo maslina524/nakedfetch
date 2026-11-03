@@ -1,6 +1,8 @@
 use alloc::string::String;
 use core::{fmt, ops::Deref, ptr, slice};
 
+use wtf8::Wtf8;
+
 use crate::{Path, PathBufInner};
 
 #[repr(transparent)]
@@ -76,7 +78,7 @@ impl PathBuf {
             self.0.push_char('/');
         }
 
-        self.0.push_wtf8(&path.as_os_str());
+        self.0.push_wtf8(&path.as_wtf8());
         self
     }
 }
@@ -163,16 +165,16 @@ mod tests {
         let mut pathbuf = PathBuf::from("C:/Hello/World");
 
         pathbuf = pathbuf.join("Learn");
-        assert_eq!(pathbuf.as_os_str(), "C:/Hello/World/Learn".as_ref());
+        assert_eq!(pathbuf.as_wtf8(), "C:/Hello/World/Learn".as_ref());
 
         pathbuf.pop();
-        assert_eq!(pathbuf.as_os_str(), "C:/Hello/World/".as_ref());
+        assert_eq!(pathbuf.as_wtf8(), "C:/Hello/World/".as_ref());
 
         pathbuf.pop();
-        assert_eq!(pathbuf.as_os_str(), "C:/Hello/".as_ref());
+        assert_eq!(pathbuf.as_wtf8(), "C:/Hello/".as_ref());
 
         pathbuf = pathbuf.join(Path::from_str("Rust"));
-        assert_eq!(pathbuf.as_os_str(), "C:/Hello/Rust".as_ref());
+        assert_eq!(pathbuf.as_wtf8(), "C:/Hello/Rust".as_ref());
     }
 
     #[test]
