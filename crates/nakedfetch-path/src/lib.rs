@@ -4,18 +4,17 @@
 extern crate alloc;
 
 mod buf;
-pub use buf::PathBuf;
-
 mod components;
-use core::{fmt, ptr};
+mod smol;
 
+pub use buf::PathBuf;
 pub use components::Components;
+pub use os::*;
+pub use smol::SmolPath;
 
 mod os;
 use alloc::string::String;
-
-// pub use error::PathBuildError;
-pub use os::*;
+use core::{fmt, ptr};
 
 #[repr(transparent)]
 #[derive(PartialEq, Eq)]

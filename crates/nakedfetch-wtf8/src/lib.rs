@@ -22,7 +22,6 @@ pub use smol::SmolWtf8;
 pub use utf16::Utf16Iter;
 
 #[repr(transparent)]
-#[derive(PartialEq, Eq)]
 pub struct Wtf8([u8]);
 
 impl Wtf8 {
@@ -139,6 +138,26 @@ impl fmt::Debug for Wtf8 {
         write!(f, "\"{self}\"")
     }
 }
+
+impl PartialEq for Wtf8 {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl PartialEq<SmolWtf8> for Wtf8 {
+    fn eq(&self, other: &SmolWtf8) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl PartialEq<Wtf8Buf> for Wtf8 {
+    fn eq(&self, other: &Wtf8Buf) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl Eq for Wtf8 {}
 
 #[cfg(test)]
 mod tests {

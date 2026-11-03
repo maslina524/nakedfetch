@@ -1,5 +1,5 @@
 use alloc::sync::Arc;
-use core::{error::Error, fmt, mem};
+use core::{error::Error, fmt, mem, ops::Deref};
 
 use crate::{Wtf8, Wtf8Buf};
 
@@ -116,6 +116,14 @@ impl SmolWtf8 {
     }
 }
 
+impl Deref for SmolWtf8 {
+    type Target = Wtf8;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_wtf8()
+    }
+}
+
 impl From<Wtf8Buf> for SmolWtf8 {
     fn from(value: Wtf8Buf) -> Self {
         value.as_wtf8().into()
@@ -180,6 +188,26 @@ impl fmt::Debug for SmolWtf8 {
         write!(f, "{:?}", self.as_wtf8())
     }
 }
+
+impl PartialEq for SmolWtf8 {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl PartialEq<Wtf8> for SmolWtf8 {
+    fn eq(&self, other: &Wtf8) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl PartialEq<Wtf8Buf> for SmolWtf8 {
+    fn eq(&self, other: &Wtf8Buf) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl Eq for SmolWtf8 {}
 
 #[cfg(test)]
 mod tests {

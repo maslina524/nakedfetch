@@ -5,10 +5,10 @@ use core::{
     ptr,
 };
 
-use crate::{Wtf8, codepoint::CodePoint};
+use crate::{SmolWtf8, Wtf8, codepoint::CodePoint};
 
 #[repr(transparent)]
-#[derive(Default, Clone, PartialEq, Eq)]
+#[derive(Default, Clone)]
 pub struct Wtf8Buf(Vec<u8>);
 
 impl Wtf8Buf {
@@ -170,6 +170,26 @@ impl fmt::Debug for Wtf8Buf {
         write!(f, "\"{self}\"")
     }
 }
+
+impl PartialEq for Wtf8Buf {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl PartialEq<SmolWtf8> for Wtf8Buf {
+    fn eq(&self, other: &SmolWtf8) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl PartialEq<Wtf8> for Wtf8Buf {
+    fn eq(&self, other: &Wtf8) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl Eq for Wtf8Buf {}
 
 #[cfg(test)]
 mod tests {
