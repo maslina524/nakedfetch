@@ -1,12 +1,12 @@
 use alloc::borrow::Cow;
 
 use common::sync::OnceLock;
+use path::SmolPath;
 use proc::{Docs, Module};
 
 use crate::{
     detect::initsystem::{InitSystemInfo, pid},
     field::{cached::SessionCached, lazy::LazyField},
-    imp::path::Path,
     impl_display_for_module,
     modules::Module,
     str::SmolStr,
@@ -19,7 +19,7 @@ pub struct Initsystem {
     #[doc = "Name"]
     pub name: Cow<'static, str>,
     #[doc = "Exe path"]
-    pub exe: Path,
+    pub exe: SmolPath,
     #[doc = "Version path"]
     pub version: SmolStr,
     #[doc = "Pid"]

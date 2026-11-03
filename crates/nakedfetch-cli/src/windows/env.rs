@@ -270,7 +270,7 @@ pub fn args_init() -> Vec<String> {
     ret
 }
 
-pub fn args() -> &'static Vec<String> {
+pub fn args() -> &'static [String] {
     ARGS.get().expect("Unreachable")
 }
 

@@ -145,6 +145,7 @@ impl_as_lua_debug_string!(
     char,
     crate::detect::gpu::GpuType,
     path::Path,
+    path::SmolPath,
     crate::str::SmolStr,
     Cow<'static, str>
 );

@@ -1,4 +1,4 @@
-use alloc::sync::Arc;
+use alloc::{string::String, sync::Arc};
 use core::{error::Error, fmt, mem, ops::Deref};
 
 use crate::{Wtf8, Wtf8Buf};
@@ -168,6 +168,12 @@ impl From<&str> for SmolWtf8 {
                 })
             },
         )
+    }
+}
+
+impl From<String> for SmolWtf8 {
+    fn from(value: String) -> Self {
+        Self::from(value.as_str())
     }
 }
 

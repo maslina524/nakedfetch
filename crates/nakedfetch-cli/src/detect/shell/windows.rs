@@ -3,6 +3,8 @@ use core::{
     sync::atomic::Ordering::Relaxed,
 };
 
+use path::SmolPath;
+
 use crate::{
     detect::shell::SHELL_PID,
     modules::Shell,
@@ -13,7 +15,6 @@ use crate::{
         env,
         error::ErrorCode,
         link::{OpenProcess, QueryFullProcessImageNameW},
-        path::Path,
     },
 };
 
@@ -32,7 +33,7 @@ static BLACKLIST: [&CStr; 6] = [
 #[derive(Default)]
 struct Process {
     pid: u32,
-    exe_path: Path,
+    exe_path: SmolPath,
 }
 
 impl Process {
@@ -57,15 +58,15 @@ impl Process {
             // SAFETY: WinAPI returns a valid C string and always leaves 261
             // bytes zeroed
             match utf16le_to_utf8(&buf, Utf16Len::Len(size as usize)) {
-                Ok(s) => Path::from(s),
+                Ok(s) => SmolPath::from(s),
                 Err(e) => {
                     warning!("Failed to convert Utf16 to Utf8 in shell exe path: {e}");
-                    Path::default()
+                    SmolPath::default()
                 },
             }
         } else {
             warning!("Failed to get shell exe path: {}", ErrorCode::last());
-            Path::default()
+            SmolPath::default()
         };
 
         Self { pid, exe_path }
@@ -101,7 +102,7 @@ pub fn get() -> Shell {
     let info = Process::new(get_shell_pid());
 
     let exe_path = info.exe_path.clone();
-    let process_name = info.exe_path.last().map_or_default(SmolStr::from);
+    let process_name = info.exe_path.last().map_or_default(SmolPath::from);
 
     let version = match env::get_file_product_version(&exe_path) {
         Ok(v) => v,
@@ -112,9 +113,11 @@ pub fn get() -> Shell {
     };
 
     let pid = info.pid;
+    let exe = process_name.clone();
     let exe_name = process_name.clone();
-    let exe = exe_path.clone();
-    let pretty_name = SmolStr::from(exe_name.trim_end_matches(".exe"));
+
+    let pretty_name_path = exe_name.trim_extension().unwrap_or(&exe_name);
+    let pretty_name = SmolPath::from(pretty_name_path);
 
     Shell {
         process_name,

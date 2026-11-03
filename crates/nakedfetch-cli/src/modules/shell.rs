@@ -1,21 +1,20 @@
 use common::sync::OnceLock;
+use path::SmolPath;
 use proc::{Docs, Module};
 
-use crate::{
-    detect::shell, imp::path::Path, impl_display_for_module, modules::Module, str::SmolStr,
-};
+use crate::{detect::shell, impl_display_for_module, modules::Module, str::SmolStr};
 
 static SHELL: OnceLock<Shell> = OnceLock::new();
 
 #[derive(Debug, Default, Docs, Module)]
 pub struct Shell {
-    pub process_name: SmolStr,
-    pub exe: Path,
-    pub exe_name: SmolStr,
+    pub process_name: SmolPath,
+    pub exe: SmolPath,
+    pub exe_name: SmolPath,
     pub version: SmolStr,
     pub pid: u32,
-    pub pretty_name: SmolStr,
-    pub exe_path: Path,
+    pub pretty_name: SmolPath,
+    pub exe_path: SmolPath,
     pub tty: i32,
 }
 

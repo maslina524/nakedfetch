@@ -101,6 +101,12 @@ impl AsRef<Path> for PathBuf {
     }
 }
 
+impl From<&Path> for PathBuf {
+    fn from(s: &Path) -> Self {
+        Self(OsString::from(&s.0))
+    }
+}
+
 impl<const N: usize> From<&[u8; N]> for PathBuf {
     fn from(s: &[u8; N]) -> Self {
         Self(OsString::from(s))

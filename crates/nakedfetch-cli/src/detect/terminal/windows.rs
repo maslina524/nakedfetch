@@ -1,5 +1,7 @@
 use core::ffi::c_void;
 
+use path::SmolPath;
+
 use crate::{
     detect::shell::get_shell_pid,
     modules::Terminal,
@@ -10,7 +12,6 @@ use crate::{
         env,
         error::ErrorCode,
         link::{OpenProcess, QueryFullProcessImageNameW},
-        path::Path,
     },
 };
 
@@ -20,7 +21,7 @@ const INVALID_HANDLE: *mut c_void = (-1isize).cast_unsigned() as *mut c_void;
 #[derive(Default)]
 struct Process {
     pid: u32,
-    exe_path: Path,
+    exe_path: SmolPath,
 }
 
 impl Process {
@@ -44,15 +45,15 @@ impl Process {
             // SAFETY: WinAPI returns a valid C string and always leaves 261
             // bytes zeroed
             match utf16le_to_utf8(&buf, Utf16Len::Len(size as usize)) {
-                Ok(s) => Path::from(s),
+                Ok(s) => SmolPath::from(s),
                 Err(e) => {
                     warning!("Failed to convert Utf16 to Utf8 in terminal exe path: {e}");
-                    Path::default()
+                    SmolPath::default()
                 },
             }
         } else {
             warning!("Failed to get terminal exe path: {}", ErrorCode::last());
-            Path::default()
+            SmolPath::default()
         };
 
         Self { pid, exe_path }
@@ -66,7 +67,7 @@ pub fn get() -> Terminal {
     let info = Process::new(pid);
 
     let exe_path = info.exe_path.clone();
-    let process_name = info.exe_path.last().map_or_default(SmolStr::from);
+    let process_name = info.exe_path.last().map_or_default(SmolPath::from);
 
     let version = match env::get_file_product_version(&exe_path) {
         Ok(v) => v,
@@ -79,7 +80,9 @@ pub fn get() -> Terminal {
     let pid = info.pid;
     let exe_name = process_name.clone();
     let exe = exe_path.clone();
-    let pretty_name = SmolStr::from(exe_name.trim_end_matches(".exe"));
+
+    let pretty_name_path = exe_name.trim_extension().unwrap_or(&exe_name);
+    let pretty_name = SmolPath::from(pretty_name_path);
 
     Terminal {
         process_name,

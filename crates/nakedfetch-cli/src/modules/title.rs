@@ -1,9 +1,10 @@
 use alloc::string::String;
 
 use common::sync::OnceLock;
+use path::SmolPath;
 use proc::{Docs, Module};
 
-use crate::{detect::title::TitleInfo, imp::path::Path, impl_display_for_module, modules::Module};
+use crate::{detect::title::TitleInfo, impl_display_for_module, modules::Module};
 
 static TITLE: OnceLock<Title> = OnceLock::new();
 
@@ -14,11 +15,11 @@ pub struct Title {
     #[doc = "Host name"]
     pub host_name: String,
     #[doc = "Home directory"]
-    pub home_dir: Path,
+    pub home_dir: SmolPath,
     #[doc = "Executable path of current process"]
-    pub exe_path: Path,
+    pub exe_path: SmolPath,
     #[doc = "User's default shell"]
-    pub user_shell: Path,
+    pub user_shell: SmolPath,
     #[doc = "User name (colored)"]
     pub user_name_colored: String,
     #[doc = "@ symbol (colored)"]
@@ -32,7 +33,7 @@ pub struct Title {
     #[doc = "PID of current process"]
     pub pid: u32,
     #[doc = "CWD with home dir replaced by `~`"]
-    pub cwd: Path,
+    pub cwd: SmolPath,
 }
 
 impl Module for Title {

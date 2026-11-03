@@ -16,6 +16,8 @@ mod os;
 use alloc::string::String;
 use core::{fmt, ptr};
 
+use wtf8::CodePoint;
+
 #[repr(transparent)]
 #[derive(PartialEq, Eq)]
 pub struct Path(OsStr);
@@ -40,6 +42,11 @@ impl Path {
     #[must_use]
     pub const fn as_os_str(&self) -> &OsStr {
         &self.0
+    }
+
+    #[must_use]
+    pub fn as_smol_path(&self) -> SmolPath {
+        SmolPath::from(self)
     }
 
     #[must_use]
@@ -94,6 +101,27 @@ impl Path {
 
         let bytes = &self.0.as_bytes()[..offset];
         Some(OsStr::from_bytes(bytes).as_ref())
+    }
+
+    #[must_use]
+    pub fn last(&self) -> Option<&Self> {
+        self.components().next_back()
+    }
+
+    #[must_use]
+    pub fn extension(&self) -> Option<&OsStr> {
+        let path_part = self.last()?;
+        let name = path_part.as_os_str();
+        let idx = name.rfind(CodePoint::Char('.'))?;
+        Some(&name[idx + 1..])
+    }
+
+    #[must_use]
+    pub fn trim_extension(&self) -> Option<&Self> {
+        self.extension().map(|ext| {
+            let bytes = self.as_bytes();
+            Self::from_bytes(&bytes[..bytes.len() - ext.len()])
+        })
     }
 }
 

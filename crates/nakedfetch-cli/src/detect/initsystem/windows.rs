@@ -1,11 +1,8 @@
 use alloc::borrow::{Cow, ToOwned};
 
-use crate::{
-    detect::initsystem::InitSystemInfo,
-    str::SmolStr,
-    warning,
-    windows::{env, path::Path},
-};
+use path::SmolPath;
+
+use crate::{detect::initsystem::InitSystemInfo, str::SmolStr, warning, windows::env};
 
 const NAME: &str = "smss";
 
@@ -21,7 +18,7 @@ impl InitSystemInfo {
         };
 
         Self {
-            exe: Path::from(path),
+            exe: SmolPath::from(path),
             name: Cow::Borrowed(NAME),
             version,
         }

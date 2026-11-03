@@ -8,11 +8,11 @@ use alloc::{
     vec::Vec
 };
 use common::formatf;
+use path::{Path, PathBuf, SmolPath};
 
 use crate::{
     logo::LogoInfo,
     imp::env,
-    imp::path::Path,
     imp::link::{
         ConvertSidToStringSidW, GetComputerNameW, GetCurrentDirectoryW, GetCurrentProcess,
         GetCurrentProcessId, GetTokenInformation, GetUserNameExW, GetUserNameW, OpenProcessToken,
@@ -44,7 +44,8 @@ impl TitleInfo {
         let user_name_colored = Self::colored(&user_name);
         let host_name = Self::host_name();
         let host_name_colored = Self::colored(&host_name);
-        let home_dir = Self::home_dir(&user_name);
+        let home_dir_buf = Self::home_dir(&user_name.as_ref());
+        let home_dir = home_dir_buf.as_smol_path();
         let exe_path = Self::exe_path();
         let user_shell = Self::user_shell();
         let full_user_name = Self::full_user_name();
@@ -129,20 +130,20 @@ impl TitleInfo {
         String::from_utf16_lossy(&buf).rsplit('\0').collect()
     }
 
-    pub fn home_dir(user_name: &str) -> Path {
-        Path::from("C:/Users").join(user_name)
+    pub fn home_dir(user_name: &Path) -> PathBuf {
+        PathBuf::from("C:/Users").join(user_name)
     }
 
-    pub fn exe_path() -> Path {
+    pub fn exe_path() -> SmolPath {
         let args = env::args();
-        Path::from(args[0].clone())
+        SmolPath::from(args[0].clone())
     }
 
-    pub const fn user_shell() -> Path {
-        Path::new() // No impl in windows
+    pub fn user_shell() -> SmolPath {
+        SmolPath::default() // No impl in windows
     }
 
-    pub fn cwd() -> Path {
+    pub fn cwd() -> SmolPath {
         let mut buf = [0u16; 1024];
         let size = 1024;
         
@@ -154,11 +155,11 @@ impl TitleInfo {
             )
         };
         if ret == 0 {
-            return Path::new();
+            return SmolPath::default();
         }
 
         let string: String = String::from_utf16_lossy(&buf).rsplit('\0').collect();
-        Path::from(string)
+        SmolPath::from(string)
     }
 
     pub fn pid() -> u32 {

@@ -75,6 +75,27 @@ impl Wtf8 {
     pub const fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
+
+    #[must_use]
+    pub fn find(&self, cp: CodePoint) -> Option<usize> {
+        for (i, icp) in self.codepoints().enumerate() {
+            if icp == cp {
+                return Some(i);
+            }
+        }
+        None
+    }
+
+    #[must_use]
+    pub fn rfind(&self, cp: CodePoint) -> Option<usize> {
+        let mut result = None;
+        for (i, icp) in self.codepoints().enumerate() {
+            if icp == cp {
+                result = Some(i);
+            }
+        }
+        result
+    }
 }
 
 impl AsRef<Self> for Wtf8 {
@@ -163,7 +184,7 @@ impl Eq for Wtf8 {}
 mod tests {
     use alloc::sync::Arc;
 
-    use crate::Wtf8;
+    use crate::{CodePoint, Wtf8};
 
     #[test]
     fn valid_utf8_for_wtf8_test() {
@@ -209,5 +230,17 @@ mod tests {
 
         assert_eq!(path, arc.as_ref());
         assert_eq!(path, copied.as_ref());
+    }
+
+    #[test]
+    fn rfind_test() {
+        let wtf8 = Wtf8::from_bytes(b"Hello");
+        let l = CodePoint::Char('l');
+        let h = CodePoint::Char('H');
+
+        assert_eq!(wtf8.find(l), Some(2));
+        assert_eq!(wtf8.rfind(l), Some(3));
+        assert_eq!(wtf8.find(h), Some(0));
+        assert_eq!(wtf8.rfind(h), Some(0));
     }
 }

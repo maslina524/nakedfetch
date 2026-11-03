@@ -1,9 +1,9 @@
 use common::sync::OnceLock;
+use path::SmolPath;
 use proc::{Docs, Module};
 
 use crate::{
-    detect::wallpaper::WallpaperInfo, imp::path::Path, impl_display_for_module, modules::Module,
-    str::SmolStr,
+    detect::wallpaper::WallpaperInfo, impl_display_for_module, modules::Module, str::SmolStr,
 };
 
 static WALLPAPER: OnceLock<Wallpaper> = OnceLock::new();
@@ -13,7 +13,7 @@ pub struct Wallpaper {
     #[doc = "File name"]
     pub file_name: SmolStr,
     #[doc = "Full path"]
-    pub full_path: Path,
+    pub full_path: SmolPath,
 }
 
 impl Module for Wallpaper {

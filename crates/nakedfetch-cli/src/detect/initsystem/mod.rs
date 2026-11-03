@@ -1,6 +1,8 @@
 use alloc::borrow::Cow;
 
-use crate::{cfg_if, imp::path::Path, str::SmolStr};
+use path::SmolPath;
+
+use crate::{cfg_if, str::SmolStr};
 
 cfg_if! {
     if #[cfg(target_os = "windows")] {
@@ -13,7 +15,7 @@ cfg_if! {
 }
 
 pub struct InitSystemInfo {
-    pub exe: Path,
+    pub exe: SmolPath,
     pub name: Cow<'static, str>,
     pub version: SmolStr,
 }

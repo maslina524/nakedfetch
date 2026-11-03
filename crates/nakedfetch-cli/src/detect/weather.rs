@@ -1,16 +1,18 @@
 use alloc::{borrow::ToOwned, string::String};
-use core::str::{FromStr, SplitN};
+use core::{
+    fmt::Write as _,
+    str::{FromStr as _, SplitN},
+};
 
-use common::formatf;
+use common::{
+    formatf,
+    fs::{self, AccessWrite, File},
+};
+use path::{Path, PathBuf};
 
 use crate::{
     formats::{Percent, Temperature},
-    imp::{
-        env,
-        fs::{self, Access, File},
-        http::Request,
-        path::Path,
-    },
+    imp::{env, http::Request},
     modules::weather::Weather,
     str::ConcatStr,
     warning,
@@ -119,7 +121,7 @@ fn read_cache() -> Option<(u64, String)> {
         )
     }
 
-    let path = Path::cache().join("weather");
+    let path = PathBuf::cache().join("weather");
     let string = fs::read_to_string(path).ok()?;
 
     let mut parts = string.splitn(2, '\n');
@@ -135,8 +137,8 @@ fn set_cache(hour: u64, data: &str) -> Option<()> {
         warning!("Failed to create {path_dir}: {e}");
     }
     let path = path_dir.join("weather");
-    let file = File::create_always(path, Access::Write).ok()?;
-    let formatted = formatf!("{hour}\n{data}");
-    file.write(formatted.as_bytes()).ok()?;
+    let mut file = File::<AccessWrite>::create_new(path).ok()?;
+    let _ = write!(file, "{hour}\n{data}");
+
     Some(())
 }

@@ -1,6 +1,6 @@
 use alloc::string::String;
 
-use crate::imp::path::Path;
+use path::SmolPath;
 
 crate::cfg_if! {
     if #[cfg(target_os = "windows")] {
@@ -13,13 +13,13 @@ crate::cfg_if! {
 pub struct TitleInfo {
     pub user_name: String,
     pub host_name: String,
-    pub home_dir: Path,
-    pub exe_path: Path,
-    pub user_shell: Path,
+    pub home_dir: SmolPath,
+    pub exe_path: SmolPath,
+    pub user_shell: SmolPath,
     pub user_name_colored: String,
     pub host_name_colored: String,
     pub full_user_name: String,
     pub user_id: String,
     pub pid: u32,
-    pub cwd: Path,
+    pub cwd: SmolPath,
 }

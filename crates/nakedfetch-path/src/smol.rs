@@ -1,4 +1,4 @@
-use alloc::sync::Arc;
+use alloc::{string::String, sync::Arc};
 use core::{fmt, ops::Deref};
 
 use wtf8::{SmolWtf8, Wtf8};
@@ -33,6 +33,11 @@ impl SmolPath {
     #[must_use]
     pub fn as_path(&self) -> &Path {
         Path::from_os_str(self.0.as_wtf8())
+    }
+
+    #[must_use]
+    pub fn as_pathbuf(&self) -> PathBuf {
+        PathBuf::from(self.as_path())
     }
 
     #[must_use]
@@ -75,6 +80,12 @@ impl From<PathBuf> for SmolPath {
 
 impl From<&str> for SmolPath {
     fn from(value: &str) -> Self {
+        Self(SmolWtf8::from(value))
+    }
+}
+
+impl From<String> for SmolPath {
+    fn from(value: String) -> Self {
         Self(SmolWtf8::from(value))
     }
 }

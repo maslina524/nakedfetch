@@ -1,3 +1,5 @@
+use path::SmolPath;
+
 use crate::{
     detect::wallpaper::WallpaperInfo,
     imp::error::ErrorCode,
@@ -5,7 +7,6 @@ use crate::{
     windows::{
         encoding::{self, Utf16Len, utf16le_to_utf8},
         link::SystemParametersInfoW,
-        path::Path,
     },
 };
 
@@ -18,14 +19,14 @@ impl WallpaperInfo {
             Ok(p) => p,
             Err(e) => {
                 warning!("Failed to get full wallpaper path: {e}");
-                Path::new()
+                SmolPath::default()
             },
         };
 
         Self { full_path }
     }
 
-    fn full_path() -> encoding::Result<Path> {
+    fn full_path() -> encoding::Result<SmolPath> {
         let mut buf = [0u16; MAX_PATH];
 
         // SAFETY: Completely safe
@@ -42,6 +43,6 @@ impl WallpaperInfo {
         }
 
         let utf8 = utf16le_to_utf8(&buf, Utf16Len::NullTerminated)?;
-        Ok(Path::from(utf8))
+        Ok(SmolPath::from(utf8))
     }
 }

@@ -1,16 +1,18 @@
 use alloc::string::String;
-use core::str::{FromStr as _, SplitN};
+use core::{
+    fmt::Write as _,
+    str::{FromStr as _, SplitN},
+};
 
-use common::formatf;
+use common::{
+    formatf,
+    fs::{self, AccessWrite, File},
+};
 use json::{Map, Value};
+use path::{Path, PathBuf};
 
 use crate::{
-    imp::{
-        env,
-        fs::{self, Access, File},
-        http::Request,
-        path::Path,
-    },
+    imp::{env, http::Request},
     modules::publicip::PublicIP,
     warning,
 };
@@ -88,7 +90,7 @@ fn read_cache() -> Option<(u64, Map)> {
         )
     }
 
-    let path = Path::cache().join("publicip");
+    let path = PathBuf::cache().join("publicip");
     let string = fs::read_to_string(path).ok()?;
 
     let mut parts = string.splitn(2, '\n');
@@ -111,9 +113,8 @@ fn set_cache(hour: u64, map: &Map) -> Option<()> {
     }
 
     let path = path_dir.join("publicip");
-    let file = File::create_always(path, Access::Write).ok()?;
-    let formatted = formatf!("{hour}\n{map}");
-    file.write(formatted.as_bytes()).ok()?;
+    let mut file = File::<AccessWrite>::create_new(path).ok()?;
+    let _ = write!(file, "{hour}\n{map}");
 
     Some(())
 }

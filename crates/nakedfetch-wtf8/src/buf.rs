@@ -116,6 +116,12 @@ impl Deref for Wtf8Buf {
     }
 }
 
+impl From<&Wtf8> for Wtf8Buf {
+    fn from(s: &Wtf8) -> Self {
+        Self(s.as_bytes().to_vec())
+    }
+}
+
 impl From<&str> for Wtf8Buf {
     fn from(s: &str) -> Self {
         Self(s.as_bytes().to_vec())
