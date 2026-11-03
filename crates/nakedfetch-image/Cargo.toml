@@ -6,5 +6,9 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 
+[dependencies]
+deflate = { path = "../nakedfetch-deflate" }
+hash = { path = "../nakedfetch-hash" }
+
 [lints]
 workspace = true

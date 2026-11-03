@@ -8,3 +8,6 @@ pub use img::*;
 
 mod pixel;
 pub use pixel::*;
+
+mod png;
+pub use png::*;

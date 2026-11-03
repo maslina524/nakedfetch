@@ -6,7 +6,6 @@ mod allocator;
 mod base64;
 mod color;
 mod config;
-mod crc32;
 mod kitty;
 mod logo;
 mod lua;
@@ -16,7 +15,6 @@ mod parser;
 mod sync;
 mod url;
 
-mod codecs;
 mod detect;
 mod field;
 mod formats;
@@ -41,12 +39,11 @@ use alloc::{boxed::Box, string::String, vec::Vec};
 use core::{slice::Iter, str::FromStr as _};
 
 use common::prelude::*;
-use image::Image;
+use image::{Image, Png};
 use json::Map;
 
 use crate::{
     allocator::{AllocationReport, Allocator},
-    codecs::Png,
     config::{Config, ConfigModule},
     detect::os,
     field::cached,
@@ -312,7 +309,7 @@ fn get_logo_name_and_custom(val: &str) -> (Box<str>, UILogo) {
     let id = os::get_id().as_boxed_str();
     match fs::read(val) {
         Ok(b) => {
-            if codecs::png::is_png(&b) {
+            if Png::is_png(&b) {
                 match Png::decode(&b) {
                     Ok(p) => (id, UILogo::Image(p.into_image())),
                     Err(e) => {
