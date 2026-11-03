@@ -15,6 +15,7 @@ members = [
     "crates/nakedfetch-wtf8",
     "crates/nakedfetch-path",
     "crates/nakedfetch-hash",
+    "crates/nakedfetch-lua",
 ]
 
 default-members = ["crates/nakedfetch-cli"]

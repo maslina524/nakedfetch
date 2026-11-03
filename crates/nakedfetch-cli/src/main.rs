@@ -337,11 +337,17 @@ fn get_logo_name_and_custom(val: &str) -> (Box<str>, UILogo) {
 #[cold]
 fn print_help(theme: Option<&str>) -> ! {
     if let Some(t) = theme {
-        let idx = t.find('-').unwrap_or_else(|| exit(1));
+        let idx = t.find('-').unwrap_or_else(|| {
+            fprintln!("Specify the module name!");
+            exit(0)
+        });
         let ident = &t[..idx];
         let action = &t[idx + 1..];
 
-        let vtable = DocsVtable::from_str(ident).unwrap_or_else(|| exit(1));
+        let vtable = DocsVtable::from_str(ident).unwrap_or_else(|| {
+            fprintln!("Module with this name not found!");
+            exit(0)
+        });
         match action {
             "format" => {
                 if let Some(doc) = (vtable.format)() {
