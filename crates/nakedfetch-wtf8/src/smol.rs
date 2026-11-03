@@ -1,7 +1,7 @@
 use alloc::sync::Arc;
 use core::{error::Error, fmt, mem};
 
-use crate::Wtf8;
+use crate::{Wtf8, Wtf8Buf};
 
 const INLINE_CAP: usize = 23;
 const EMPTY_WTF8: &Wtf8 = Wtf8::from_str("");
@@ -116,6 +116,12 @@ impl SmolWtf8 {
     }
 }
 
+impl From<Wtf8Buf> for SmolWtf8 {
+    fn from(value: Wtf8Buf) -> Self {
+        value.as_wtf8().into()
+    }
+}
+
 impl From<&Wtf8> for SmolWtf8 {
     fn from(value: &Wtf8) -> Self {
         let bytes = value.as_bytes();
@@ -135,15 +141,49 @@ impl From<&Wtf8> for SmolWtf8 {
     }
 }
 
+impl From<&str> for SmolWtf8 {
+    fn from(value: &str) -> Self {
+        let bytes = value.as_bytes();
+        let len = bytes.len();
+
+        len.try_into().map_or_else(
+            |_| {
+                let wtf8 = Wtf8::from_str(value);
+                Self(Repr::Heap(wtf8.into()))
+            },
+            |inline| {
+                let mut buf = [0u8; INLINE_CAP];
+                buf[..len].copy_from_slice(&bytes[..len]);
+                Self(Repr::Inline {
+                    len: inline,
+                    data: buf,
+                })
+            },
+        )
+    }
+}
+
 impl From<Arc<Wtf8>> for SmolWtf8 {
     fn from(value: Arc<Wtf8>) -> Self {
         Self(Repr::Heap(value))
     }
 }
 
+impl fmt::Display for SmolWtf8 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.as_wtf8())
+    }
+}
+
+impl fmt::Debug for SmolWtf8 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.as_wtf8())
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::{SmolWtf8, Wtf8};
+    use crate::{SmolWtf8, Wtf8, Wtf8Buf};
 
     #[test]
     fn smol_wtf8_len() {
@@ -159,5 +199,21 @@ mod tests {
         let smol: SmolWtf8 = wtf8.into();
 
         assert_eq!(wtf8, smol.as_wtf8());
+    }
+
+    #[test]
+    fn smol_from_wtf8buf_len() {
+        let wtf8 = Wtf8Buf::from("Hello World!");
+        let smol: SmolWtf8 = wtf8.as_wtf8().into();
+
+        assert_eq!(wtf8.as_wtf8(), smol.as_wtf8());
+    }
+
+    #[test]
+    fn smol_display_len() {
+        let orig = "Hello World!";
+        let smol = SmolWtf8::from(orig);
+
+        assert_eq!(orig, format!("{smol}"));
     }
 }

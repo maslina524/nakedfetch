@@ -1,4 +1,4 @@
-use alloc::{string::String, vec::Vec};
+use alloc::{string::String, sync::Arc, vec::Vec};
 use core::{
     fmt::{self, Write as _},
     ops::Deref,
@@ -143,6 +143,12 @@ impl From<&[u8]> for Wtf8Buf {
 impl<const N: usize> From<&[u8; N]> for Wtf8Buf {
     fn from(bytes: &[u8; N]) -> Self {
         Self::from(&bytes[..])
+    }
+}
+
+impl From<Wtf8Buf> for Arc<Wtf8> {
+    fn from(value: Wtf8Buf) -> Self {
+        value.as_wtf8().into()
     }
 }
 
