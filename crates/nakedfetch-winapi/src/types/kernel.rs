@@ -62,6 +62,13 @@ STRUCT! {
     }
 }
 
+STRUCT! {
+    struct CurDir {
+        dos_path: RawUnicodeString,
+        handle: Handle,
+    }
+}
+
 UNION! {
     union IoStatusBlockInner {
         status: NtStatus,

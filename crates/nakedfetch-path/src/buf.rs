@@ -1,7 +1,7 @@
 use alloc::string::String;
 use core::{fmt, ops::Deref, ptr, slice};
 
-use crate::{OsString, Path};
+use crate::{OsStr, OsString, Path};
 
 #[repr(transparent)]
 #[derive(Default, PartialEq, Eq)]
@@ -127,6 +127,24 @@ impl From<&str> for PathBuf {
 
 impl From<String> for PathBuf {
     fn from(s: String) -> Self {
+        Self(OsString::from(s))
+    }
+}
+
+impl From<OsString> for PathBuf {
+    fn from(s: OsString) -> Self {
+        Self(s)
+    }
+}
+
+impl From<&OsString> for PathBuf {
+    fn from(s: &OsString) -> Self {
+        Self(s.clone())
+    }
+}
+
+impl From<&OsStr> for PathBuf {
+    fn from(s: &OsStr) -> Self {
         Self(OsString::from(s))
     }
 }

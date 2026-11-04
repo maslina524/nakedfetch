@@ -91,8 +91,8 @@ pub struct NtStatus(u32);
 
 impl NtStatus {
     #[must_use]
-    pub const fn new(status: i32) -> Self {
-        Self(status.cast_unsigned())
+    pub const fn new(status: u32) -> Self {
+        Self(status)
     }
 
     #[must_use]
@@ -162,6 +162,12 @@ impl fmt::Debug for NtStatus {
 
 impl From<i32> for NtStatus {
     fn from(value: i32) -> Self {
+        Self::new(value.cast_unsigned())
+    }
+}
+
+impl From<u32> for NtStatus {
+    fn from(value: u32) -> Self {
         Self::new(value)
     }
 }
@@ -173,8 +179,8 @@ mod tests {
     const SUCCESS: NtStatus = NtStatus::new(0);
     const TIMEOUT: NtStatus = NtStatus::new(0x0102);
     const OBJECT_NAME_EXISTS: NtStatus = NtStatus::new(0x4000_0000);
-    const BUFFER_OVERFLOW: NtStatus = NtStatus::new(0x8000_0005u32.cast_signed());
-    const INVALID_HANDLE: NtStatus = NtStatus::new(0xC000_0008u32.cast_signed());
+    const BUFFER_OVERFLOW: NtStatus = NtStatus::new(0x8000_0005u32);
+    const INVALID_HANDLE: NtStatus = NtStatus::new(0xC000_0008u32);
 
     #[test]
     fn is_success_test() {

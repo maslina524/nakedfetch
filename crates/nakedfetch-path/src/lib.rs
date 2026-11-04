@@ -45,6 +45,11 @@ impl Path {
     }
 
     #[must_use]
+    pub fn as_pathbuf(&self) -> PathBuf {
+        PathBuf::from(&self.0)
+    }
+
+    #[must_use]
     pub fn as_smol_path(&self) -> SmolPath {
         SmolPath::from(self)
     }

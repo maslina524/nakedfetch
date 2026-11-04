@@ -16,3 +16,5 @@ link!("ntdll" fn RtlFreeUnicodeString(UnicodeString: *mut t::RawUnicodeString) -
 link!("ntdll" fn NtCreateFile(FileHandle: *mut t::Handle, DesiredAccess: prim::ULong, ObjectAttributes: *mut t::ObjectAttributes, IoStatusBlock: *mut t::IoStatusBlock, AllocationSize: ptr::LargeIntegerPtr, FileAttributes: prim::ULong, ShareAccess: prim::ULong, CreateDisposition: prim::ULong, CreateOptions: prim::ULong, EaBuffer: ptr::VoidPtr, EaLength: prim::ULong) -> NtStatus);
 link!("ntdll" fn NtQueryAttributesFile(ObjectAttributes: *mut t::ObjectAttributes, FileInformation: *mut t::FileBasicInfo) -> NtStatus);
 link!("ntdll" fn NtQueryInformationFile(FileHandle: t::Handle, IoStatusBlock: *mut t::IoStatusBlock, FileInformation: ptr::VoidPtr, Length: prim::ULong, FileInformationClass: class::FileInformation) -> NtStatus);
+link!("ntdll" fn RtlQueryEnvironmentVariable_U(Environment: ptr::WideStrPtr, Name: *const t::RawUnicodeString, Value: *mut t::RawUnicodeString) -> NtStatus);
+link!("ntdll" fn RtlInitUnicodeString(DestinationString: *mut t::RawUnicodeString, SourceString: ptr::WideStrConstPtr) -> ());
