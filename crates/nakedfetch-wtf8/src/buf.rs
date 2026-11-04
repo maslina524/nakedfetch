@@ -5,7 +5,7 @@ use core::{
     ptr,
 };
 
-use crate::{SmolWtf8, Wtf8, codepoint::CodePoint};
+use crate::{DecodeUtf16Iter, SmolWtf8, Wtf8, codepoint::CodePoint};
 
 #[repr(transparent)]
 #[derive(Default, Clone)]
@@ -15,6 +15,12 @@ impl Wtf8Buf {
     #[must_use]
     pub const fn new() -> Self {
         Self(Vec::new())
+    }
+
+    #[must_use]
+    pub fn from_utf16<I: Iterator<Item = u16>>(iter: I) -> Self {
+        let utf16 = DecodeUtf16Iter::new(iter);
+        Self::from_iter(utf16)
     }
 
     #[must_use]
@@ -158,6 +164,23 @@ impl From<Wtf8Buf> for Arc<Wtf8> {
     }
 }
 
+impl FromIterator<CodePoint> for Wtf8Buf {
+    fn from_iter<I: IntoIterator<Item = CodePoint>>(iter: I) -> Self {
+        let iter = iter.into_iter();
+        let hint = iter.size_hint();
+        let size = hint.1.unwrap_or(hint.0);
+
+        let mut this = Self::with_capacity(size);
+        for cp in iter {
+            match cp {
+                CodePoint::Char(c) => this.push_char(c),
+                CodePoint::Surrogate(s) => this.push_surrogate(s),
+            }
+        }
+        this
+    }
+}
+
 impl fmt::Display for Wtf8Buf {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let iter = self.0.utf8_chunks();
@@ -199,7 +222,7 @@ impl Eq for Wtf8Buf {}
 
 #[cfg(test)]
 mod tests {
-    use crate::{Wtf8Buf, codepoint::CodePoint};
+    use crate::{DecodeUtf16Iter, Wtf8Buf, codepoint::CodePoint};
 
     #[test]
     fn valid_utf8_for_wtf8_test() {
@@ -294,5 +317,20 @@ mod tests {
             formatted,
             format!("\"C:/Hello/World{}\"", char::REPLACEMENT_CHARACTER)
         );
+    }
+
+    #[test]
+    fn from_utf16_test() {
+        let text = "Привет Мир!";
+        let utf16 = text.encode_utf16();
+
+        let codepoints: Vec<CodePoint> = DecodeUtf16Iter::new(utf16.into_iter()).collect();
+        let wtf8buf: Wtf8Buf = Wtf8Buf::from_iter(codepoints);
+        assert_eq!(wtf8buf.as_str(), Some(text));
+
+        let chinese = "你媽媽";
+        let chinese_utf16 = chinese.encode_utf16();
+        let chinese_wtf8buf = Wtf8Buf::from_utf16(chinese_utf16);
+        assert_eq!(chinese_wtf8buf.as_str(), Some(chinese));
     }
 }
