@@ -7,6 +7,7 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
+wtf8 = { path = "../nakedfetch-wtf8" }
 path = { path = "../nakedfetch-path" }
 winapi = { path = "../nakedfetch-winapi" }
 

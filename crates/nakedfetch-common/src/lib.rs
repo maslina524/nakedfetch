@@ -11,6 +11,7 @@ use windows as imp;
 #[macro_use]
 mod macros;
 pub mod allocator;
+pub mod env;
 pub mod fs;
 pub mod io;
 pub mod sync;
