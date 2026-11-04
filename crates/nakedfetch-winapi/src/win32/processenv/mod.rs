@@ -1,3 +1,6 @@
+mod GetCommandLine;
+pub use GetCommandLine::*;
+
 mod GetEnvironmentVariable;
 pub use GetEnvironmentVariable::*;
 
@@ -16,5 +19,12 @@ mod tests {
         let name = appadata.last().expect("Windows returns small path");
 
         assert_eq!(name.to_str(), Some("AppData"));
+    }
+
+    #[test]
+    fn cmd_line_test() {
+        let wtf8 = super::GetCommandLine();
+        let string = wtf8.to_string_lossy();
+        assert!(string.contains(env!("CARGO_CRATE_NAME")));
     }
 }

@@ -35,7 +35,7 @@ fn get_env_var_inner(name: &Wtf8) -> Result<Wtf8Buf, NtStatus> {
     }
 
     let len = raw_value.length;
-    let mut buffer = vec![0u16; len as usize];
+    let mut buffer = vec![0u16; len as usize + 2];
 
     let mut value = RawUnicodeString {
         maximum_length: (buffer.len() + 2) as u16,
