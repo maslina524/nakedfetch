@@ -3,10 +3,7 @@
 
 extern crate alloc;
 
-#[cfg(target_os = "windows")]
-mod windows;
-#[cfg(target_os = "windows")]
-use windows as imp;
+mod imp;
 
 #[macro_use]
 mod macros;

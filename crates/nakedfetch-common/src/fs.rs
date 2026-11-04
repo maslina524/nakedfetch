@@ -11,7 +11,7 @@ pub use crate::imp::fs::{
     AccessAll, AccessCanRead, AccessCanWrite, AccessRead, AccessWrite, FileCreateError,
     FileExistsError, FileHandle, FileReadError, FileSizeError,
 };
-use crate::{imp::fs, windows::handle};
+use crate::imp::{fs, handle};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FileSizeReadError {

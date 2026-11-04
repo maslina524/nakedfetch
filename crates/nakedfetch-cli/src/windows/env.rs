@@ -443,21 +443,6 @@ const fn is_leap_year(year: u16) -> bool {
     (year.is_multiple_of(4) && !year.is_multiple_of(100)) || year.is_multiple_of(400)
 }
 
-pub fn get_var(name: &str, size: Option<usize>) -> encoding::Result<String> {
-    let name_wide = wide(name);
-    let size = size.unwrap_or(1024);
-    let mut buf = vec![0u16; size + 1];
-
-    // SAFETY: Buffer overflow will not occur,
-    //  1 byte remains for the null byte, safe
-    let len = unsafe { GetEnvironmentVariableW(name_wide.as_ptr(), buf.as_mut_ptr(), size as u32) };
-    if len == 0 {
-        return Err(ErrorCode::last().into());
-    }
-
-    utf16le_to_utf8(&buf, Utf16Len::Len(len as usize)).map_err(EncodeError::from)
-}
-
 pub fn expand_env(s: &str) -> Result<Cow<'_, str>, Utf16ToUtf8> {
     if s.is_empty() {
         return Ok(Cow::Borrowed(s));
