@@ -5,29 +5,25 @@
 )]
 
 use crate::{
-    native::peb::Peb,
+    native::peb,
     ntstatus::NtStatus,
-    types::{self as t, Boolean, RawUnicodeString, class, primitives as prim, ptr},
+    types::{self as t, Boolean, Logical, RawUnicodeString, class, primitives as prim, ptr},
 };
 
-link!("ntdll" safe fn RtlGetCurrentPeb() -> &'static Peb);
-link!("ntdll" fn RtlFreeHeap(hHeap: t::Handle, dwFlags: prim::ULong, lpMem: ptr::VoidPtr) -> Boolean);
-link!("ntdll" fn RtlReAllocateHeap(hHeap: t::Handle, dwFlags: prim::ULong, lpMem: ptr::VoidPtr, size: usize) -> ptr::VoidPtr);
-link!("ntdll" fn RtlFreeUnicodeString(UnicodeString: *mut t::RawUnicodeString) -> ());
-link!("ntdll" fn RtlQueryEnvironmentVariable_U(Environment: ptr::WideStrPtr, Name: *const t::RawUnicodeString, Value: *mut t::RawUnicodeString) -> NtStatus);
-link!("ntdll" fn RtlInitUnicodeString(DestinationString: *mut t::RawUnicodeString, SourceString: ptr::WideStrConstPtr) -> ());
-
 // Primitives
+type VOID = core::ffi::c_void;
 type BOOLEAN = Boolean;
 type SIZE_T = usize;
 type ULONG = prim::ULong;
+type LARGE_INTEGER = prim::LargeInteger;
 type ACCESS_MASK = prim::ULong;
+type LOGICAL = Logical;
 
 // Primitives Ptr
 type PULONG = *mut ULONG;
-type PLARGE_INTEGER = *mut prim::LargeInteger;
+type PLARGE_INTEGER = *mut LARGE_INTEGER;
 
-type PVOID = ptr::VoidPtr;
+type PVOID = *mut VOID;
 
 // Strings
 type PWSTR = *mut u16;
@@ -38,6 +34,8 @@ type HANDLE = t::Handle;
 type FILE_BASIC_INFORMATION = t::FileBasicInfo;
 type UNICODE_STRING = RawUnicodeString;
 type IO_STATUS_BLOCK = t::IoStatusBlock;
+type OBJECT_ATTRIBUTES = t::ObjectAttributes;
+type PEB = peb::Peb;
 
 type NTSTATUS = NtStatus;
 
@@ -49,9 +47,11 @@ type PIO_STATUS_BLOCK = *mut IO_STATUS_BLOCK;
 
 type PIO_APC_ROUTINE = ptr::IoApcRoutinePtr;
 type PRTL_RELATIVE_NAME_U = PVOID;
+type PPEB = &'static PEB;
 
 // Structs const ptr
-type PCOBJECT_ATTRIBUTES = *const t::ObjectAttributes;
+type PCOBJECT_ATTRIBUTES = *const OBJECT_ATTRIBUTES;
+type PCUNICODE_STRING = *const UNICODE_STRING;
 
 // Classes
 type FILE_INFORMATION_CLASS = class::FileInformation;
@@ -124,11 +124,36 @@ define_fn!(
         _Out_opt_ PWSTR *FilePart,
         _Out_opt_ PRTL_RELATIVE_NAME_U RelativeName
     );
-);
 
-// RtlFreeHeap
-// RtlFreeUnicodeString
-// RtlGetCurrentPeb
-// RtlInitUnicodeString
-// RtlQueryEnvironmentVariable_U
-// RtlReAllocateHeap
+    LOGICAL NTAPI RtlFreeHeap(
+        _In_ HANDLE HeapHandle,
+        _In_opt_ ULONG Flags,
+        _Frees_ptr_opt__Post_invalid_ PVOID BaseAddress
+    );
+
+    VOID NTAPI RtlFreeUnicodeString(
+        _Inout_ PUNICODE_STRING UnicodeString
+    );
+
+    PPEB NTAPI RtlGetCurrentPeb(
+        VOID
+    );
+
+    VOID NTAPI RtlInitUnicodeString(
+        _Out_ PUNICODE_STRING DestinationString,
+        _In_opt_z_ PCWSTR SourceString
+    );
+
+    NTSTATUS NTAPI RtlQueryEnvironmentVariable_U(
+        _In_opt_ PVOID Environment,
+        _In_ PCUNICODE_STRING Name,
+        _Inout_ PUNICODE_STRING Value
+    );
+
+    PVOID NTAPI RtlReAllocateHeap(
+        _In_ HANDLE HeapHandle,
+        _In_ ULONG Flags,
+        _Frees_ptr_opt_ PVOID BaseAddress,
+        _In_ SIZE_T Size
+    );
+);

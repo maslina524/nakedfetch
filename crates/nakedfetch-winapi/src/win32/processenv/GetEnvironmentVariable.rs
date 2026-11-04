@@ -15,7 +15,9 @@ pub fn GetEnvironmentVariable<T: AsRef<Wtf8>>(name: T) -> Result<Wtf8Buf, NtStat
 }
 
 fn get_env_var_inner(name: &Wtf8) -> Result<Wtf8Buf, NtStatus> {
-    let env = ntdll::RtlGetCurrentPeb().process_parameters.environment;
+    // SAFETY: Completely safe
+    let peb = unsafe { ntdll::RtlGetCurrentPeb() };
+    let env = peb.process_parameters.environment;
     let name_unicode = UnicodeString::from_wtf8(name);
     let mut raw_value = RawUnicodeString::default();
 

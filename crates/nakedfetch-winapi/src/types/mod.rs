@@ -4,7 +4,7 @@ pub mod primitives;
 pub mod ptr;
 
 mod bool;
-pub use bool::Boolean;
+pub use bool::*;
 
 mod kernel;
 pub use kernel::*;

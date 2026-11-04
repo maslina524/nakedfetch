@@ -35,7 +35,8 @@ pub enum StdHandle {
 
 #[must_use]
 pub fn GetStdHandle(typ: StdHandle) -> ConsoleHandle {
-    let peb = ntdll::RtlGetCurrentPeb();
+    // SAFETY: Completely safe
+    let peb = unsafe { ntdll::RtlGetCurrentPeb() };
     let params = peb.process_parameters;
 
     match typ {

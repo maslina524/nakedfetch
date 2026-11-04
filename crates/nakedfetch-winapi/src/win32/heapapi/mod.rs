@@ -95,7 +95,8 @@ impl AsRawHandle for HeapHandle {
 
 #[must_use]
 pub fn GetProcessHeap() -> HeapHandle {
-    let peb = ntdll::RtlGetCurrentPeb();
+    // SAFETY: Completely safe
+    let peb = unsafe { ntdll::RtlGetCurrentPeb() };
     let raw = peb.process_heap;
     HeapHandle::from_raw(raw)
 }

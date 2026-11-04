@@ -109,12 +109,21 @@ macro_rules! link {
 }
 
 macro_rules! define_fn {
-    // Entry
+    // Entry: NTAPI
     ($( $return:ident NTAPI $name:ident ( VOID ) ; )+) => {
         $( define_fn!(@emit $name () -> $return); )+
     };
     ($( $return:ident NTAPI $name:ident ( $($args:tt)* ) ; )+) => {
         $( define_fn!(@munch [$name] [$return] [] $($args)*); )+
+    };
+
+    // Munch: VOID
+    (@munch [$name:ident] [$return:ty] [$($acc:tt)*] VOID) => {
+        define_fn!(@emit $name ($($acc)*) -> $return);
+    };
+    // Munch: No args
+    (@munch [$name:ident] [$return:ty] [$($acc:tt)*]) => {
+        define_fn!(@emit $name ($($acc)*) -> $return);
     };
 
     // Munch: With SAL, With *

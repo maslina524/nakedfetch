@@ -7,3 +7,13 @@ impl From<Boolean> for bool {
         val.0 > 0
     }
 }
+
+#[repr(transparent)]
+#[derive(Debug, Clone, Copy)]
+pub struct Logical(u32);
+
+impl From<Logical> for bool {
+    fn from(val: Logical) -> Self {
+        val.0 > 0
+    }
+}
