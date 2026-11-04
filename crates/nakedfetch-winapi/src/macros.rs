@@ -29,6 +29,29 @@ macro_rules! STRUCT {
     }
 }
 
+macro_rules! define_struct {
+    (
+        typedef struct $raw_name:ident {
+            $($ftype:ident $fname:ident;)*
+        } $name:ident, $ptr_name:ident;
+    ) => {
+        #[repr(C)]
+        #[doc = concat!("### NTAPI: [", ::core::stringify!($name), "](https://ntdoc.m417z.com/", ::proc::lower!($name), ")")]
+        pub struct $name {
+            $(pub $fname: $ftype,)*
+        }
+
+        pub type $ptr_name = *mut $name;
+    };
+}
+
+define_struct!(
+    typedef struct _PEB {
+        u32 hello;
+        u64 world;
+    } PEB, PPEB;
+);
+
 macro_rules! ENUM {
     ($(#[$attrs:meta])* enum $name:ident {
         $($variant:ident $(= $discr:expr)?),* $(,)?
