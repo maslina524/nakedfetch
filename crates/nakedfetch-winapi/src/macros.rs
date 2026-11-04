@@ -177,6 +177,7 @@ macro_rules! define_fn {
     // Emit
     (@emit $name:ident ($(($fname:ident, $fty:ty))*) -> $return:ty) => {
         unsafe extern "system" {
+            #[doc = concat!("### NTAPI: [", ::core::stringify!($name), "](https://ntdoc.m417z.com/", ::proc::lower!($name), ")")]
             #[link_name = ::core::stringify!($name)]
             pub fn $name($($fname: $fty),*) -> $return;
         }

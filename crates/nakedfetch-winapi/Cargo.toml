@@ -9,6 +9,7 @@ repository.workspace = true
 [dependencies]
 path = { path = "../nakedfetch-path" }
 wtf8 = { path = "../nakedfetch-wtf8" }
+proc = { path = "../nakedfetch-proc" }
 
 [lints]
 workspace = true

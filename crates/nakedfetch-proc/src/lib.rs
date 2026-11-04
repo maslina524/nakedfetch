@@ -5,6 +5,7 @@ use proc_macro::TokenStream;
 use syn::{DeriveInput, parse_macro_input};
 
 mod derive;
+mod lower;
 mod parser;
 mod todo;
 
@@ -13,6 +14,12 @@ mod todo;
 pub fn todo(attr: TokenStream, item: TokenStream) -> TokenStream {
     todo::imp(attr.clone());
     item
+}
+
+// TODO MACRO
+#[proc_macro]
+pub fn lower(item: TokenStream) -> TokenStream {
+    lower::imp(item.into()).into()
 }
 
 // DOC MACRO
