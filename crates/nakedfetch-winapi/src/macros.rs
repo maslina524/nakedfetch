@@ -109,22 +109,67 @@ macro_rules! link {
 }
 
 macro_rules! define_fn {
-    // Entries
+    // Entry
     ($( $return:ident NTAPI $name:ident ( VOID ) ; )+) => {
-        $( define_fn!(@build $name () -> $return); )+
+        $( define_fn!(@emit $name () -> $return); )+
     };
-    ($( $return:ident NTAPI $name:ident ( $($sal:ident $field_ty:ident $field_name:ident),* $(,)? ) ; )+) => {
-        $( define_fn!(@build $name ( $($field_ty $field_name),* ) -> $return); )+
-    };
-    ($( $return:ident NTAPI $name:ident ( $($field_ty:ident $field_name:ident),* $(,)? ) ; )+) => {
-        $( define_fn!(@build $name ( $($field_ty $field_name),* ) -> $return); )+
+    ($( $return:ident NTAPI $name:ident ( $($args:tt)* ) ; )+) => {
+        $( define_fn!(@munch [$name] [$return] [] $($args)*); )+
     };
 
-    // Build
-    (@build $name:ident ( $($field_ty:ident $field_name:ident),* $(,)? ) -> $return:ty) => {
+    // Munch: With SAL, With *
+    (@munch [$name:ident] [$return:ty] [$($acc:tt)*]
+        $sal:ident $field_ty:ident * $field_name:ident, $($rest:tt)*
+    ) => {
+        define_fn!(@munch [$name] [$return] [$($acc)* ($field_name, *mut $field_ty)] $($rest)*);
+    };
+    (@munch [$name:ident] [$return:ty] [$($acc:tt)*]
+        $sal:ident $field_ty:ident * $field_name:ident
+    ) => {
+        define_fn!(@emit $name ($($acc)* ($field_name, *mut $field_ty)) -> $return);
+    };
+
+    // Munch: With SAL, No *
+    (@munch [$name:ident] [$return:ty] [$($acc:tt)*]
+        $sal:ident $field_ty:ident $field_name:ident, $($rest:tt)*
+    ) => {
+        define_fn!(@munch [$name] [$return] [$($acc)* ($field_name, $field_ty)] $($rest)*);
+    };
+    (@munch [$name:ident] [$return:ty] [$($acc:tt)*]
+        $sal:ident $field_ty:ident $field_name:ident
+    ) => {
+        define_fn!(@emit $name ($($acc)* ($field_name, $field_ty)) -> $return);
+    };
+
+    // Munch: No SAL, With *
+    (@munch [$name:ident] [$return:ty] [$($acc:tt)*]
+        $field_ty:ident * $field_name:ident, $($rest:tt)*
+    ) => {
+        define_fn!(@munch [$name] [$return] [$($acc)* ($field_name, *mut $field_ty)] $($rest)*);
+    };
+    (@munch [$name:ident] [$return:ty] [$($acc:tt)*]
+        $field_ty:ident * $field_name:ident
+    ) => {
+        define_fn!(@emit $name ($($acc)* ($field_name, *mut $field_ty)) -> $return);
+    };
+
+    // Munch: No SAL, No *
+    (@munch [$name:ident] [$return:ty] [$($acc:tt)*]
+        $field_ty:ident $field_name:ident, $($rest:tt)*
+    ) => {
+        define_fn!(@munch [$name] [$return] [$($acc)* ($field_name, $field_ty)] $($rest)*);
+    };
+    (@munch [$name:ident] [$return:ty] [$($acc:tt)*]
+        $field_ty:ident $field_name:ident
+    ) => {
+        define_fn!(@emit $name ($($acc)* ($field_name, $field_ty)) -> $return);
+    };
+
+    // Emit
+    (@emit $name:ident ($(($fname:ident, $fty:ty))*) -> $return:ty) => {
         unsafe extern "system" {
             #[link_name = ::core::stringify!($name)]
-            pub fn $name($($field_name: $field_ty),*) -> $return;
+            pub fn $name($($fname: $fty),*) -> $return;
         }
     };
 }

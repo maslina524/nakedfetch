@@ -7,13 +7,12 @@
 use crate::{
     native::peb::Peb,
     ntstatus::NtStatus,
-    types::{self as t, Boolean, class, primitives as prim, ptr},
+    types::{self as t, Boolean, RawUnicodeString, class, primitives as prim, ptr},
 };
 
 link!("ntdll" safe fn RtlGetCurrentPeb() -> &'static Peb);
 link!("ntdll" fn RtlFreeHeap(hHeap: t::Handle, dwFlags: prim::ULong, lpMem: ptr::VoidPtr) -> Boolean);
 link!("ntdll" fn RtlReAllocateHeap(hHeap: t::Handle, dwFlags: prim::ULong, lpMem: ptr::VoidPtr, size: usize) -> ptr::VoidPtr);
-link!("ntdll" fn RtlDosPathNameToNtPathName_U(DosFileName: ptr::WideStrConstPtr, NtFileName: *mut t::RawUnicodeString, FilePart: *mut ptr::WideStrPtr, RelativeName: ptr::VoidPtr) -> Boolean);
 link!("ntdll" fn RtlFreeUnicodeString(UnicodeString: *mut t::RawUnicodeString) -> ());
 link!("ntdll" fn RtlQueryEnvironmentVariable_U(Environment: ptr::WideStrPtr, Name: *const t::RawUnicodeString, Value: *mut t::RawUnicodeString) -> NtStatus);
 link!("ntdll" fn RtlInitUnicodeString(DestinationString: *mut t::RawUnicodeString, SourceString: ptr::WideStrConstPtr) -> ());
@@ -35,15 +34,21 @@ type PWSTR = *mut u16;
 type PCWSTR = *const u16;
 
 // Structs
-type NTSTATUS = NtStatus;
 type HANDLE = t::Handle;
+type FILE_BASIC_INFORMATION = t::FileBasicInfo;
+type UNICODE_STRING = RawUnicodeString;
+type IO_STATUS_BLOCK = t::IoStatusBlock;
+
+type NTSTATUS = NtStatus;
 
 // Structs mut ptr
-type PHANDLE = *mut t::Handle;
-type PFILE_BASIC_INFORMATION = *mut t::FileBasicInfo;
+type PHANDLE = *mut HANDLE;
+type PFILE_BASIC_INFORMATION = *mut FILE_BASIC_INFORMATION;
+type PUNICODE_STRING = *mut UNICODE_STRING;
+type PIO_STATUS_BLOCK = *mut IO_STATUS_BLOCK;
 
 type PIO_APC_ROUTINE = ptr::IoApcRoutinePtr;
-type PIO_STATUS_BLOCK = *mut t::IoStatusBlock;
+type PRTL_RELATIVE_NAME_U = PVOID;
 
 // Structs const ptr
 type PCOBJECT_ATTRIBUTES = *const t::ObjectAttributes;
@@ -113,6 +118,12 @@ define_fn!(
         _In_ SIZE_T Size
     );
 
+    BOOLEAN NTAPI RtlDosPathNameToNtPathName_U(
+        _In_ PCWSTR DosFileName,
+        _Out_ PUNICODE_STRING NtFileName,
+        _Out_opt_ PWSTR *FilePart,
+        _Out_opt_ PRTL_RELATIVE_NAME_U RelativeName
+    );
 );
 
 // RtlFreeHeap
