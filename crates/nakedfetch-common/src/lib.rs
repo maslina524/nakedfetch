@@ -13,4 +13,7 @@ pub mod fs;
 pub mod io;
 pub mod sync;
 
+#[cfg(target_os = "windows")]
+pub mod windows;
+
 pub mod prelude;

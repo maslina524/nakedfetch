@@ -102,7 +102,29 @@ macro_rules! link {
         #[link(name = $library)]
         unsafe extern "system" {
             $(#[link_name=$link_name])?
+            #[allow(clashing_extern_declarations, reason = "Warn on tests")]
             pub safe fn $($function)*;
         }
     );
+}
+
+macro_rules! define_fn {
+    // Entries
+    ($( $return:ident NTAPI $name:ident ( VOID ) ; )+) => {
+        $( define_fn!(@build $name () -> $return); )+
+    };
+    ($( $return:ident NTAPI $name:ident ( $($sal:ident $field_ty:ident $field_name:ident),* $(,)? ) ; )+) => {
+        $( define_fn!(@build $name ( $($field_ty $field_name),* ) -> $return); )+
+    };
+    ($( $return:ident NTAPI $name:ident ( $($field_ty:ident $field_name:ident),* $(,)? ) ; )+) => {
+        $( define_fn!(@build $name ( $($field_ty $field_name),* ) -> $return); )+
+    };
+
+    // Build
+    (@build $name:ident ( $($field_ty:ident $field_name:ident),* $(,)? ) -> $return:ty) => {
+        unsafe extern "system" {
+            #[link_name = ::core::stringify!($name)]
+            pub fn $name($($field_name: $field_ty),*) -> $return;
+        }
+    };
 }
