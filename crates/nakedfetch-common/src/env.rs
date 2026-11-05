@@ -21,6 +21,25 @@ pub fn var<T: AsRef<Wtf8>>(name: T) -> Result<String, env::EnvVarError> {
     Ok(s)
 }
 
+pub struct Args {
+    inner: env::ArgsInner,
+}
+
+impl Iterator for Args {
+    type Item = &'static str;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next()
+    }
+}
+
+#[must_use]
+pub fn args() -> Args {
+    Args {
+        inner: env::ArgsInner::new(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(target_os = "windows")]
@@ -31,5 +50,20 @@ mod tests {
         let var = super::var("PATH").expect("Failed to get env var");
         assert_ne!(var, "");
         assert!(var.contains(ENV_SEP));
+    }
+
+    #[test]
+    fn args_test() {
+        let mut args = super::args();
+
+        let crate_name = args.next().expect("args in empty");
+        assert!(crate_name.contains(env!("CARGO_CRATE_NAME")));
+
+        let test_name = args.next().expect("Test name not exists (args[1])");
+        let target = "env::tests::args_test";
+        assert!(
+            test_name.contains(target),
+            "Target: {target}, Arg: {test_name}"
+        );
     }
 }
