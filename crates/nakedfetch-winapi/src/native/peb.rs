@@ -1,20 +1,5 @@
-#![allow(
-    clippy::upper_case_acronyms,
-    non_camel_case_types,
-    reason = "Windows style"
-)]
+use super::{BOOLEAN, HANDLE, PHEAP, PPEB_LDR_DATA, PRTL_USER_PROCESS_PARAMETERS, PVOID};
 
-use crate::{
-    native::rtl::RtlUserProcessParameters,
-    types::{Boolean, Handle, ptr},
-};
-
-type BOOLEAN = Boolean;
-type HANDLE = Handle;
-type PVOID = ptr::VoidPtr;
-type PPEB_LDR_DATA = &'static core::ffi::c_void;
-type PHEAP = *mut core::ffi::c_void;
-type PRTL_USER_PROCESS_PARAMETERS = &'static RtlUserProcessParameters;
 define_struct!(
     typedef struct Peb {
         //
