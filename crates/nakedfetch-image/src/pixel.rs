@@ -175,3 +175,16 @@ impl Rgba {
         }
     }
 }
+
+#[macro_export]
+macro_rules! rgba {
+    ($v1:expr, $v2:expr, $v3:expr, $v4:expr) => {
+        $crate::pixel::Rgba($v1, $v2, $v3, $v4)
+    };
+    ($v1:expr, $v2:expr, $v3:expr) => {
+        $crate::pixel::Rgba($v1, $v2, $v3, 255)
+    };
+    ($v1:expr) => {
+        $crate::pixel::Rgba($v1, $v1, $v1, 255)
+    };
+}

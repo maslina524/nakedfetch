@@ -13,7 +13,7 @@ pub fn print_image(
     rows: Option<usize>,
     image_id: u32,
 ) -> core::fmt::Result {
-    let (w, h) = image.get_size();
+    let (w, h) = image.size();
 
     let raw = image.as_rgba_bytes();
     let b64 = base64::encode(&raw);

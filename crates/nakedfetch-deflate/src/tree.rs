@@ -9,8 +9,8 @@ pub fn build_fixed_trees() -> (HuffmanTree, HuffmanTree) {
     let mut litlen_lens = [0u8; 288];
     for (i, item) in litlen_lens.iter_mut().enumerate() {
         *item = match i {
-            i if (144..256).contains(&i) => 7,
-            i if (256..280).contains(&i) => 9,
+            i if (144..256).contains(&i) => 9,
+            i if (256..280).contains(&i) => 7,
             _ => 8,
         }
     }

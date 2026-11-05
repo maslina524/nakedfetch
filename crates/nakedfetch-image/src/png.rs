@@ -331,3 +331,60 @@ impl Png {
         self.image
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{Png, rgba};
+
+    #[rustfmt::skip]
+    fn open_raw_png_file(path: &str) -> Vec<u8> {
+        std::fs::read(path).unwrap_or_else(|_| {
+            panic!(
+                "Failed to read `{path}`, check if the file exists, if it's missing - generate it using generate-png.py"
+            )
+        })
+    }
+
+    #[test]
+    fn rgb8_test() {
+        let data = open_raw_png_file("test-png/rgb8.png");
+        let png = Png::decode(&data).expect("Failed to parse png file");
+        let image = png.into_image();
+        assert_eq!(
+            image.as_rgba_slice(),
+            [
+                rgba!(255, 0, 0),
+                rgba!(0, 255, 0),
+                rgba!(0, 0, 255),
+                rgba!(255)
+            ]
+        );
+    }
+
+    #[test]
+    fn rgba16_test() {
+        let data = open_raw_png_file("test-png/rgba16.png");
+        let png = Png::decode(&data).expect("Failed to parse png file");
+        let image = png.into_image();
+        assert_eq!(
+            image.as_rgba_slice(),
+            [
+                rgba!(255, 0, 0, 127),
+                rgba!(0, 0, 0),
+                rgba!(0, 255, 255),
+                rgba!(255, 255, 255, 127)
+            ]
+        );
+    }
+
+    #[test]
+    fn gray8_test() {
+        let data = open_raw_png_file("test-png/gray8.png");
+        let png = Png::decode(&data).expect("Failed to parse png file");
+        let image = png.into_image();
+        assert_eq!(
+            image.as_rgba_slice(),
+            [rgba!(255), rgba!(200), rgba!(127), rgba!(0)]
+        );
+    }
+}
