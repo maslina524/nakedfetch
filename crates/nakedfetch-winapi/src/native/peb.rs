@@ -16,7 +16,7 @@ type PPEB_LDR_DATA = &'static core::ffi::c_void;
 type PHEAP = *mut core::ffi::c_void;
 type PRTL_USER_PROCESS_PARAMETERS = &'static RtlUserProcessParameters;
 define_struct!(
-    typedef struct _PEB {
+    typedef struct Peb {
         //
         // The process was cloned with an inherited address space.
         //
@@ -63,5 +63,5 @@ define_struct!(
         // Pointer to the process default heap.
         //
         PHEAP ProcessHeap;
-    } Peb, PPeb;
+    };
 );
