@@ -1,4 +1,4 @@
-use core::error::Error;
+use core::{error::Error, fmt};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ColorType {
@@ -37,8 +37,8 @@ impl TryFrom<u8> for ColorType {
 #[derive(Debug)]
 pub struct ColorTypeError(u8);
 
-impl core::fmt::Display for ColorTypeError {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+impl fmt::Display for ColorTypeError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "Failed to get ColorType from index ({}); file is corrupted or nakedfetch does not support the type, try converting the file to another type",
@@ -50,13 +50,32 @@ impl core::fmt::Display for ColorTypeError {
 impl Error for ColorTypeError {}
 
 #[derive(Debug)]
-pub struct RgbaConvertError {
+pub enum RgbaError {
+    Type(UnknownType),
+    BufTooSmall,
+    InvalidByte,
+}
+
+impl fmt::Display for RgbaError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Type(t) => write!(f, "{t}"),
+            Self::BufTooSmall => write!(f, "Buf too small"),
+            Self::InvalidByte => write!(f, "Invalid byte"),
+        }
+    }
+}
+
+impl Error for RgbaError {}
+
+#[derive(Debug)]
+pub struct UnknownType {
     pub typ: ColorType,
     pub bits: u8,
 }
 
-impl core::fmt::Display for RgbaConvertError {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+impl fmt::Display for UnknownType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "nakedfetch does not support {:?} with {}-bit color depth, try converting the image to another format",
@@ -65,8 +84,6 @@ impl core::fmt::Display for RgbaConvertError {
     }
 }
 
-impl Error for RgbaConvertError {}
-
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
 
@@ -74,54 +91,87 @@ impl Rgba {
     /// # Errors
     ///
     /// `Err` on an invalid byte sequence for ``ColorType``.
-    pub const fn from(data: &[u8], typ: ColorType, bits: u8) -> Result<Self, RgbaConvertError> {
+    pub const fn from(data: &[u8], typ: ColorType, bits: u8) -> Result<Self, RgbaError> {
         match (typ, bits) {
-            (ColorType::Rgba, 8) => Ok(Self(data[0], data[1], data[2], data[3])),
+            (ColorType::Rgba, 8) => {
+                if data.len() < 4 {
+                    return Err(RgbaError::BufTooSmall);
+                }
+                Ok(Self(data[0], data[1], data[2], data[3]))
+            },
             (ColorType::Rgba, 16) => {
+                if data.len() < 8 {
+                    return Err(RgbaError::BufTooSmall);
+                }
                 let r = data[0];
                 let g = data[2];
                 let b = data[4];
                 let a = data[6];
                 Ok(Self(r, g, b, a))
             },
-            (ColorType::Rgb, 8) => Ok(Self(data[0], data[1], data[2], 255)),
+            (ColorType::Rgb, 8) => {
+                if data.len() < 3 {
+                    return Err(RgbaError::BufTooSmall);
+                }
+                Ok(Self(data[0], data[1], data[2], 255))
+            },
             (ColorType::Rgb, 16) => {
+                if data.len() < 6 {
+                    return Err(RgbaError::BufTooSmall);
+                }
                 let r = data[0];
                 let g = data[2];
                 let b = data[4];
                 Ok(Self(r, g, b, 255))
             },
-            (ColorType::Grayscale, 8 | 16) => {
+            (ColorType::Grayscale, 8) => {
+                if data.is_empty() {
+                    return Err(RgbaError::BufTooSmall);
+                }
+                let g = data[0];
+                Ok(Self(g, g, g, 255))
+            },
+            (ColorType::Grayscale, 16) => {
+                if data.len() < 2 {
+                    return Err(RgbaError::BufTooSmall);
+                }
                 let g = data[0];
                 Ok(Self(g, g, g, 255))
             },
             (ColorType::Grayscale, 1 | 2 | 4) => {
+                if data.is_empty() {
+                    return Err(RgbaError::BufTooSmall);
+                }
                 let val = data[0];
-                let g = match bits {
-                    1 => {
-                        if val == 0 {
-                            0
-                        } else {
-                            255
-                        }
-                    },
-                    2 => val * 85,
-                    4 => val * 17,
-                    _ => unreachable!(),
+                let (max_val, multiplier) = match bits {
+                    1 => (1, 255),
+                    2 => (3, 85),
+                    4 => (15, 17),
+                    _ => return Err(RgbaError::InvalidByte),
                 };
+                if val > max_val {
+                    return Err(RgbaError::InvalidByte);
+                }
+                let g = val * multiplier;
                 Ok(Self(g, g, g, 255))
             },
             (ColorType::GrayscaleAlpha, 8) => {
+                if data.len() < 2 {
+                    return Err(RgbaError::BufTooSmall);
+                }
                 let g = data[0];
                 let a = data[1];
                 Ok(Self(g, g, g, a))
             },
             (ColorType::GrayscaleAlpha, 16) => {
+                if data.len() < 4 {
+                    return Err(RgbaError::BufTooSmall);
+                }
                 let g = data[0];
                 let a = data[2];
                 Ok(Self(g, g, g, a))
             },
-            _ => Err(RgbaConvertError { typ, bits }),
+            _ => Err(RgbaError::Type(UnknownType { typ, bits })),
         }
     }
 }

@@ -1,4 +1,5 @@
 use alloc::{vec, vec::Vec};
+use core::slice;
 
 use crate::Rgba;
 
@@ -57,16 +58,42 @@ impl Image {
     }
 
     #[must_use]
-    pub const fn get_size(&self) -> (usize, usize) {
-        (self.w, self.h)
+    pub const fn as_rgba_bytes(&self) -> &[u8] {
+        const _: () = assert!(size_of::<Rgba>() == 4);
+
+        let data = self.data.as_ptr().cast::<u8>();
+        let len = self.data.len() * 4;
+        // SAFETY: In memory all Rgba are stored contiguously, each one holds 4
+        // bytes, the size of the output array is `data.len() * 4`
+        unsafe { slice::from_raw_parts(data, len) }
     }
 
     #[must_use]
-    pub fn as_rgba_bytes(&self) -> Vec<u8> {
-        let mut out = Vec::with_capacity(self.w * self.h * 4);
-        for p in &self.data {
-            out.extend_from_slice(&[p.0, p.1, p.2, p.3]);
-        }
-        out
+    pub fn as_rgba_slice(&self) -> &[Rgba] {
+        &self.data
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{Image, Rgba};
+
+    #[test]
+    fn as_rgba_bytes() {
+        let vec = vec![
+            Rgba(255, 0, 0, 255),
+            Rgba(0, 255, 0, 255),
+            Rgba(0, 0, 255, 255),
+            Rgba(255, 255, 255, 255),
+        ];
+        let image = Image::from_data(2, 2, vec);
+
+        let bytes = image.as_rgba_bytes();
+        assert_eq!(
+            bytes,
+            [
+                255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255
+            ]
+        );
     }
 }

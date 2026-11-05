@@ -4,7 +4,7 @@ use core::error::Error;
 use deflate::{self, DeflateError};
 use hash::Crc32;
 
-use crate::{ColorType, ColorTypeError, Image, Rgba, RgbaConvertError};
+use crate::{ColorType, ColorTypeError, Image, Rgba, RgbaError};
 
 static PNG_SIG: &[u8] = b"\x89PNG\x0D\x0A\x1A\x0A";
 static IHDR_NAME: &[u8] = b"IHDR";
@@ -23,7 +23,7 @@ pub enum PngError {
     IncorrectCrc32,
     DeflateError(DeflateError),
     ColorTypeError(ColorTypeError),
-    RgbaConvertError(RgbaConvertError),
+    RgbaConvertError(RgbaError),
 }
 
 impl core::fmt::Display for PngError {
@@ -60,8 +60,8 @@ impl From<ColorTypeError> for PngError {
     }
 }
 
-impl From<RgbaConvertError> for PngError {
-    fn from(value: RgbaConvertError) -> Self {
+impl From<RgbaError> for PngError {
+    fn from(value: RgbaError) -> Self {
         Self::RgbaConvertError(value)
     }
 }
