@@ -121,7 +121,7 @@ fn read_cache() -> Option<(u64, String)> {
         )
     }
 
-    let path = PathBuf::cache().join("weather");
+    let path = common::env::cache_dir().join("weather");
     let string = fs::read_to_string(path).ok()?;
 
     let mut parts = string.splitn(2, '\n');
@@ -132,7 +132,7 @@ fn read_cache() -> Option<(u64, String)> {
 }
 
 fn set_cache(hour: u64, data: &str) -> Option<()> {
-    let path_dir = Path::cache();
+    let path_dir = common::env::cache_dir();
     if let Err(e) = fs::create_dirs(&path_dir) {
         warning!("Failed to create {path_dir}: {e}");
     }

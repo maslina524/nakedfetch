@@ -90,7 +90,7 @@ fn read_cache() -> Option<(u64, Map)> {
         )
     }
 
-    let path = PathBuf::cache().join("publicip");
+    let path = common::env::cache_dir().join("publicip");
     let string = fs::read_to_string(path).ok()?;
 
     let mut parts = string.splitn(2, '\n');
@@ -107,7 +107,7 @@ fn read_cache() -> Option<(u64, Map)> {
 }
 
 fn set_cache(hour: u64, map: &Map) -> Option<()> {
-    let path_dir = Path::cache();
+    let path_dir = common::env::cache_dir();
     if let Err(e) = fs::create_dirs(&path_dir) {
         warning!("Failed to create {path_dir}: {e}");
     }

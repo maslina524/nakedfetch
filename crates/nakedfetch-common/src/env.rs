@@ -1,5 +1,6 @@
 use alloc::string::String;
 
+use path::PathBuf;
 use wtf8::{Wtf8, Wtf8Buf};
 
 use crate::imp::env;
@@ -40,6 +41,11 @@ pub fn args() -> Args {
     }
 }
 
+#[must_use]
+pub fn cache_dir() -> PathBuf {
+    env::cache()
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(target_os = "windows")]
@@ -65,5 +71,16 @@ mod tests {
             test_name.contains(target),
             "Target: {target}, Arg: {test_name}"
         );
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn cache_dir_test() {
+        let mut std = std::env::home_dir().expect("std::env::home_dir failed");
+        std.push("AppData/Local/nakedfetch/cache");
+
+        let std_string = std.to_string_lossy().replace('\\', "/");
+        let my_string = super::cache_dir().to_string_lossy().replace('\\', "/");
+        assert_eq!(std_string, my_string);
     }
 }

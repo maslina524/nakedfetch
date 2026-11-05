@@ -1,6 +1,7 @@
 use alloc::string::String;
 use core::{error::Error, fmt};
 
+use path::PathBuf;
 use winapi::{
     ntstatus::NtStatus,
     win32::processenv::{GetCommandLine, GetEnvironmentVariable},
@@ -149,6 +150,17 @@ impl Iterator for ArgsInner {
 
         Some(self.build_str(start, end))
     }
+}
+
+const LOCALAPPDATA_NAME: &Wtf8 = Wtf8::from_str("LOCALAPPDATA");
+
+pub fn cache() -> PathBuf {
+    let mut base = match var(LOCALAPPDATA_NAME) {
+        Ok(w) => w,
+        Err(e) => panic!("Failed to get APPDATA env: {e}"),
+    };
+    base.push_str("/nakedfetch/cache");
+    base.into()
 }
 
 #[cfg(test)]

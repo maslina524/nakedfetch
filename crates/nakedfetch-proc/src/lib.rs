@@ -10,14 +10,14 @@ mod parser;
 mod snake;
 mod todo;
 
-// TODO MACRO
+// TODO ATTRIBUTE
 #[proc_macro_attribute]
 pub fn todo(attr: TokenStream, item: TokenStream) -> TokenStream {
     todo::imp(attr.clone());
     item
 }
 
-// TODO MACRO
+// LOWER MACRO
 #[proc_macro]
 pub fn lower(item: TokenStream) -> TokenStream {
     lower::imp(item.into()).into()
@@ -35,14 +35,14 @@ pub fn snake_struct(_attr: TokenStream, item: TokenStream) -> TokenStream {
     snake::imp_attribute(item.into()).into()
 }
 
-// DOC MACRO
+// DOC DERIVE
 #[allow(clippy::missing_panics_doc)]
 #[proc_macro_derive(Docs)]
 pub fn docs_derive(input: TokenStream) -> TokenStream {
     derive::doc::imp(input)
 }
 
-// DOC MACRO
+// MODULE DERIVE
 #[allow(clippy::missing_panics_doc)]
 #[proc_macro_derive(Module)]
 pub fn module_derive(input: TokenStream) -> TokenStream {
