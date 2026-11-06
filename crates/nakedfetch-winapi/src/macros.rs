@@ -30,18 +30,60 @@ macro_rules! STRUCT {
 }
 
 macro_rules! define_struct {
+    // NO DEFAULT
     (
-        typedef struct $name:ident {
+        _NO_DEFAULT typedef struct $raw_name:ident {
             $($ftype:ident $fname:ident;)*
-        };
+        } $name:ident $(, $ptr_name:ident)?;
+    ) => {
+        define_struct!(
+            @impl $name { $($ftype $fname;)* }
+            gen_default = false
+            $(, $ptr_name)?
+        );
+    };
+
+    // WITH DEFAULT
+    (
+        typedef struct $raw_name:ident {
+            $($ftype:ident $fname:ident;)*
+        } $name:ident $(, $ptr_name:ident)?;
+    ) => {
+        define_struct!(
+            @impl $name { $($ftype $fname;)* }
+            gen_default = true
+            $(, $ptr_name)?
+        );
+    };
+
+    (
+        @impl $name:ident { $($ftype:ident $fname:ident;)* }
+        gen_default = $gen_default:ident
+        $(, $ptr_name:ident)?
     ) => {
         #[repr(C)]
-        #[doc = concat!("### NTAPI: [", ::core::stringify!($name), "](https://ntdoc.m417z.com/", ::proc::lower!($name), ")")]
-        #[::proc::snake_struct]
+        #[doc = concat!(
+            "### NTAPI: [`", ::core::stringify!($name), "`]",
+            "(https://ntdoc.m417z.com/", ::proc::lower!($name), ")",
+        )]
         pub struct $name {
             $(pub $fname: $ftype,)*
         }
+
+        $(pub type $ptr_name = *mut $name;)?
+
+        define_struct!(@maybe_default $name, $gen_default);
     };
+
+    (@maybe_default $name:ident, true) => {
+        impl Default for $name {
+            fn default() -> Self {
+                // SAFETY: Guarantee that all fields can be zeroable
+                unsafe { ::core::mem::zeroed() }
+            }
+        }
+    };
+    (@maybe_default $name:ident, false) => {};
 }
 
 macro_rules! ENUM {
@@ -194,7 +236,7 @@ macro_rules! define_fn {
         unsafe extern "system" {
             #[doc = concat!("### NTAPI: [", ::core::stringify!($name), "](https://ntdoc.m417z.com/", ::proc::lower!($name), ")")]
             #[link_name = ::core::stringify!($name)]
-            pub fn $name($(::proc::snake_ident!($fname): $fty),*) -> $return;
+            pub fn $name($($fname: $fty),*) -> $return;
         }
     };
 }

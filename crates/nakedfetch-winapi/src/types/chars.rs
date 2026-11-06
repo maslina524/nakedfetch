@@ -1,4 +1,3 @@
-pub type Char = i8;
-pub type UChar = u8;
-
-pub type WChar = u16;
+pub type CHAR = i8;
+pub type UCHAR = u8;
+pub type WCHAR = u16;

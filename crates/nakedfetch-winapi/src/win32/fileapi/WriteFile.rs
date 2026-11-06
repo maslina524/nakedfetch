@@ -3,7 +3,7 @@ use core::ptr;
 use crate::{
     AsRawHandle as _, ntdll,
     ntstatus::NtStatus,
-    types::IoStatusBlock,
+    types::IO_STATUS_BLOCK,
     win32::fileapi::{CanWrite, FileHandle},
 };
 
@@ -13,7 +13,7 @@ use crate::{
 /// in it; situations where ``Err()`` is returned are kernel failures,
 /// for example the disk is full.
 pub fn WriteFile<T: CanWrite>(handle: &FileHandle<T>, buf: &[u8]) -> Result<usize, NtStatus> {
-    let mut info = IoStatusBlock::default();
+    let mut info = IO_STATUS_BLOCK::default();
 
     // SAFETY: The descriptor, buffer, and its length are always valid
     let status = unsafe {
@@ -31,7 +31,7 @@ pub fn WriteFile<T: CanWrite>(handle: &FileHandle<T>, buf: &[u8]) -> Result<usiz
     };
 
     if status.is_success() {
-        let written = info.information as usize;
+        let written = info.Information as usize;
         Ok(written)
     } else {
         Err(status)

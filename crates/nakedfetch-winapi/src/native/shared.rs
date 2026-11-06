@@ -1,71 +1,73 @@
-use crate::types::{
-    AlternativeArchitectureType, Boolean, KSystemTime, MitigationPolicies, NtProductType,
-    VirtualizationFlags,
-    chars::{UChar, WChar},
-    primitives::{LargeInteger, Long, LongLong, ULong, ULongLong, UShort},
-};
+#[allow(
+    clippy::wildcard_imports,
+    reason = "There's no point in importing them separately"
+)]
+use super::*;
 
 const PROCESSOR_FEATURE_MAX: usize = 64;
-const KUSER_SHARED_DATA_PTR: *mut KUserSharedData = 0x7FFE_0000 as *mut _;
+const KUSER_SHARED_DATA_PTR: *mut KUSER_SHARED_DATA = 0x7FFE_0000 as *mut _;
 
 STRUCT! {
-    struct KUserSharedData {
-        tick_count_low_deprecated: ULong,
-        tick_count_multiplier: ULong,
-        interrupt_time: KSystemTime,
-        system_time: KSystemTime,
-        time_zone_bias: KSystemTime,
-        image_number_low: UShort,
-        image_number_high: UShort,
-        nt_system_root: [WChar; 260],
-        max_stack_trace_depth: ULong,
-        crypto_exponent: ULong,
-        time_zone_id: ULong,
-        large_page_minimum: ULong,
-        ait_sampling_value: ULong,
-        app_compat_flag: ULong,
-        rng_seed_version: ULongLong,
-        global_validation_runlevel: ULong,
-        time_zone_bias_stamp: Long,
-        nt_build_number: ULong,
+    Naked
+    struct KUSER_SHARED_DATA {
+        tick_count_low_deprecated: ULONG,
+        tick_count_multiplier: ULONG,
+        interrupt_time: KSYSTEM_TIME,
+        system_time: KSYSTEM_TIME,
+        time_zone_bias: KSYSTEM_TIME,
+        image_number_low: USHORT,
+        image_number_high: USHORT,
+        nt_system_root: [WCHAR; 260],
+        max_stack_trace_depth: ULONG,
+        crypto_exponent: ULONG,
+        time_zone_id: ULONG,
+        large_page_minimum: ULONG,
+        ait_sampling_value: ULONG,
+        app_compat_flag: ULONG,
+        rng_seed_version: ULONGLONG,
+        global_validation_runlevel: ULONG,
+        time_zone_bias_stamp: LONG,
+        nt_build_number: ULONG,
         nt_product_type: NtProductType,
-        product_type_is_valid: Boolean,
-        reserved0: [Boolean; 1],
-        native_processor_architecture: UShort,
-        nt_major_version: ULong,
-        nt_minor_version: ULong,
-        processor_features: [Boolean; PROCESSOR_FEATURE_MAX],
-        reserved1: ULong,
-        reserved3: ULong,
-        time_slip: ULong,
+        product_type_is_valid: BOOLEAN,
+        reserved0: [BOOLEAN; 1],
+        native_processor_architecture: USHORT,
+        nt_major_version: ULONG,
+        nt_minor_version: ULONG,
+        processor_features: [BOOLEAN; PROCESSOR_FEATURE_MAX],
+        reserved1: ULONG,
+        reserved3: ULONG,
+        time_slip: ULONG,
         alternative_architecture: AlternativeArchitectureType,
-        boot_id: UShort,
-        system_expiration_date: LargeInteger,
-        suite_mask: ULong,
-        kd_debugger_enabled: Boolean,
+        boot_id: USHORT,
+        system_expiration_date: i64,
+        suite_mask: ULONG,
+        kd_debugger_enabled: BOOLEAN,
         mitigation_policies: MitigationPolicies,
-        cycles_per_yield: UShort,
-        active_console_id: ULong,
-        dismount_count: ULong,
-        com_plus_package: ULong,
-        last_system_rit_event_tick_count: ULong,
-        number_of_physical_pages: ULong,
-        safe_boot_mode: Boolean,
+        cycles_per_yield: USHORT,
+        active_console_id: ULONG,
+        dismount_count: ULONG,
+        com_plus_package: ULONG,
+        last_system_rit_event_tick_count: ULONG,
+        number_of_physical_pages: ULONG,
+        safe_boot_mode: BOOLEAN,
         virtualization_flags: VirtualizationFlags,
-        reserved12: [UChar; 2],
-        share_data_flags: ULong, // FIXME: Replace to bitflag struct
-        data_flags_pad: [ULong; 1],
-        test_ret_instruction: ULongLong,
-        qpc_frequency: LongLong,
-        system_call: ULong,
-        reserved2: ULong,
-        full_number_of_physical_pages: ULongLong,
-        system_call_pad: [ULongLong; 1],
-        tick_count: KSystemTime
+        reserved12: [UCHAR; 2],
+        share_data_flags: ULONG, // FIXME: Replace to bitflag struct
+        data_flags_pad: [ULONG; 1],
+        test_ret_instruction: ULONGLONG,
+        qpc_frequency: LONGLONG,
+        system_call: ULONG,
+        reserved2: ULONG,
+        full_number_of_physical_pages: ULONGLONG,
+        system_call_pad: [ULONGLONG; 1],
+        tick_count: KSYSTEM_TIME
     }
 }
 
-pub fn kuser_share_data() -> &'static KUserSharedData {
+pub type PKUSER_SHARED_DATA = &'static KUSER_SHARED_DATA;
+
+pub fn kuser_share_data() -> PKUSER_SHARED_DATA {
     // SAFETY: The ptr is static for all versions of Windows, safe
     unsafe { &*KUSER_SHARED_DATA_PTR }
 }

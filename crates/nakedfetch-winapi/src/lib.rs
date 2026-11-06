@@ -3,7 +3,7 @@
 
 extern crate alloc;
 
-use crate::types::Handle;
+use crate::types::HANDLE;
 
 #[macro_use]
 mod macros;
@@ -17,6 +17,6 @@ pub mod unicode;
 pub mod win32;
 
 pub trait AsRawHandle {
-    fn from_raw(raw: Handle) -> Self;
-    fn as_raw(&self) -> Handle;
+    fn from_raw(raw: HANDLE) -> Self;
+    fn as_raw(&self) -> HANDLE;
 }

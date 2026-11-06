@@ -2,8 +2,8 @@ use crate::{
     AsRawHandle, ntdll,
     ntstatus::NtStatus,
     types::{
-        Handle, IoStatusBlock,
-        class::{FileInformation, FileStandartInformation},
+        HANDLE, IO_STATUS_BLOCK,
+        class::{FILE_INFORMATION_CLASS, FILE_STANDARD_INFORMATION},
     },
     win32::fileapi::{FileAccess, FileHandle},
 };
@@ -15,9 +15,9 @@ pub fn GetFileSizeEx<A: FileAccess>(handle: &FileHandle<A>) -> Result<usize, NtS
     get_file_size_ex(handle.as_raw())
 }
 
-fn get_file_size_ex(raw: Handle) -> Result<usize, NtStatus> {
-    let mut info = FileStandartInformation::default();
-    let mut io = IoStatusBlock::default();
+fn get_file_size_ex(raw: HANDLE) -> Result<usize, NtStatus> {
+    let mut info = FILE_STANDARD_INFORMATION::default();
+    let mut io = IO_STATUS_BLOCK::default();
 
     // SAFETY: All fields have been verified against ntdoc, safe
     let ret = unsafe {
@@ -25,13 +25,13 @@ fn get_file_size_ex(raw: Handle) -> Result<usize, NtStatus> {
             raw,
             &raw mut io,
             (&raw mut info).cast(),
-            size_of::<FileStandartInformation>() as u32,
-            FileInformation::FileStandardInformation,
+            size_of::<FILE_STANDARD_INFORMATION>() as u32,
+            FILE_INFORMATION_CLASS::FileStandardInformation,
         )
     };
 
     if ret.is_success() {
-        Ok(info.end_of_file as usize)
+        Ok(info.EndOfFile as usize)
     } else {
         Err(ret)
     }

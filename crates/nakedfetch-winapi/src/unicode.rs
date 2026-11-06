@@ -4,7 +4,7 @@ use core::{error::Error, fmt, ptr, slice};
 use path::Path;
 use wtf8::Wtf8;
 
-use crate::{ntdll, types::RawUnicodeString};
+use crate::{ntdll, types::UNICODE_STRING};
 
 #[derive(Debug, Clone, Copy)]
 pub struct ConvertDosPathToNtPathError;
@@ -18,7 +18,7 @@ impl fmt::Display for ConvertDosPathToNtPathError {
 impl Error for ConvertDosPathToNtPathError {}
 
 pub struct UnicodeString {
-    raw: RawUnicodeString,
+    raw: UNICODE_STRING,
     owned: Option<Vec<u16>>,
 }
 
@@ -33,7 +33,7 @@ impl UnicodeString {
     fn from_path_inner(path: &Path) -> Result<Self, ConvertDosPathToNtPathError> {
         let buf: Vec<u16> = path.as_utf16().collect();
 
-        let mut unicode_raw = RawUnicodeString::default();
+        let mut unicode_raw = UNICODE_STRING::default();
         let ret = Self::dos_path_to_nt_path(&buf, &mut unicode_raw);
         if ret {
             Ok(Self {
@@ -52,7 +52,7 @@ impl UnicodeString {
     fn from_wtf8_inner(s: &Wtf8) -> Self {
         let buf: Vec<u16> = s.utf16_with_zero().collect();
 
-        let mut unicode_raw = RawUnicodeString::default();
+        let mut unicode_raw = UNICODE_STRING::default();
         Self::init(&buf, &mut unicode_raw);
         Self {
             raw: unicode_raw,
@@ -62,7 +62,7 @@ impl UnicodeString {
 
     #[must_use]
     pub const fn len(&self) -> usize {
-        self.raw.length as usize / size_of::<u16>()
+        self.raw.Length as usize / size_of::<u16>()
     }
 
     #[must_use]
@@ -75,20 +75,20 @@ impl UnicodeString {
         let inner = &self.raw;
         // SAFETY: Method `len` returns the number of characters, not
         // bytes, safe
-        unsafe { slice::from_raw_parts(inner.buffer, self.len()) }
+        unsafe { slice::from_raw_parts(inner.Buffer, self.len()) }
     }
 
     #[must_use]
-    pub const fn as_inner_ptr(&self) -> *const RawUnicodeString {
+    pub const fn as_inner_ptr(&self) -> *const UNICODE_STRING {
         &raw const self.raw
     }
 
     #[must_use]
-    pub const fn as_inner_mut_ptr(&mut self) -> *mut RawUnicodeString {
+    pub const fn as_inner_mut_ptr(&mut self) -> *mut UNICODE_STRING {
         &raw mut self.raw
     }
 
-    fn dos_path_to_nt_path(s: &[u16], unicode_raw: &mut RawUnicodeString) -> bool {
+    fn dos_path_to_nt_path(s: &[u16], unicode_raw: &mut UNICODE_STRING) -> bool {
         // SAFETY: `&[u16]` slice may be incorrect, mostly this shouldn't happen
         // since in common we convert valid Paths to `&[u16]`
         let ret = unsafe {
@@ -102,7 +102,7 @@ impl UnicodeString {
         ret.into()
     }
 
-    fn init(s: &[u16], unicode_raw: &mut RawUnicodeString) {
+    fn init(s: &[u16], unicode_raw: &mut UNICODE_STRING) {
         // SAFETY: `&[u16]` slice may be incorrect, mostly this shouldn't happen
         // since in common we convert valid Paths to `&[u16]`
         unsafe {

@@ -1,7 +1,11 @@
-use super::{CONSOLE_HANDLE, CURDIR, HANDLE, PVOID, ULONG, UNICODE_STRING};
+#[allow(
+    clippy::wildcard_imports,
+    reason = "There's no point in importing them separately"
+)]
+use super::*;
 
 define_struct!(
-    typedef struct RtlUserProcessParameters {
+    typedef struct _RTL_USER_PROCESS_PARAMETERS {
         ULONG MaximumLength;
         ULONG Length;
 
@@ -19,5 +23,7 @@ define_struct!(
         UNICODE_STRING ImagePathName;
         UNICODE_STRING CommandLine;
         PVOID Environment;
-    };
+    } RTL_USER_PROCESS_PARAMETERS;
 );
+
+pub type PRTL_USER_PROCESS_PARAMETERS = &'static RTL_USER_PROCESS_PARAMETERS;

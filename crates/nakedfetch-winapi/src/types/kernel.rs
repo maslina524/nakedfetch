@@ -1,80 +1,96 @@
-use crate::{
-    ntstatus::NtStatus,
-    types::{
-        primitives::{LargeInteger, Long, ULong, UShort},
-        ptr::{ULongPtr, VoidPtr, WideStrPtr},
-    },
-};
+#[allow(
+    clippy::wildcard_imports,
+    reason = "There's no point in importing them separately"
+)]
+use super::*;
+use crate::ntstatus::NtStatus;
 
-pub type Handle = VoidPtr;
+define_struct!(
+    typedef struct _KSYSTEM_TIME {
+        ULONG LowPart;
+        LONG High1Time;
+        LONG High2Time;
+    } KSYSTEM_TIME, PKSYSTEM_TIME;
+);
 
-STRUCT! {
-    struct KSystemTime {
-        low_part: ULong,
-        high1_time: Long,
-        high2_time: Long,
-    }
-}
-
-impl KSystemTime {
+impl KSYSTEM_TIME {
     #[must_use]
     pub const fn quad(&self) -> u64 {
-        ((self.high1_time as u64) << 32) | (self.low_part as u64)
+        ((self.High1Time as u64) << 32) | (self.LowPart as u64)
     }
 }
 
-STRUCT! {
-    struct IoStatusBlock {
-        union: IoStatusBlockInner,
-        information: ULongPtr,
-    }
-}
-
-STRUCT! {
-    #[derive(Debug)]
-    struct RawUnicodeString {
-        length: UShort,
-        maximum_length: UShort,
-        buffer: WideStrPtr
-    }
-}
-
-STRUCT! {
-    #[derive(Debug)]
-    struct ObjectAttributes {
-        length: ULong,
-        root_directory: Handle,
-        object_name: *const RawUnicodeString,
-        attributes: ULong,
-        security_descriptor: *mut (),
-        security_quality_of_service: *mut ()
-    }
-}
-
-STRUCT! {
-    #[derive(Debug)]
-    struct FileBasicInfo {
-        creation_time: LargeInteger,
-        last_access_time: LargeInteger,
-        last_write_time: LargeInteger,
-        change_time: LargeInteger,
-        file_attributes: ULong,
-    }
-}
-
-STRUCT! {
-    struct CurDir {
-        dos_path: RawUnicodeString,
-        handle: Handle,
-    }
-}
+define_struct!(
+    typedef struct _IO_STATUS_BLOCK {
+        IO_STATUS_BLOCK_INNER inner;
+        ULONG_PTR Information;
+    } IO_STATUS_BLOCK, PIO_STATUS_BLOCK;
+);
 
 UNION! {
-    union IoStatusBlockInner {
+    union IO_STATUS_BLOCK_INNER {
         status: NtStatus,
-        pointer: VoidPtr,
+        pointer: PVOID,
     }
 }
+
+define_struct!(
+    typedef struct _UNICODE_STRING {
+        USHORT Length;
+        USHORT MaximumLength;
+        PWCH Buffer;
+    } UNICODE_STRING, PUNICODE_STRING;
+);
+
+define_struct!(
+    typedef struct _OBJECT_ATTRIBUTES {
+        ULONG Length;
+        HANDLE RootDirectory;
+        PCUNICODE_STRING ObjectName;
+        ULONG Attributes;
+        PSECURITY_DESCRIPTOR SecurityDescriptor;
+        PSECURITY_QUALITY_OF_SERVICE SecurityQualityOfService;
+    } OBJECT_ATTRIBUTES, POBJECT_ATTRIBUTES;
+);
+
+define_struct!(
+    typedef struct _FILE_BASIC_INFORMATION {
+        LARGE_INTEGER CreationTime;
+        LARGE_INTEGER LastAccessTime;
+        LARGE_INTEGER LastWriteTime;
+        LARGE_INTEGER ChangeTime;
+        ULONG FileAttributes;
+    } FILE_BASIC_INFORMATION, PFILE_BASIC_INFORMATION;
+);
+
+define_struct!(
+    typedef struct _CURDIR {
+        UNICODE_STRING DosPath;
+        HANDLE Handle;
+    } CURDIR, PCURDIR;
+);
+
+define_struct!(
+    typedef struct _CLIENT_ID {
+        HANDLE UniqueProcess;
+        HANDLE UniqueThread;
+    } CLIENT_ID, PCLIENT_ID;
+);
+
+define_struct!(
+    typedef struct _RTLP_CURDIR_REF {
+        LONG ReferenceCount;
+        HANDLE DirectoryHandle;
+    } RTLP_CURDIR_REF, PRTLP_CURDIR_REF;
+);
+
+define_struct!(
+    typedef struct _RTL_RELATIVE_NAME_U {
+        UNICODE_STRING RelativeName;
+        HANDLE ContainingDirectory;
+        PRTLP_CURDIR_REF CurDirRef;
+    } RTL_RELATIVE_NAME_U, PRTL_RELATIVE_NAME_U;
+);
 
 ENUM! {
     enum NtProductType {

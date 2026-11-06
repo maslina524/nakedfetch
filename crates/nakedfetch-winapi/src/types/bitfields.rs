@@ -2,7 +2,7 @@ use crate::types::chars;
 
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
-pub struct MitigationPolicies(chars::UChar);
+pub struct MitigationPolicies(chars::UCHAR);
 
 impl MitigationPolicies {
     #[must_use]
@@ -28,7 +28,7 @@ impl MitigationPolicies {
 
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
-pub struct VirtualizationFlags(chars::UChar);
+pub struct VirtualizationFlags(chars::UCHAR);
 
 impl VirtualizationFlags {
     #[must_use]

@@ -2,20 +2,20 @@ use core::mem::ManuallyDrop;
 
 use crate::{
     AsRawHandle, ntdll,
-    types::Handle,
+    types::HANDLE,
     win32::fileapi::{FileHandle, Write},
 };
 
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
-pub struct ConsoleHandle(Handle);
+pub struct ConsoleHandle(HANDLE);
 
 impl AsRawHandle for ConsoleHandle {
-    fn as_raw(&self) -> Handle {
+    fn as_raw(&self) -> HANDLE {
         self.0
     }
 
-    fn from_raw(raw: Handle) -> Self {
+    fn from_raw(raw: HANDLE) -> Self {
         Self(raw)
     }
 }
@@ -37,12 +37,12 @@ pub enum StdHandle {
 pub fn GetStdHandle(typ: StdHandle) -> ConsoleHandle {
     // SAFETY: Completely safe
     let peb = unsafe { ntdll::RtlGetCurrentPeb() };
-    let params = peb.process_parameters;
+    let params = peb.ProcessParameters;
 
     match typ {
-        StdHandle::Stdout => params.standard_output,
-        StdHandle::Stderr => params.standard_error,
-        StdHandle::Stdin => params.standard_input,
+        StdHandle::Stdout => params.StandardOutput,
+        StdHandle::Stderr => params.StandardError,
+        StdHandle::Stdin => params.StandardInput,
     }
 }
 
@@ -56,8 +56,10 @@ mod tests {
 
     #[test]
     fn std_handles_test() {
+        use core::ffi::c_void;
+
         unsafe extern "system" {
-            safe fn GetStdHandle(nStdHandle: u32) -> *mut ();
+            safe fn GetStdHandle(nStdHandle: u32) -> *mut c_void;
         }
 
         let winapi = GetStdHandle(STDIN);

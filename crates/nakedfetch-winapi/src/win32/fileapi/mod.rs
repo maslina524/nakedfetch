@@ -15,7 +15,7 @@ pub use ReadFile::*;
 mod WriteFile;
 pub use WriteFile::*;
 
-use crate::{AsRawHandle, types::Handle, win32::handleapi};
+use crate::{AsRawHandle, types::HANDLE, win32::handleapi};
 
 mod_sealed!();
 pub trait FileAccess: sealed::Sealed {
@@ -61,19 +61,19 @@ impl FileAccess for All {
 
 #[repr(transparent)]
 pub struct FileHandle<Access> {
-    raw: Handle,
+    raw: HANDLE,
     _marker: PhantomData<Access>,
 }
 
 impl<Access> AsRawHandle for FileHandle<Access> {
-    fn from_raw(raw: Handle) -> Self {
+    fn from_raw(raw: HANDLE) -> Self {
         Self {
             raw,
             _marker: PhantomData,
         }
     }
 
-    fn as_raw(&self) -> Handle {
+    fn as_raw(&self) -> HANDLE {
         self.raw
     }
 }
@@ -96,8 +96,10 @@ mod tests {
 
     #[test]
     fn write_to_std_test() {
+        use core::ffi::c_void;
+
         unsafe extern "system" {
-            safe fn GetStdHandle(nStdHandle: u32) -> *mut ();
+            safe fn GetStdHandle(nStdHandle: u32) -> *mut c_void;
             safe fn SetConsoleOutputCP(wCodePage: u32) -> i32;
         }
 
@@ -162,8 +164,10 @@ mod tests {
 
     #[test]
     fn get_file_size_test() {
+        use core::ffi::c_void;
+
         unsafe extern "system" {
-            safe fn GetFileSizeEx(hFile: *mut (), lpFileSize: *mut i64) -> i32;
+            safe fn GetFileSizeEx(hFile: *mut c_void, lpFileSize: *mut i64) -> i32;
         }
 
         let handle: FileHandle<Read> = CreateFile(

@@ -5,7 +5,7 @@ use path::Path;
 use crate::{
     ntdll,
     ntstatus::NtStatus,
-    types::{IoStatusBlock, ObjectAttributes},
+    types::{IO_STATUS_BLOCK, OBJECT_ATTRIBUTES},
     unicode::UnicodeString,
     win32::fileapi::{FileAttributes, FileDispose},
 };
@@ -43,12 +43,12 @@ fn create_directory_inner(path: &Path, flags: FileAttributes) -> Result<(), Crea
     let unicode =
         UnicodeString::from_path(path).map_err(|_| CreateDirError::UnicodePathAllocate)?;
 
-    let mut attrs = ObjectAttributes {
-        length: size_of::<ObjectAttributes>() as u32,
-        object_name: unicode.as_inner_ptr(),
+    let mut attrs = OBJECT_ATTRIBUTES {
+        Length: size_of::<OBJECT_ATTRIBUTES>() as u32,
+        ObjectName: unicode.as_inner_ptr(),
         ..Default::default()
     };
-    let mut io = IoStatusBlock::default();
+    let mut io = IO_STATUS_BLOCK::default();
     let mut out = ptr::null_mut();
 
     // SAFETY: All wrapper structures comply with the `ntdll` documentation

@@ -3,7 +3,7 @@ use path::Path;
 use crate::{
     ntdll,
     ntstatus::NtStatus,
-    types::{FileBasicInfo, ObjectAttributes},
+    types::{FILE_BASIC_INFORMATION, OBJECT_ATTRIBUTES},
     unicode::UnicodeString,
 };
 
@@ -46,12 +46,12 @@ fn get_file_attributes_inner(path: &Path) -> Result<ItemAttributes, FileAttribut
     let path =
         UnicodeString::from_path(path).map_err(|_| FileAttributesError::UnicodePathAllocate)?;
 
-    let mut attr = ObjectAttributes {
-        length: size_of::<ObjectAttributes>() as u32,
-        object_name: path.as_inner_ptr(),
+    let mut attr = OBJECT_ATTRIBUTES {
+        Length: size_of::<OBJECT_ATTRIBUTES>() as u32,
+        ObjectName: path.as_inner_ptr(),
         ..Default::default()
     };
-    let mut info = FileBasicInfo::default();
+    let mut info = FILE_BASIC_INFORMATION::default();
 
     // SAFETY: We pass valid pointers, `OBJECT_ATTRIBUTES` stores a valid
     // pointer to `UNICODE_STRING`
@@ -60,7 +60,7 @@ fn get_file_attributes_inner(path: &Path) -> Result<ItemAttributes, FileAttribut
         return Err(FileAttributesError::QueryAttributes(ret));
     }
 
-    let raw = info.file_attributes;
+    let raw = info.FileAttributes;
     let has = |flag: u32| raw & flag != 0;
 
     Ok(ItemAttributes {

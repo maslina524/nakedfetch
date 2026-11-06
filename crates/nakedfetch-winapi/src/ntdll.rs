@@ -4,64 +4,18 @@
     reason = "Windows style"
 )]
 
-use crate::{
-    native::peb,
-    ntstatus::NtStatus,
-    types::{self as t, Boolean, Logical, RawUnicodeString, class, primitives as prim, ptr},
-};
-
-// Primitives
-type VOID = core::ffi::c_void;
-type BOOLEAN = Boolean;
-type SIZE_T = usize;
-type ULONG = prim::ULong;
-type LARGE_INTEGER = prim::LargeInteger;
-type ACCESS_MASK = prim::ULong;
-type LOGICAL = Logical;
-
-// Primitives Ptr
-type PULONG = *mut ULONG;
-type PLARGE_INTEGER = *mut LARGE_INTEGER;
-
-type PVOID = *mut VOID;
-
-// Strings
-type PWSTR = *mut u16;
-type PCWSTR = *const u16;
-
-// Structs
-type HANDLE = t::Handle;
-type FILE_BASIC_INFORMATION = t::FileBasicInfo;
-type UNICODE_STRING = RawUnicodeString;
-type IO_STATUS_BLOCK = t::IoStatusBlock;
-type OBJECT_ATTRIBUTES = t::ObjectAttributes;
-type PEB = peb::Peb;
-
-type NTSTATUS = NtStatus;
-
-// Structs mut ptr
-type PHANDLE = *mut HANDLE;
-type PFILE_BASIC_INFORMATION = *mut FILE_BASIC_INFORMATION;
-type PUNICODE_STRING = *mut UNICODE_STRING;
-type PIO_STATUS_BLOCK = *mut IO_STATUS_BLOCK;
-
-type PIO_APC_ROUTINE = ptr::IoApcRoutinePtr;
-type PRTL_RELATIVE_NAME_U = PVOID;
-type PPEB = &'static PEB;
-
-// Structs const ptr
-type PCOBJECT_ATTRIBUTES = *const OBJECT_ATTRIBUTES;
-type PCUNICODE_STRING = *const UNICODE_STRING;
-
-// Classes
-type FILE_INFORMATION_CLASS = class::FileInformation;
+#[allow(
+    clippy::wildcard_imports,
+    reason = "There's no point in importing them separately"
+)]
+use crate::{native::peb::PPEB, ntstatus::NtStatus, types::*};
 
 define_fn!(
-    NTSTATUS NTAPI NtClose(
+    NtStatus NTAPI NtClose(
         _In__Post_ptr_invalid_ HANDLE Handle
     );
 
-    NTSTATUS NTAPI NtCreateFile(
+    NtStatus NTAPI NtCreateFile(
         _Out_ PHANDLE FileHandle,
         _In_ ACCESS_MASK DesiredAccess,
         _In_ PCOBJECT_ATTRIBUTES ObjectAttributes,
@@ -75,12 +29,19 @@ define_fn!(
         _In_ ULONG EaLength
     );
 
-    NTSTATUS NTAPI NtQueryAttributesFile(
+    NtStatus NTAPI NtOpenProcess(
+        _Out_ PHANDLE ProcessHandle,
+        _In_ ACCESS_MASK DesiredAccess,
+        _In_ PCOBJECT_ATTRIBUTES ObjectAttributes,
+        _In_opt_ PCLIENT_ID ClientId
+    );
+
+    NtStatus NTAPI NtQueryAttributesFile(
         _In_ PCOBJECT_ATTRIBUTES ObjectAttributes,
         _Out_ PFILE_BASIC_INFORMATION FileInformation
     );
 
-    NTSTATUS NTAPI NtQueryInformationFile(
+    NtStatus NTAPI NtQueryInformationFile(
         _In_ HANDLE FileHandle,
         _Out_ PIO_STATUS_BLOCK IoStatusBlock,
         _Out_ PVOID FileInformation,
@@ -88,7 +49,7 @@ define_fn!(
         _In_ FILE_INFORMATION_CLASS FileInformationClass
         );
 
-    NTSTATUS NTAPI NtReadFile(
+    NtStatus NTAPI NtReadFile(
         _In_ HANDLE FileHandle,
         _In_opt_ HANDLE Event,
         _In_opt_ PIO_APC_ROUTINE ApcRoutine,
@@ -100,7 +61,7 @@ define_fn!(
         _In_opt_ PULONG Key
     );
 
-    NTSTATUS NTAPI NtWriteFile(
+    NtStatus NTAPI NtWriteFile(
         _In_ HANDLE FileHandle,
         _In_opt_ HANDLE Event,
         _In_opt_ PIO_APC_ROUTINE ApcRoutine,
@@ -144,7 +105,7 @@ define_fn!(
         _In_opt_z_ PCWSTR SourceString
     );
 
-    NTSTATUS NTAPI RtlQueryEnvironmentVariable_U(
+    NtStatus NTAPI RtlQueryEnvironmentVariable_U(
         _In_opt_ PVOID Environment,
         _In_ PCUNICODE_STRING Name,
         _Inout_ PUNICODE_STRING Value

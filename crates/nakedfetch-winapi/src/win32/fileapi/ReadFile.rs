@@ -3,7 +3,7 @@ use core::ptr;
 use crate::{
     AsRawHandle, ntdll,
     ntstatus::NtStatus,
-    types::IoStatusBlock,
+    types::{IO_STATUS_BLOCK, PVOID},
     win32::fileapi::{CanRead, FileHandle},
 };
 
@@ -25,7 +25,7 @@ pub fn ReadFile<A: CanRead>(
 }
 
 fn read_file_inner(
-    raw: *mut (),
+    raw: PVOID,
     buf: &mut [u8],
     read: usize,
     offset: Option<usize>,
@@ -36,7 +36,7 @@ fn read_file_inner(
         &raw mut offset_val
     });
 
-    let mut info = IoStatusBlock::default();
+    let mut info = IO_STATUS_BLOCK::default();
 
     // SAFETY: The parameters fully comply with docs
     let ret = unsafe {
@@ -53,7 +53,7 @@ fn read_file_inner(
         )
     };
     if ret.is_success() {
-        let readed = info.information as usize;
+        let readed = info.Information as usize;
         Ok(readed)
     } else {
         Err(ret)

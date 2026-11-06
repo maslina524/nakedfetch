@@ -1,19 +1,19 @@
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
-pub struct Boolean(u8);
+pub struct BOOLEAN(u8);
 
-impl From<Boolean> for bool {
-    fn from(val: Boolean) -> Self {
+impl From<BOOLEAN> for bool {
+    fn from(val: BOOLEAN) -> Self {
         val.0 > 0
     }
 }
 
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
-pub struct Logical(u32);
+pub struct LOGICAL(u32);
 
-impl From<Logical> for bool {
-    fn from(val: Logical) -> Self {
+impl From<LOGICAL> for bool {
+    fn from(val: LOGICAL) -> Self {
         val.0 > 0
     }
 }

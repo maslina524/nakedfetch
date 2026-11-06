@@ -5,7 +5,7 @@ use path::Path;
 use crate::{
     AsRawHandle, ntdll,
     ntstatus::NtStatus,
-    types::{Handle, IoStatusBlock, ObjectAttributes},
+    types::{HANDLE, IO_STATUS_BLOCK, OBJECT_ATTRIBUTES},
     unicode::UnicodeString,
     win32::fileapi::{FileAccess, FileHandle},
 };
@@ -175,7 +175,7 @@ fn create_file_inner(
     create: FileDispose,
     attributes: FileAttributes,
     options: CreateOptions,
-) -> Result<Handle, CreateFileError> {
+) -> Result<HANDLE, CreateFileError> {
     let access = if options.build() & SYNC_FLAGS != 0 {
         access | SYNCHRONIZE
     } else {
@@ -185,12 +185,12 @@ fn create_file_inner(
     let unicode =
         UnicodeString::from_path(path).map_err(|_| CreateFileError::UnicodePathAllocate)?;
 
-    let mut attrs = ObjectAttributes {
-        length: size_of::<ObjectAttributes>() as u32,
-        object_name: unicode.as_inner_ptr(),
+    let mut attrs = OBJECT_ATTRIBUTES {
+        Length: size_of::<OBJECT_ATTRIBUTES>() as u32,
+        ObjectName: unicode.as_inner_ptr(),
         ..Default::default()
     };
-    let mut io = IoStatusBlock::default();
+    let mut io = IO_STATUS_BLOCK::default();
     let mut out = ptr::null_mut();
 
     // SAFETY: All wrapper structures comply with the `ntdll` documentation

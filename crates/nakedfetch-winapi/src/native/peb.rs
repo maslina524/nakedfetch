@@ -1,7 +1,12 @@
-use super::{BOOLEAN, HANDLE, PHEAP, PPEB_LDR_DATA, PRTL_USER_PROCESS_PARAMETERS, PVOID};
+#[allow(
+    clippy::wildcard_imports,
+    reason = "There's no point in importing them separately"
+)]
+use super::*;
+use crate::native::rtl::PRTL_USER_PROCESS_PARAMETERS;
 
 define_struct!(
-    typedef struct Peb {
+    _NO_DEFAULT typedef struct _PEB {
         //
         // The process was cloned with an inherited address space.
         //
@@ -48,5 +53,7 @@ define_struct!(
         // Pointer to the process default heap.
         //
         PHEAP ProcessHeap;
-    };
+    } PEB;
 );
+
+pub type PPEB = &'static PEB;

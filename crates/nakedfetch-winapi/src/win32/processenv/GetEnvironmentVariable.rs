@@ -2,7 +2,7 @@ use alloc::vec;
 
 use wtf8::{Wtf8, Wtf8Buf};
 
-use crate::{ntdll, ntstatus::NtStatus, types::RawUnicodeString, unicode::UnicodeString};
+use crate::{ntdll, ntstatus::NtStatus, types::UNICODE_STRING, unicode::UnicodeString};
 
 const STATUS_BUFFER_TOO_SMALL: NtStatus = NtStatus::new(0xC000_0023);
 
@@ -17,9 +17,9 @@ pub fn GetEnvironmentVariable<T: AsRef<Wtf8>>(name: T) -> Result<Wtf8Buf, NtStat
 fn get_env_var_inner(name: &Wtf8) -> Result<Wtf8Buf, NtStatus> {
     // SAFETY: Completely safe
     let peb = unsafe { ntdll::RtlGetCurrentPeb() };
-    let env = peb.process_parameters.environment;
+    let env = peb.ProcessParameters.Environment;
     let name_unicode = UnicodeString::from_wtf8(name);
-    let mut raw_value = RawUnicodeString::default();
+    let mut raw_value = UNICODE_STRING::default();
 
     // Get size
     // SAFETY: Pass a valid pointer to Env; according to the documentation, an
@@ -36,12 +36,12 @@ fn get_env_var_inner(name: &Wtf8) -> Result<Wtf8Buf, NtStatus> {
         return Err(ret);
     }
 
-    let len = raw_value.length;
+    let len = raw_value.Length;
     let mut buffer = vec![0u16; len as usize + 2];
 
-    let mut value = RawUnicodeString {
-        maximum_length: (buffer.len() + 2) as u16,
-        buffer: buffer.as_mut_ptr(),
+    let mut value = UNICODE_STRING {
+        MaximumLength: (buffer.len() + 2) as u16,
+        Buffer: buffer.as_mut_ptr(),
         ..Default::default()
     };
 
@@ -57,7 +57,7 @@ fn get_env_var_inner(name: &Wtf8) -> Result<Wtf8Buf, NtStatus> {
     };
 
     if ret.is_success() {
-        let chars = value.length as usize / size_of::<u16>();
+        let chars = value.Length as usize / size_of::<u16>();
         buffer.truncate(chars);
         Ok(Wtf8Buf::from_utf16(buffer.into_iter()))
     } else {

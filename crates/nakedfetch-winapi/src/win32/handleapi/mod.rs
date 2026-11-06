@@ -17,6 +17,8 @@ mod tests {
 
     #[test]
     fn close_handle_test() {
+        use core::ffi::c_void;
+
         type Error = u32;
         type Attrs = u32;
 
@@ -25,16 +27,16 @@ mod tests {
                 lpFileName: *const u8,
                 dwDesiredAccess: u32,
                 dwShareMode: u32,
-                lpSecurityAttributes: *mut (),
+                lpSecurityAttributes: *mut c_void,
                 dwCreationDisposition: u32,
                 dwFlagsAndAttributes: u32,
-                hTemplateFile: *mut (),
-            ) -> *mut ();
-            safe fn GetHandleInformation(hObject: *mut (), lpdwFlags: *mut u32) -> i32;
+                hTemplateFile: *mut c_void,
+            ) -> *mut c_void;
+            safe fn GetHandleInformation(hObject: *mut c_void, lpdwFlags: *mut u32) -> i32;
             safe fn GetLastError() -> u32;
         }
 
-        fn get_handle_attrs(raw: *mut ()) -> Result<Attrs, Error> {
+        fn get_handle_attrs(raw: *mut c_void) -> Result<Attrs, Error> {
             let mut flags = 0;
             let ret = GetHandleInformation(raw, &raw mut flags);
             if ret == 0 {

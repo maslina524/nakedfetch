@@ -1,6 +1,6 @@
 use core::{marker::PhantomData, ptr::NonNull};
 
-use crate::{AsRawHandle, ntdll, types::Handle};
+use crate::{AsRawHandle, ntdll, types::HANDLE};
 
 mod HeapAlloc;
 pub use HeapAlloc::*;
@@ -81,14 +81,14 @@ impl<T> HeapPtr<T> {
 
 #[derive(Clone, Copy)]
 #[repr(transparent)]
-pub struct HeapHandle(Handle);
+pub struct HeapHandle(HANDLE);
 
 impl AsRawHandle for HeapHandle {
-    fn from_raw(val: Handle) -> Self {
+    fn from_raw(val: HANDLE) -> Self {
         Self(val)
     }
 
-    fn as_raw(&self) -> Handle {
+    fn as_raw(&self) -> HANDLE {
         self.0
     }
 }
@@ -97,7 +97,7 @@ impl AsRawHandle for HeapHandle {
 pub fn GetProcessHeap() -> HeapHandle {
     // SAFETY: Completely safe
     let peb = unsafe { ntdll::RtlGetCurrentPeb() };
-    let raw = peb.process_heap;
+    let raw = peb.ProcessHeap;
     HeapHandle::from_raw(raw)
 }
 
