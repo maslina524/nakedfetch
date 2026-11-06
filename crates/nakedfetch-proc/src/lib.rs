@@ -7,7 +7,6 @@ use syn::{DeriveInput, parse_macro_input};
 mod derive;
 mod lower;
 mod parser;
-mod snake;
 mod todo;
 
 // TODO ATTRIBUTE
@@ -21,18 +20,6 @@ pub fn todo(attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro]
 pub fn lower(item: TokenStream) -> TokenStream {
     lower::imp(item.into()).into()
-}
-
-// SNAKE MACRO
-#[proc_macro]
-pub fn snake_ident(item: TokenStream) -> TokenStream {
-    snake::imp_macro(item.into()).into()
-}
-
-// SNAKE ATTRIBUTE
-#[proc_macro_attribute]
-pub fn snake_struct(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    snake::imp_attribute(item.into()).into()
 }
 
 // DOC DERIVE
