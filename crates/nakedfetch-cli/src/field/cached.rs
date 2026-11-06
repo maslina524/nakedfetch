@@ -4,20 +4,22 @@ use alloc::{
     string::{String, ToString},
 };
 use core::{
-    fmt::{Debug, Display},
+    fmt::{Debug, Display, Write as _},
     marker::PhantomData,
     sync::atomic::{AtomicBool, Ordering},
 };
 
-use common::{formatf, sync::Mutex, warning};
+use common::{
+    env, formatf,
+    fs::{self, AccessWrite, File, FileCreateError as FCErr, FileReadToStringError as FRTSErr},
+    sync::Mutex,
+    warning,
+};
+use path::Path;
 
 use crate::{
     detect::uptime::UptimeInfo,
     formats::Frequency,
-    imp::{
-        fs::{self, Access, File, ReadError},
-        path::Path,
-    },
     lua::{AsLua, LuaType},
     parser::LineBased,
 };
@@ -32,10 +34,10 @@ pub fn flush_to_file() {
         return;
     }
 
-    let path_dir = Path::cache();
+    let path_dir = env::cache_dir();
     let _ = fs::create_dirs(&path_dir);
     let path = path_dir.join("session");
-    let file = match File::create_always(path, Access::Write) {
+    let mut file = match File::<AccessWrite>::create_new_or_rewrite(path) {
         Ok(f) => f,
         Err(e) => {
             warning!("Failed to create cache/session: {e}");
@@ -44,7 +46,7 @@ pub fn flush_to_file() {
     };
 
     let entries = ENTRIES.lock();
-    if let Err(e) = file.write(formatf!("{}", *entries).as_bytes()) {
+    if let Err(e) = write!(file, "{}", *entries) {
         warning!("Failed to write to cache/session: {e}");
     }
 }
@@ -60,21 +62,17 @@ fn load_entries() {
     }
 
     let actual = UptimeInfo::new().boot_timestamp;
-    let path = Path::cache().join("session");
+    let path = env::cache_dir().join("session");
 
     let fallback = || LineBased::parse(formatf!("boot_timestamp={actual}"), '=');
 
     let mut parsed = match LineBased::parse_file(path, '=') {
         Ok(p) => p,
-        Err(ReadError::Utf8(e)) => {
-            warning!("Failed to read cache/session: {e}");
+        Err(FRTSErr::Create(FCErr::NameNotFound)) => fallback(),
+        Err(e) => {
+            warning!("Failed to read cache session: {e}");
             fallback()
         },
-        Err(ReadError::Code(e)) if !e.is_file_not_found() => {
-            warning!("Failed to read cache/session: {e} ({:2X})", e.code());
-            fallback()
-        },
-        Err(_) => fallback(),
     };
 
     match parsed.get("boot_timestamp").and_then(u64::from_cached) {

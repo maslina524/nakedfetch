@@ -183,7 +183,7 @@ pub fn open_lua_file(code: &str) -> Cow<'_, str> {
     match fs::read_to_string(code.trim()) {
         Ok(c) => Cow::Owned(c),
         Err(e) => {
-            if e == FRTSErr::Create(FCErr::InvalidName) {
+            if e == FRTSErr::Create(FCErr::NameNotFound) {
                 Cow::Borrowed(code)
             } else {
                 warning!("Failed to open the file: {e}");

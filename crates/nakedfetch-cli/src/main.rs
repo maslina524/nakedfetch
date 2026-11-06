@@ -328,7 +328,7 @@ fn get_logo_name_and_custom(val: &str) -> (Box<str>, UILogo) {
             }
         },
         Err(e) => {
-            if e == FCRErr::Create(FCErr::InvalidName) {
+            if e == FCRErr::Create(FCErr::NameNotFound) {
                 let ready_id = val.to_lowercase().replace('_', " ").into_boxed_str();
                 (ready_id, UILogo::Preset)
             } else {
