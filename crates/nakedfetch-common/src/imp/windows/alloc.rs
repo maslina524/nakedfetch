@@ -1,6 +1,7 @@
 use core::{
     alloc::Layout,
     error::Error,
+    ffi::c_void,
     fmt,
     sync::atomic::{AtomicUsize, Ordering::Relaxed},
 };
@@ -40,7 +41,7 @@ impl Error for ReAllocError {}
 fn handle() -> HeapHandle {
     let atomic = HANDLE.load(Relaxed);
     if atomic != 0 {
-        let hmodule = atomic as *mut ();
+        let hmodule = atomic as *mut c_void;
         return HeapHandle::from_raw(hmodule);
     }
 

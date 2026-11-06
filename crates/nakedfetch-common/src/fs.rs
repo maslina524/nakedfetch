@@ -3,7 +3,7 @@ use alloc::{
     vec,
     vec::Vec,
 };
-use core::fmt;
+use core::{ffi::c_void, fmt};
 
 use path::Path;
 
@@ -74,7 +74,7 @@ impl<A: fs::Access> File<A> {
     }
 
     #[must_use]
-    pub fn as_raw_handle(&self) -> *mut () {
+    pub fn as_raw_handle(&self) -> *mut c_void {
         handle::as_raw_handle(&self.0)
     }
 }
