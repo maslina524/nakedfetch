@@ -7,6 +7,7 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
+allocator = { path = "../nakedfetch-allocator" }
 common = { path = "../nakedfetch-common" }
 path = { path = "../nakedfetch-path" }
 proc = { path = "../nakedfetch-proc" }

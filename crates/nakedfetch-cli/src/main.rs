@@ -2,7 +2,6 @@
 #![cfg_attr(not(test), no_main)]
 #![allow(unused, reason = "All unused will be removed closer to 1.0.0.")]
 
-mod allocator;
 mod base64;
 mod color;
 mod config;
@@ -47,7 +46,6 @@ use image::{Image, Png};
 use json::Map;
 
 use crate::{
-    allocator::{AllocationReport, Allocator},
     config::{Config, ConfigModule},
     detect::os,
     field::cached,
@@ -60,7 +58,7 @@ use crate::{
 };
 
 #[global_allocator]
-static ALLOCATOR: Allocator = Allocator;
+static ALLOCATOR: allocator::Allocator = allocator::Allocator;
 static HELP: &str = concat!(
     "nakedfetch is a neofetch-like tool for beautiful system information display with flexible output customization\n",
     "\n",
@@ -464,59 +462,6 @@ fn print_version(method: Option<&str>) -> ! {
     exit(0)
 }
 
-#[cold]
-#[inline(never)]
-fn print_alloc_report() {
-    let rep = AllocationReport::get();
-    let total = rep.alloc + rep.dealloc + rep.realloc;
-
-    fprintln!();
-    fprintln!("\x1b[1mAllocation Report\x1b[0m");
-    fprintln!("Total Ops: {total}");
-
-    let total_u = total as u128;
-
-    let mut alloc_len = ((rep.alloc as u128) * ALLOC_REP_BAR_SIZE) / total_u;
-    let mut realloc_len = ((rep.realloc as u128) * ALLOC_REP_BAR_SIZE) / total_u;
-    if alloc_len + realloc_len > ALLOC_REP_BAR_SIZE {
-        alloc_len = ALLOC_REP_BAR_SIZE;
-        realloc_len = 0;
-    }
-    let dealloc_len = ALLOC_REP_BAR_SIZE - alloc_len - realloc_len;
-
-    let alloc_len = alloc_len as usize;
-    let realloc_len = realloc_len as usize;
-    let dealloc_len = dealloc_len as usize;
-
-    fprintln!(
-        "|\x1b[{};1m{}\x1b[{};1m{}\x1b[{};1m{}\x1b[0m|",
-        color::FG_YELLOW,
-        "=".repeat(alloc_len),
-        color::FG_CYAN,
-        "=".repeat(dealloc_len),
-        color::FG_LIGHT_MAGENTA,
-        "=".repeat(realloc_len),
-    );
-
-    fprintln!(
-        "\x1b[{}mAlloc: {}   \x1b[{}mDealloc: {}   \x1b[{}mRealloc: {}\x1b[0m\n",
-        color::FG_YELLOW,
-        rep.alloc,
-        color::FG_CYAN,
-        rep.dealloc,
-        color::FG_LIGHT_MAGENTA,
-        rep.realloc,
-    );
-
-    fprintln!("Total Bytes:");
-    fprintln!(
-        "Allocated: {}   Deallocated: {}   Max In RT: {}",
-        MemorySize::from_bytes(rep.alloc_total),
-        MemorySize::from_bytes(rep.dealloc_total),
-        MemorySize::from_bytes(rep.max_in_runtime)
-    );
-}
-
 fn print_none() {
     let id = os::get_id().as_boxed_str();
     LogoInfo::new(&id);
@@ -628,9 +573,6 @@ fn just_print_logo_and_info(logo_lines: &[(String, usize)]) {
 static ARGS: OnceLock<Vec<String>> = OnceLock::new();
 
 #[cfg(not(test))]
-use core::ffi;
-
-#[cfg(not(test))]
 #[allow(
     clippy::similar_names,
     reason = "that's what they're called in C, i don't give a fuck about clippy"
@@ -649,9 +591,15 @@ extern "C" fn main(argc: ffi::c_int, argv: *const *const ffi::c_char) -> ffi::c_
 #[cfg(not(test))]
 #[cfg(target_os = "windows")]
 #[unsafe(no_mangle)]
-extern "C" fn main() -> ffi::c_int {
+extern "C" fn main() -> i32 {
     let _ = ARGS.set(env::args_init());
-    nakedfetch_main()
+    let ret = nakedfetch_main();
+
+    if env::args().iter().any(|a| a == "--alloc-report") {
+        fprintln!("{}", allocator::Snapshot::create());
+    }
+
+    ret
 }
 
 fn nakedfetch_main() -> i32 {
@@ -698,10 +646,6 @@ fn nakedfetch_main() -> i32 {
         UILogo::Preset => print_base(&logo_name),
         UILogo::Ascii(s) => print_ascii(s),
         UILogo::Image(i) => print_image(&i),
-    }
-
-    if args.iter().any(|a| a == "--alloc-report") {
-        print_alloc_report();
     }
 
     // The handle is created not with `GetStdHandle`,
