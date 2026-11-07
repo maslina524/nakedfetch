@@ -29,8 +29,8 @@ pub struct Request {
 }
 
 impl Request {
-    pub fn new(url: impl Into<String>) -> Option<Self> {
-        let url = Url::new(url.into())?;
+    pub fn new(url: &str) -> Option<Self> {
+        let url = Url::new(url)?;
         Some(Self { url })
     }
 

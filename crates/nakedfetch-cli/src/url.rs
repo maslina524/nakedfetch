@@ -14,22 +14,22 @@ pub struct Url {
 }
 
 impl Url {
-    pub fn new(url: impl Into<String>) -> Option<Self> {
-        let mut url = url.into();
+    pub fn new(url: &str) -> Option<Self> {
+        let mut buf = String::with_capacity(url.len());
 
         // Protocol
         let proto_sep = url.find("://")?;
         let protocol = url[..proto_sep].to_owned();
-        url = url[proto_sep + 3..].to_owned();
+        buf.push_str(&url[proto_sep + 3..]);
 
         // Path
-        let slash_sep = url.find('/').unwrap_or(url.len());
-        let path = if slash_sep == url.len() {
+        let slash_sep = buf.find('/').unwrap_or(buf.len());
+        let path = if slash_sep == buf.len() {
             String::from("/")
         } else {
-            url[slash_sep..].to_owned()
+            buf[slash_sep..].to_owned()
         };
-        let mut base = url[..slash_sep].to_owned();
+        let mut base = buf[..slash_sep].to_owned();
 
         // Port
         let port = if let Some(colon_sep) = base.rfind(':') {

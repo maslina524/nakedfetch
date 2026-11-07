@@ -55,9 +55,10 @@ fn command_line_string() -> &'static str {
     COMMAND_LINE_STRING.get_or_init(|| GetCommandLine().to_string_lossy())
 }
 
+#[derive(Debug, Clone)]
 pub struct ArgsInner {
     source: &'static str,
-    pos: usize, // байтовое смещение
+    pos: usize,
 }
 
 impl ArgsInner {
@@ -84,7 +85,6 @@ impl ArgsInner {
             .unwrap_or_else(|| unreachable!("Check via `in_bound`"))
     }
 
-    /// Съесть один char и вернуть его.
     fn pop(&mut self) -> Option<char> {
         let ch = self.peek()?;
         self.pos += ch.len_utf8();

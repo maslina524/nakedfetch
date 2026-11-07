@@ -22,6 +22,7 @@ pub fn var<T: AsRef<Wtf8>>(name: T) -> Result<String, env::EnvVarError> {
     Ok(s)
 }
 
+#[derive(Debug, Clone)]
 pub struct Args {
     inner: env::ArgsInner,
 }

@@ -286,6 +286,7 @@ impl Default for ConfigModuleArray {
             "memory",
             "disk",
             "locale",
+            "weather",
             "version",
             "break",
             "colors"

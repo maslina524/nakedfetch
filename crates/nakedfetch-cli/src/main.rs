@@ -34,7 +34,7 @@ cfg_if! {
 
 extern crate alloc;
 
-use alloc::{boxed::Box, string::String, vec::Vec};
+use alloc::{borrow::ToOwned, boxed::Box, string::String, vec::Vec};
 use core::{slice::Iter, str::FromStr as _};
 
 use common::{
@@ -255,8 +255,8 @@ pub fn exit(code: u32) -> ! {
     }
 }
 
-fn get_config(args: &mut Iter<'_, String>) -> Config {
-    let Some(_) = args.position(|a| a == "--config" || a == "-c") else {
+fn get_config(args: &mut Iter<'_, &'static str>) -> Config {
+    let Some(_) = args.position(|a| *a == "--config" || *a == "-c") else {
         return Config::default();
     };
     let Some(path) = args.next() else {
@@ -603,26 +603,25 @@ extern "C" fn main() -> i32 {
 }
 
 fn nakedfetch_main() -> i32 {
-    let args = env::args();
+    let mut args: Vec<&'static str> = common::env::args().collect();
 
-    // Commands
-    if let Some(pos) = args.iter().position(|a| a == "--help" || a == "-h") {
-        print_help(args.get(pos + 1).map(String::as_str))
+    if let Some(pos) = args.iter().position(|a| *a == "--help" || *a == "-h") {
+        print_help(args.get(pos + 1).copied());
     }
 
-    if let Some(pos) = args.iter().position(|a| a == "--version" || a == "-v") {
-        print_version(args.get(pos + 1).map(String::as_str))
+    if let Some(pos) = args.iter().position(|a| *a == "--version" || *a == "-v") {
+        print_version(args.get(pos + 1).copied());
     }
 
-    // Config init
     let config = get_config(&mut args.iter());
     Config::get_or_init(config);
 
     // Logo init
     let name_raw = args
         .iter()
-        .position(|a| a == "--logo" || a == "-l")
-        .and_then(|pos| args.get(pos + 1).cloned())
+        .position(|a| *a == "--logo" || *a == "-l")
+        .and_then(|pos| args.get(pos + 1).copied())
+        .map(|v| v.to_owned())
         .or_else(|| Config::get().get_logo_name());
 
     let (logo_name, custom) = name_raw.map_or_else(
