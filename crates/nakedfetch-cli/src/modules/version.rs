@@ -34,6 +34,8 @@ pub struct Version {
     pub llvm: &'static str,
     #[doc = "Link to the release of this version of nakedfetch"]
     pub release_link: &'static str,
+    #[doc = "Stack size"]
+    pub stack_size: usize,
 }
 
 impl Module for Version {
@@ -59,6 +61,7 @@ impl Module for Version {
                 "https://github.com/maslina524/nakedfetch/releases/tag/v",
                 env!("CARGO_PKG_VERSION")
             ),
+            stack_size: 4096,
         }
     }
 

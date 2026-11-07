@@ -1,2 +1,11 @@
 [alias]
 build-native = "build --release --config .cargo/native.toml"
+
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "link-arg=/STACK:4096"]
+
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-Wl,-z,stack-size=4096"]
+
+[target.aarch64-linux-android]
+rustflags = ["-C", "link-arg=-Wl,-z,stack-size=4096"]
