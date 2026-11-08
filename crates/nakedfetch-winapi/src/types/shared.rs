@@ -67,6 +67,7 @@ STRUCT! {
 
 pub type PKUSER_SHARED_DATA = &'static KUSER_SHARED_DATA;
 
+#[must_use]
 pub fn kuser_share_data() -> PKUSER_SHARED_DATA {
     // SAFETY: The ptr is static for all versions of Windows, safe
     unsafe { &*KUSER_SHARED_DATA_PTR }

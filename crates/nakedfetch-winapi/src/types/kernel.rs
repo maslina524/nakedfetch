@@ -92,6 +92,87 @@ define_struct!(
     } RTL_RELATIVE_NAME_U, PRTL_RELATIVE_NAME_U;
 );
 
+define_struct!(
+    typedef struct _SYSTEM_THREAD_INFORMATION {
+        LARGE_INTEGER KernelTime;
+        LARGE_INTEGER UserTime;
+        LARGE_INTEGER CreateTime;
+        ULONG WaitTime;
+        PVOID StartAddress;
+        CLIENT_ID ClientId;
+        KPRIORITY Priority;
+        KPRIORITY BasePriority;
+        ULONG ContextSwitches;
+        KTHREAD_STATE ThreadState;
+        KWAIT_REASON WaitReason;
+    } SYSTEM_THREAD_INFORMATION, PSYSTEM_THREAD_INFORMATION;
+);
+
+ENUM! {
+    enum KTHREAD_STATE {
+        Initialized,
+        Ready,
+        Running,
+        Standby,
+        Terminated,
+        Waiting,
+        Transition,
+        DeferredReady,
+        GateWaitObsolete,
+        WaitingForProcessInSwap,
+        MaximumThreadState
+    }
+}
+
+ENUM! {
+    enum KWAIT_REASON {
+        Executive,
+        FreePage,
+        PageIn,
+        PoolAllocation,
+        DelayExecution,
+        Suspended,
+        UserRequest,
+        WrExecutive,
+        WrFreePage,
+        WrPageIn,
+        WrPoolAllocation,
+        WrDelayExecution,
+        WrSuspended,
+        WrUserRequest,
+        WrEventPair,
+        WrQueue,
+        WrLpcReceive,
+        WrLpcReply,
+        WrVirtualMemory,
+        WrPageOut,
+        WrRendezvous,
+        WrKeyedEvent,
+        WrTerminated,
+        WrProcessInSwap,
+        WrCpuRateControl,
+        WrCalloutStack,
+        WrKernel,
+        WrResource,
+        WrPushLock,
+        WrMutex,
+        WrQuantumEnd,
+        WrDispatchInt,
+        WrPreempted,
+        WrYieldExecution,
+        WrFastMutex,
+        WrGuardedMutex,
+        WrRundown,
+        WrAlertByThreadId,
+        WrDeferredPreempt,
+        WrPhysicalFault,
+        WrIoRing,
+        WrMdlCache,
+        WrRcu,
+        MaximumWaitReason
+    }
+}
+
 ENUM! {
     enum NtProductType {
         WinNt = 1,

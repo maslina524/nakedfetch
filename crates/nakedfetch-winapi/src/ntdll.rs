@@ -61,6 +61,14 @@ define_fn!(
         _In_opt_ PULONG Key
     );
 
+    NtStatus NTAPI NtQuerySystemInformation(
+        _In_ SYSTEM_INFORMATION_CLASS SystemInformationClass,
+        _Out_ PVOID SystemInformation,
+        _In_ ULONG SystemInformationLength,
+        _Out_opt_ PULONG ReturnLength
+    );
+
+
     NtStatus NTAPI NtWriteFile(
         _In_ HANDLE FileHandle,
         _In_opt_ HANDLE Event,
@@ -84,6 +92,12 @@ define_fn!(
         _Out_ PUNICODE_STRING NtFileName,
         _Out_opt_ PWSTR *FilePart,
         _Out_opt_ PRTL_RELATIVE_NAME_U RelativeName
+    );
+
+    BOOLEAN NTAPI RtlEqualUnicodeString(
+        _In_ PCUNICODE_STRING String1,
+        _In_ PCUNICODE_STRING String2,
+        _In_ BOOLEAN CaseInSensitive
     );
 
     LOGICAL NTAPI RtlFreeHeap(

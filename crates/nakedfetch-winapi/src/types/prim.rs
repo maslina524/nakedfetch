@@ -14,6 +14,7 @@ pub type LARGE_INTEGER = i64;
 pub type VOID = core::ffi::c_void;
 pub type SIZE_T = usize;
 pub type ACCESS_MASK = ULONG;
+pub type KPRIORITY = ULONG;
 
 pub type HANDLE = PVOID;
 pub type CONSOLE_HANDLE = ConsoleHandle;
