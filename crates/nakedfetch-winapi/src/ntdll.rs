@@ -8,7 +8,7 @@
     clippy::wildcard_imports,
     reason = "There's no point in importing them separately"
 )]
-use crate::{native::peb::PPEB, ntstatus::NtStatus, types::*};
+use crate::{ntstatus::NtStatus, types::*};
 
 define_fn!(
     NtStatus NTAPI NtClose(

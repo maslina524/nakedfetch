@@ -7,14 +7,15 @@ use crate::types::HANDLE;
 
 #[macro_use]
 mod macros;
-mod native;
+mod ntdll;
+
+mod api;
+pub use api::win32;
 
 pub mod kernel32;
-pub mod ntdll;
 pub mod ntstatus;
 pub mod types;
 pub mod unicode;
-pub mod win32;
 
 pub trait AsRawHandle {
     fn from_raw(raw: HANDLE) -> Self;

@@ -5,23 +5,24 @@
     reason = "Windows style"
 )]
 
+pub mod bitfields;
+pub mod bool;
 pub mod chars;
-pub use chars::*;
-
 pub mod class;
-pub use class::*;
-
+pub mod kernel;
+pub mod peb;
 pub mod prim;
-pub use prim::*;
-
 pub mod ptr;
-pub use ptr::*;
+pub mod rtl;
+pub mod shared;
 
-mod bool;
-pub use bool::*;
-
-mod kernel;
-pub use kernel::*;
-
-mod bitfields;
 pub use bitfields::*;
+pub use bool::*;
+pub use chars::*;
+pub use class::*;
+pub use kernel::*;
+pub use peb::*;
+pub use prim::*;
+pub use ptr::*;
+pub use rtl::*;
+pub use shared::*;

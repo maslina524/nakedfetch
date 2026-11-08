@@ -125,7 +125,12 @@ impl Path {
     pub fn trim_extension(&self) -> Option<&Self> {
         self.extension().map(|ext| {
             let bytes = self.as_bytes();
-            Self::from_bytes(&bytes[..bytes.len() - ext.len()])
+            let trim_len = ext.len() + 1;
+            if bytes.len() >= trim_len {
+                Self::from_bytes(&bytes[..bytes.len() - trim_len])
+            } else {
+                self
+            }
         })
     }
 }

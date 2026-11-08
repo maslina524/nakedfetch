@@ -1,4 +1,4 @@
-use crate::native::shared::kuser_share_data;
+use crate::types::shared::kuser_share_data;
 
 /// REF: <https://ntdoc.m417z.com/kuser_shared_data>
 #[must_use]

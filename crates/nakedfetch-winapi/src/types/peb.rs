@@ -3,7 +3,6 @@
     reason = "There's no point in importing them separately"
 )]
 use super::*;
-use crate::native::rtl::PRTL_USER_PROCESS_PARAMETERS;
 
 define_struct!(
     _NO_DEFAULT typedef struct _PEB {
