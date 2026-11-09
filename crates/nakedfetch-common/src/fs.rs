@@ -3,7 +3,7 @@ use alloc::{
     vec,
     vec::Vec,
 };
-use core::{ffi::c_void, fmt};
+use core::{error::Error, ffi::c_void, fmt, str::Utf8Error};
 
 use path::Path;
 
@@ -262,15 +262,102 @@ pub fn exists<T: AsRef<Path>>(path: T) -> Result<bool, FileExistsError> {
     fs::exists(path.as_ref())
 }
 
+const PER_READ_BYTES: usize = 128;
+
+#[derive(Debug)]
+pub enum FileByLineError {
+    Size(FileSizeError),
+    Read(FileReadError),
+    LineTooLong,
+    InvalidUtf8(Utf8Error),
+}
+
+impl fmt::Display for FileByLineError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for FileByLineError {}
+
+pub struct FileByLine<'f, A: AccessCanRead> {
+    file: &'f File<A>,
+    pos: usize,
+}
+
+impl<'f, A: AccessCanRead> FileByLine<'f, A> {
+    #[must_use]
+    pub const fn new(file: &'f File<A>) -> Self {
+        Self { file, pos: 0 }
+    }
+
+    /// # Errors
+    ///
+    /// `Err` if it failed to read a line of the file, see [`FileByLineError`].
+    pub fn next<'out>(
+        &mut self,
+        buf: &'out mut [u8],
+    ) -> Result<Option<&'out str>, FileByLineError> {
+        if buf.is_empty() {
+            return Err(FileByLineError::LineTooLong);
+        }
+
+        let size = self.file.file_size().map_err(FileByLineError::Size)?;
+        if self.pos >= size {
+            return Ok(None);
+        }
+
+        let requested = PER_READ_BYTES.min(buf.len());
+        let readed = self
+            .file
+            .read_part(buf, self.pos, requested)
+            .map_err(FileByLineError::Read)?;
+        if readed == 0 {
+            return Ok(None);
+        }
+
+        let at_eof = self.pos + readed >= size;
+
+        let mut new_line_idx = 0;
+        let has_newline = loop {
+            if new_line_idx >= readed {
+                break false;
+            }
+            if buf[new_line_idx] == b'\n' {
+                break true;
+            }
+            new_line_idx += 1;
+        };
+
+        if has_newline {
+            self.pos += new_line_idx + 1;
+        } else if at_eof {
+            self.pos += readed;
+            new_line_idx = readed;
+        } else {
+            return Err(FileByLineError::LineTooLong);
+        }
+
+        // Trim \r
+        if new_line_idx > 0 && buf[new_line_idx - 1] == b'\r' {
+            new_line_idx -= 1;
+        }
+
+        str::from_utf8(&buf[..new_line_idx])
+            .map(Some)
+            .map_err(FileByLineError::InvalidUtf8)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use core::fmt::Write as _;
     use std::fs;
 
-    use crate::fs::{AccessRead, AccessWrite, File};
+    use crate::fs::{AccessRead, AccessWrite, File, FileByLine};
 
     #[test]
-    fn create_new_file_test() {
+    fn create_new_file() {
         let path = "Common-Fs-File-CreateNew-1.txt";
         {
             let _ =
@@ -282,7 +369,7 @@ mod tests {
     }
 
     #[test]
-    fn write_bytes_file_test() {
+    fn write_bytes_file() {
         let path = "Common-Fs-File-WriteBytes-1.txt";
         {
             let mut file =
@@ -298,7 +385,7 @@ mod tests {
     }
 
     #[test]
-    fn fmt_write_file_test() {
+    fn fmt_write_file() {
         let path = "Common-Fs-File-FmtWrite-1.txt";
         {
             let mut file =
@@ -317,7 +404,7 @@ mod tests {
     }
 
     #[test]
-    fn read_part_file_test() {
+    fn read_part_file() {
         let path = "Cargo.toml";
         {
             let file = File::<AccessRead>::open(path).expect("Failed to crate new file");
@@ -336,7 +423,7 @@ mod tests {
     }
 
     #[test]
-    fn read_and_read_to_string_test() {
+    fn read_and_read_to_string() {
         let path = "Cargo.toml";
 
         let std = fs::read(path).expect("fs::read_to_string failed");
@@ -349,7 +436,7 @@ mod tests {
     }
 
     #[test]
-    fn file_size_test() {
+    fn file_size() {
         let path = "Cargo.toml";
 
         let file = File::<AccessRead>::open(path).expect("Failed to open file");
@@ -358,7 +445,7 @@ mod tests {
     }
 
     #[test]
-    fn create_dir_test() {
+    fn create_dir() {
         let path = "Common-Fs-File-CreateDir-1";
         super::create_dir(path).expect("Failed to create dir");
 
@@ -368,7 +455,7 @@ mod tests {
     }
 
     #[test]
-    fn create_dirs_test() {
+    fn create_dirs() {
         let path = "Common-Fs-File-CreateDir-1/2/3/4/5";
         super::create_dirs(path).expect("Failed to create dir");
 
@@ -378,9 +465,51 @@ mod tests {
     }
 
     #[test]
-    fn exists_test() {
+    fn exists() {
         assert!(super::exists("Cargo.toml").expect("Failed to check exists"));
         assert!(super::exists("src").expect("Failed to check exists"));
         assert!(!super::exists("NotExists").expect("Failed to check exists"));
+    }
+
+    #[test]
+    fn read_file_by_line() {
+        static LINES: [&str; 6] = [
+            "First Line",
+            "Second Line",
+            "Line with `\\r`\r",
+            "Next line is empty",
+            "",
+            "End Of File",
+        ];
+
+        fn save_example_file(path: &str) {
+            fs::write(path, LINES.join("\n")).expect("std::fs::write failed");
+        }
+
+        fn next<'out>(
+            by_line: &'out mut FileByLine<'_, AccessRead>,
+            buf: &'out mut [u8],
+        ) -> Option<&'out str> {
+            by_line.next(buf).expect("Failed to read line")
+        }
+
+        let path = "Common-Fs-ReadFileByLine-1";
+        save_example_file(path);
+
+        {
+            let file = File::<AccessRead>::open(path).expect("Failed to open file");
+            let mut by_line = FileByLine::new(&file);
+            let mut buf = [0u8; 64];
+
+            assert_eq!(next(&mut by_line, &mut buf), Some("First Line"));
+            assert_eq!(next(&mut by_line, &mut buf), Some("Second Line"));
+            assert_eq!(next(&mut by_line, &mut buf), Some("Line with `\\r`"));
+            assert_eq!(next(&mut by_line, &mut buf), Some("Next line is empty"));
+            assert_eq!(next(&mut by_line, &mut buf), Some(""));
+            assert_eq!(next(&mut by_line, &mut buf), Some("End Of File"));
+            assert_eq!(next(&mut by_line, &mut buf), None);
+        }
+
+        fs::remove_file(path).expect("std::fs::remove_file failed");
     }
 }
