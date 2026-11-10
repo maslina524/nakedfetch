@@ -1,12 +1,12 @@
-#![cfg_attr(not(test), no_std)]
-#![cfg_attr(not(test), no_main)]
+#[cfg(target_arch = "x86_64")]
+mod x86_64;
+#[cfg(target_arch = "x86_64")]
+pub use x86_64::*;
 
-pub mod errno;
-pub mod raw;
-pub mod table;
-
-pub mod api;
-pub use api::{io, process};
+#[cfg(target_arch = "aarch64")]
+mod aarch64;
+#[cfg(target_arch = "aarch64")]
+pub use aarch64::*;
 
 #[macro_export]
 macro_rules! syscall {

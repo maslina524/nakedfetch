@@ -1,21 +1,22 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/nakedfetch-cli", 
-    "crates/nakedfetch-unixlib",
+    "crates/nakedfetch-cli",
     "crates/nakedfetch-proc",
-    "crates/nakedfetch-json", 
-    "crates/nakedfetch-huffman", 
-    "crates/nakedfetch-zlib", 
-    "crates/nakedfetch-lz77", 
-    "crates/nakedfetch-deflate", 
+    "crates/nakedfetch-json",
+    "crates/nakedfetch-huffman",
+    "crates/nakedfetch-zlib",
+    "crates/nakedfetch-lz77",
+    "crates/nakedfetch-deflate",
     "crates/nakedfetch-image", 
     "crates/nakedfetch-winapi",
     "crates/nakedfetch-common",
     "crates/nakedfetch-wtf8",
     "crates/nakedfetch-path",
     "crates/nakedfetch-hash",
-    "crates/nakedfetch-lua", "crates/nakedfetch-allocator",
+    "crates/nakedfetch-lua",
+    "crates/nakedfetch-allocator",
+    "crates/nakedfetch-libc",
 ]
 
 default-members = ["crates/nakedfetch-cli"]
