@@ -4,4 +4,5 @@
 mod api;
 pub use api::unistd;
 
+pub mod errno;
 pub mod raw;
