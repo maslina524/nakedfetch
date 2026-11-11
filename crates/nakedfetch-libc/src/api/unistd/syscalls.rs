@@ -1,8 +1,11 @@
-use crate::{raw::Table, syscall};
+use crate::{errno::Errno, raw::Table, syscall};
 
-#[must_use]
-pub fn write(fd: isize, buf: &[u8]) -> isize {
+/// # Errors
+///
+/// `Err` if system failed to write
+pub fn write(fd: isize, buf: &[u8]) -> Result<usize, Errno> {
     // SAFETY: We pass a valid nr,
     // all values are synchronized with https://syscalls.mebeim.net
-    unsafe { syscall!(Table::Write, fd, buf.as_ptr(), buf.len()) }
+    let ret = unsafe { syscall!(Table::Write, fd, buf.as_ptr(), buf.len()) };
+    ret.map(|v| v as usize)
 }

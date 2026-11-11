@@ -2,7 +2,7 @@
 #![cfg_attr(not(test), no_main)]
 
 mod api;
-pub use api::unistd;
+pub use api::{sys, unistd};
 
 pub mod errno;
 pub mod raw;

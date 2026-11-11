@@ -1,6 +1,6 @@
 use core::ptr::{self, NonNull};
 
-use crate::{api::sys::types::c_off, raw::Table, syscall};
+use crate::{api::sys::types::c_off, errno::Errno, raw::Table, syscall};
 
 pub const PROT_READ: i32 = 0x1;
 pub const PROT_WRITE: i32 = 0x2;
@@ -8,7 +8,9 @@ pub const PROT_WRITE: i32 = 0x2;
 pub const MAP_PRIVATE: i32 = 0x02;
 pub const MAP_ANONYMOUS: i32 = 0x20;
 
-#[must_use]
+/// # Errors
+///
+/// `Err` if failed to allocate mem
 pub fn mmap(
     addr: Option<NonNull<()>>,
     length: usize,
@@ -16,21 +18,23 @@ pub fn mmap(
     flags: i32,
     fd: i32,
     offset: c_off,
-) -> *mut () {
+) -> Result<*mut (), Errno> {
     let addr_ptr = addr.map_or(ptr::null_mut(), NonNull::as_ptr);
     // SAFETY: We pass a valid nr,
     // all values are synchronized with https://syscalls.mebeim.net
     let size = unsafe { syscall!(Table::Mmap, addr_ptr, length, prot, flags, fd, offset) };
-    size as *mut ()
+    size.map(|v| v as *mut ())
 }
 
-#[must_use]
-pub fn munmap(addr: *mut (), length: usize) -> i32 {
+/// # Errors
+///
+/// `Err` if failed to deallocate mem
+pub fn munmap(addr: *mut (), length: usize) -> Result<(), Errno> {
     // let addr_ptr = addr.as_ptr();
     // SAFETY: We pass a valid nr,
     // all values are synchronized with https://syscalls.mebeim.net
     let ret = unsafe { syscall!(Table::Munmap, addr, length) };
-    ret as i32
+    ret.map(|_| ())
 }
 
 #[cfg(test)]
@@ -48,7 +52,8 @@ mod tests {
             MAP_PRIVATE | MAP_ANONYMOUS,
             -1,
             0,
-        );
+        )
+        .expect("Failed mmap");
 
         // SAFETY: We write bytes only to the allocated memory
         unsafe { ptr::write_bytes(ptr.cast::<u8>(), 42u8, 128) };
@@ -58,6 +63,6 @@ mod tests {
             assert_eq!(val, 42u8);
         }
 
-        assert_eq!(super::munmap(ptr, 128), 0);
+        super::munmap(ptr, 128).expect("Failed munmap");
     }
 }
