@@ -6,6 +6,7 @@ pub enum Table {
     Mmap = 9,
     Munmap = 11,
     Exit = 60,
+    OpenAt = 257,
 }
 
 /// # SAFETY
