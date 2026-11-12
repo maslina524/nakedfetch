@@ -51,7 +51,7 @@ impl PathBuf {
     #[cfg(target_family = "unix")]
     #[must_use]
     pub fn has_trailing_sep(&self) -> bool {
-        self.0.last().map(|b| *b == b'/').unwrap_or(false)
+        self.0.last().is_some_and(|b| *b == b'/')
     }
 
     pub fn pop_trailing_sep(&mut self) -> bool {
@@ -102,7 +102,7 @@ impl PathBuf {
             self.0.push(b'/');
         }
 
-        self.0.extend_from_slice(&path.as_os_str());
+        self.0.extend_from_slice(path.as_os_str());
         self
     }
 }

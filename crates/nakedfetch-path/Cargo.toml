@@ -6,8 +6,11 @@ license.workspace = true
 authors.workspace = true
 repository.workspace = true
 
-[dependencies]
+[target.'cfg(windows)'.dependencies]
 wtf8 = { path = "../nakedfetch-wtf8" }
+
+[target.'cfg(unix)'.dependencies]
+smolarray = { path = "../nakedfetch-smolarray" }
 
 [lints]
 workspace = true

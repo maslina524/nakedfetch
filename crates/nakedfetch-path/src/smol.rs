@@ -23,14 +23,21 @@ impl SmolPath {
         self.len() == 0
     }
 
+    #[cfg(target_os = "windows")]
     #[must_use]
     pub fn as_os_str(&self) -> &OsStr {
         self.0.as_wtf8()
     }
 
+    #[cfg(target_family = "unix")]
+    #[must_use]
+    pub fn as_os_str(&self) -> &OsStr {
+        self.0.as_slice()
+    }
+
     #[must_use]
     pub fn as_path(&self) -> &Path {
-        Path::from_os_str(self.0.as_wtf8())
+        Path::from_os_str(self.as_os_str())
     }
 
     #[must_use]
@@ -38,9 +45,16 @@ impl SmolPath {
         PathBuf::from(self.as_path())
     }
 
+    #[cfg(target_os = "windows")]
     #[must_use]
     pub fn as_bytes(&self) -> &[u8] {
         self.as_os_str().as_bytes()
+    }
+
+    #[cfg(target_family = "unix")]
+    #[must_use]
+    pub fn as_bytes(&self) -> &[u8] {
+        self.as_os_str()
     }
 }
 
@@ -76,15 +90,31 @@ impl From<PathBuf> for SmolPath {
     }
 }
 
+#[cfg(target_os = "windows")]
 impl From<&str> for SmolPath {
     fn from(value: &str) -> Self {
         Self(SmolOsInner::from(value))
     }
 }
 
+#[cfg(target_family = "unix")]
+impl From<&str> for SmolPath {
+    fn from(value: &str) -> Self {
+        Self(SmolOsInner::from(value.as_bytes()))
+    }
+}
+
+#[cfg(target_os = "windows")]
 impl From<String> for SmolPath {
     fn from(value: String) -> Self {
         Self(SmolOsInner::from(value))
+    }
+}
+
+#[cfg(target_family = "unix")]
+impl From<String> for SmolPath {
+    fn from(value: String) -> Self {
+        Self(SmolOsInner::from(value.as_bytes()))
     }
 }
 

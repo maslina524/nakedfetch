@@ -20,6 +20,7 @@ mod unix {
 
     pub type OsStr = [u8];
     pub type OsString = Vec<u8>;
+    pub type SmolOsInner = smolarray::SmolArray<u8, 22>;
 
     pub static SEPARATOR: [char; 1] = ['/'];
     pub static INVALID_SYMBOLS: &[char] = &[];

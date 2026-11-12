@@ -1,5 +1,6 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
+#![cfg(target_os = "windows")]
 
 extern crate alloc;
 
