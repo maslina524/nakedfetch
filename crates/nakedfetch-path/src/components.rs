@@ -5,14 +5,14 @@ pub use crate::os::*;
 
 #[derive(Clone)]
 pub struct Components<'path> {
-    source: &'path Path,
+    source: &'path OsStr,
     pos: usize,
     end: usize,
 }
 
 impl<'path> Components<'path> {
     #[must_use]
-    pub fn new<T: AsRef<Path> + ?Sized>(source: &'path T) -> Self {
+    pub fn new<T: AsRef<OsStr> + ?Sized>(source: &'path T) -> Self {
         let source = source.as_ref();
         Self {
             source,
@@ -25,6 +25,16 @@ impl<'path> Components<'path> {
         let s = &self.source[range];
         s.as_ref()
     }
+
+    #[cfg(target_os = "windows")]
+    fn source_as_bytes(&self) -> &[u8] {
+        self.source.as_bytes()
+    }
+
+    #[cfg(target_family = "unix")]
+    fn source_as_bytes(&self) -> &[u8] {
+        self.source
+    }
 }
 
 impl<'path> Iterator for Components<'path> {
@@ -33,7 +43,7 @@ impl<'path> Iterator for Components<'path> {
     fn next(&mut self) -> Option<Self::Item> {
         while self.pos < self.end {
             let start = self.pos;
-            if let Some(off) = self.source.as_bytes()[start..self.end]
+            if let Some(off) = self.source_as_bytes()[start..self.end]
                 .iter()
                 .position(|&b| SEPARATOR.contains(&char::from(b)))
             {
@@ -50,7 +60,7 @@ impl<'path> Iterator for Components<'path> {
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let seps = self.source.as_bytes()[self.pos..self.end]
+        let seps = self.source_as_bytes()[self.pos..self.end]
             .iter()
             .filter(|&&b| SEPARATOR.contains(&char::from(b)))
             .count();
@@ -62,14 +72,13 @@ impl DoubleEndedIterator for Components<'_> {
     fn next_back(&mut self) -> Option<Self::Item> {
         while self.pos < self.end {
             let end = self.end;
-            if let Some(off) = self.source.as_bytes()[self.pos..end]
+            if let Some(off) = self.source_as_bytes()[self.pos..end]
                 .iter()
                 .rposition(|&b| SEPARATOR.contains(&char::from(b)))
             {
                 let sep_pos = self.pos + off;
                 self.end = sep_pos;
                 if sep_pos + 1 < end {
-                    // содержимое после последнего разделителя
                     return Some(self.build_path(sep_pos + 1..end));
                 }
             } else {

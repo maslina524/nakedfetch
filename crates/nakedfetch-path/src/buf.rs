@@ -1,7 +1,7 @@
 use alloc::string::String;
 use core::{fmt, ops::Deref, ptr, slice};
 
-use crate::{OsStr, OsString, Path};
+use crate::{OsString, Path};
 
 #[repr(transparent)]
 #[derive(Default, PartialEq, Eq)]
@@ -18,10 +18,18 @@ impl PathBuf {
         Self(OsString::with_capacity(cap))
     }
 
+    #[cfg(target_os = "windows")]
     #[must_use]
     pub const fn as_path(&self) -> &Path {
         // SAFETY: Layout of OsStr == Path
         unsafe { &*(ptr::from_ref(self.0.as_wtf8()) as *const Path) }
+    }
+
+    #[cfg(target_family = "unix")]
+    #[must_use]
+    pub const fn as_path(&self) -> &Path {
+        // SAFETY: Layout of OsStr == Path
+        unsafe { &*(ptr::from_ref(self.0.as_slice()) as *const Path) }
     }
 
     #[must_use]
@@ -34,9 +42,16 @@ impl PathBuf {
         self.0
     }
 
+    #[cfg(target_os = "windows")]
     #[must_use]
     pub fn has_trailing_sep(&self) -> bool {
         self.0.ends_with_char('\\') || self.0.ends_with_char('/')
+    }
+
+    #[cfg(target_family = "unix")]
+    #[must_use]
+    pub fn has_trailing_sep(&self) -> bool {
+        self.0.last().map(|b| *b == b'/').unwrap_or(false)
     }
 
     pub fn pop_trailing_sep(&mut self) -> bool {
@@ -71,12 +86,23 @@ impl PathBuf {
         self.join_inner(path.as_ref())
     }
 
+    #[cfg(target_os = "windows")]
     fn join_inner(mut self, path: &Path) -> Self {
         if !self.has_trailing_sep() {
             self.0.push_char('/');
         }
 
         self.0.push_wtf8(&path.as_os_str());
+        self
+    }
+
+    #[cfg(target_family = "unix")]
+    fn join_inner(mut self, path: &Path) -> Self {
+        if !self.has_trailing_sep() {
+            self.0.push(b'/');
+        }
+
+        self.0.extend_from_slice(&path.as_os_str());
         self
     }
 }
@@ -143,6 +169,10 @@ impl From<&OsString> for PathBuf {
     }
 }
 
+#[cfg(target_os = "windows")]
+use crate::OsStr;
+
+#[cfg(target_os = "windows")]
 impl From<&OsStr> for PathBuf {
     fn from(s: &OsStr) -> Self {
         Self(OsString::from(s))
@@ -151,19 +181,29 @@ impl From<&OsStr> for PathBuf {
 
 impl fmt::Display for PathBuf {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.as_path())
     }
 }
 
 impl fmt::Debug for PathBuf {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self.0)
+        write!(f, "{:?}", self.as_path())
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::{OsStr, Path, PathBuf};
+
+    #[cfg(target_os = "windows")]
+    fn os_str_from_str(s: &str) -> &OsStr {
+        OsStr::from_str(s)
+    }
+
+    #[cfg(target_family = "unix")]
+    fn os_str_from_str(s: &str) -> &OsStr {
+        s.as_bytes()
+    }
 
     #[test]
     fn pop_pathbuf_test() {
@@ -187,16 +227,16 @@ mod tests {
         let mut pathbuf = PathBuf::from("C:/Hello/World");
 
         pathbuf = pathbuf.join("Learn");
-        assert_eq!(pathbuf.as_os_str(), OsStr::from_str("C:/Hello/World/Learn"));
+        assert_eq!(pathbuf.as_os_str(), os_str_from_str("C:/Hello/World/Learn"));
 
         pathbuf.pop();
-        assert_eq!(pathbuf.as_os_str(), OsStr::from_str("C:/Hello/World/"));
+        assert_eq!(pathbuf.as_os_str(), os_str_from_str("C:/Hello/World/"));
 
         pathbuf.pop();
-        assert_eq!(pathbuf.as_os_str(), OsStr::from_str("C:/Hello/"));
+        assert_eq!(pathbuf.as_os_str(), os_str_from_str("C:/Hello/"));
 
         pathbuf = pathbuf.join(Path::from_str("Rust"));
-        assert_eq!(pathbuf.as_os_str(), OsStr::from_str("C:/Hello/Rust"));
+        assert_eq!(pathbuf.as_os_str(), os_str_from_str("C:/Hello/Rust"));
     }
 
     #[test]
