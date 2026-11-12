@@ -83,6 +83,56 @@ impl Path {
     }
 
     #[must_use]
+    #[cfg(target_family = "unix")]
+    pub fn with_c_str<F>(&self, f: impl FnOnce(&core::ffi::CStr) -> F) -> F {
+        match self.len() {
+            0..16 => self.with_buf_unchecked::<16, _>(f),
+            16..32 => self.with_buf_unchecked::<32, _>(f),
+            32..64 => self.with_buf_unchecked::<64, _>(f),
+            64..128 => self.with_buf_unchecked::<128, _>(f),
+            128..256 => self.with_buf_unchecked::<256, _>(f),
+            256..512 => self.with_buf_unchecked::<512, _>(f),
+            512..1024 => self.with_buf_unchecked::<1024, _>(f),
+            1024..2048 => self.with_buf_unchecked::<2048, _>(f),
+            2048..4096 => self.with_buf_unchecked::<4096, _>(f),
+            _ => unreachable!(),
+        }
+    }
+
+    /// # Panics
+    ///
+    /// If buf is empty
+    #[must_use]
+    #[cfg(target_family = "unix")]
+    pub fn as_c_str<'c>(&self, buf: &'c mut [u8]) -> &'c core::ffi::CStr {
+        use core::ffi::CStr;
+
+        let len = self.0.len();
+        assert!(
+            buf.len() > len,
+            "buffer too small: need {} bytes, got {}",
+            len + 1,
+            buf.len()
+        );
+        assert!(!self.0.contains(&0), "self.0 must not contain interior NUL");
+
+        buf[..len].copy_from_slice(&self.0);
+        buf[len] = 0;
+
+        // SAFETY: The last byte is always NUL
+        unsafe { CStr::from_bytes_with_nul_unchecked(&buf[..=len]) }
+    }
+
+    #[inline(never)]
+    #[cfg(target_family = "unix")]
+    fn with_buf_unchecked<const SIZE: usize, F>(&self, f: impl FnOnce(&core::ffi::CStr) -> F) -> F {
+        assert!(self.len() < SIZE);
+        let mut buf = [0u8; SIZE];
+        let c_str = self.as_c_str(&mut buf);
+        f(c_str)
+    }
+
+    #[must_use]
     pub fn to_str(&self) -> Option<&str> {
         str::from_utf8(self.as_bytes()).ok()
     }
@@ -291,6 +341,7 @@ mod tests {
         assert_eq!(path.parent(), Some("C:/Hello/World/Learn/".as_ref()));
     }
 
+    #[cfg(target_os = "windows")]
     #[test]
     fn display_for_path_test() {
         let path = Path::from_bytes(b"C:/Hello/World\xED");
@@ -301,6 +352,7 @@ mod tests {
         );
     }
 
+    #[cfg(target_os = "windows")]
     #[test]
     fn debug_for_path_test() {
         let path = Path::from_bytes(b"C:/Hello/World\xED");
