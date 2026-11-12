@@ -10,7 +10,130 @@ use path::Path;
 pub use crate::imp::fs::{
     FileCreateError, FileExistsError, FileHandle, FileReadError, FileSizeError,
 };
-use crate::imp::{fs, handle};
+use crate::imp::{self, fs, handle};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileCreateError {
+    BadUnicode,
+    PathNotFound,
+    NameNotFound,
+    AccessDenied,
+    AccessPending,
+    InvalidParam,
+    InvalidName,
+    DiskFull,
+    AlreadyExists,
+    NameTooLong,
+    NotADir,
+    QuotaExceeded,
+    NoSystemResource,
+    BadPrivilege,
+    Unknown(imp::RawError),
+}
+
+impl fmt::Display for FileCreateError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for FileCreateError {}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileWriteError {
+    InvalidHandle,
+    NotEnoughMemory,
+    WriteProtect,
+    NotReady,
+    Crc,
+    WriteFault,
+    AccessDenied,
+    InvalidParam,
+    NoData,
+    DiskFull,
+    Unknown(imp::RawError),
+}
+
+impl fmt::Display for FileWriteError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for FileWriteError {}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileReadError {
+    BufTooSmall,
+    InvalidHandle,
+    EndOfFile,
+    NotEnoughMemory,
+    NotReady,
+    Crc,
+    ReadFault,
+    AccessDenied,
+    InvalidParam,
+    NoData,
+    Unknown(imp::RawError),
+}
+
+impl fmt::Display for FileReadError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for FileReadError {}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileSizeError {
+    InvalidHandle,
+    FileClosed,
+    AccessDenied,
+    InvalidParam,
+    InvalidDeviceRequest,
+    InvalidInfoClass,
+    InfoLengthMismatch,
+    NotImplemented,
+    NotSupported,
+    FileInvalid,
+    NoSuchFile,
+    NotEnoughMemory,
+    Crc,
+    IoDeviceError,
+    Unknown(imp::RawError),
+}
+
+impl fmt::Display for FileSizeError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for FileSizeError {}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FileExistsError {
+    BadUnicode,
+    AccessDenied,
+    AccessPending,
+    InvalidParam,
+    InvalidName,
+    NotADir,
+    NoSystemResource,
+    BadPrivilege,
+    Crc,
+    IoDeviceError,
+    Unknown(imp::RawError),
+}
+
+impl fmt::Display for FileExistsError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for FileExistsError {}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FileSizeReadError {

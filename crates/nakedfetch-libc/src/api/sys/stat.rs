@@ -3,7 +3,13 @@ use core::{
     mem::MaybeUninit,
 };
 
-use crate::{errno::Errno, raw::Table, sys::types::c_mode, syscall};
+use crate::{
+    errno::Errno,
+    raw::Table,
+    stdio::{self, FileAccess, FileDispose},
+    sys::types::c_mode,
+    syscall,
+};
 
 const AT_FDCWD: i32 = -100;
 
@@ -96,7 +102,7 @@ pub struct Stat {
 
 /// # Errors
 ///
-/// `Err` if system failed to get stat
+/// If system failed to get stat
 pub fn fstat(fd: i32) -> Result<Stat, Errno> {
     let mut buf = MaybeUninit::uninit();
     // SAFETY: The syscall complies with the documentation, errors are checked;
@@ -110,7 +116,15 @@ pub fn fstat(fd: i32) -> Result<Stat, Errno> {
 
 /// # Errors
 ///
-/// `Err` if system failed to make dir.
+/// If system failed to get stat
+pub fn stat(path: &CStr) -> Result<Stat, Errno> {
+    let file = stdio::fopen(path, FileAccess::Read, FileDispose::OpenExisting)?;
+    fstat(file.as_raw_fd())
+}
+
+/// # Errors
+///
+/// If system failed to make dir.
 pub fn mkdirat(dirfd: i32, path: &CStr, mode: c_mode) -> Result<(), Errno> {
     // SAFETY: We pass a valid nr,
     // all values are synchronized with https://syscalls.mebeim.net

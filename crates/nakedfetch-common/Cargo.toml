@@ -7,9 +7,14 @@ authors.workspace = true
 repository.workspace = true
 
 [dependencies]
-wtf8 = { path = "../nakedfetch-wtf8" }
 path = { path = "../nakedfetch-path" }
+
+[target.'cfg(windows)'.dependencies]
+wtf8 = { path = "../nakedfetch-wtf8" }
 winapi = { path = "../nakedfetch-winapi" }
+
+[target.'cfg(unix)'.dependencies]
+libc = { path = "../nakedfetch-libc" }
 
 [lints]
 workspace = true

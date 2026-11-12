@@ -146,6 +146,7 @@ impl CreateOptions {
 }
 
 #[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FileAccess {
     Read = 0x8000_0000,
     Write = 0x4000_0000,

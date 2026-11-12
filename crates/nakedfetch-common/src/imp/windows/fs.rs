@@ -13,33 +13,6 @@ use winapi::{
     },
 };
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum FileCreateError {
-    BadUnicode,
-    PathNotFound,
-    NameNotFound,
-    AccessDenied,
-    AccessPending,
-    InvalidParam,
-    InvalidName,
-    DiskFull,
-    AlreadyExists,
-    NameTooLong,
-    NotADir,
-    QuotaExceeded,
-    NoSystemResource,
-    BadPrivilege,
-    Unknown(NtStatus),
-}
-
-impl fmt::Display for FileCreateError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
-impl Error for FileCreateError {}
-
 fn create_with_dispose(
     path: &Path,
     access: FileAccess,
@@ -97,29 +70,6 @@ pub fn open_file(path: &Path, access: FileAccess) -> Result<FileHandle, FileCrea
     create_with_dispose(path, access, FileDispose::OpenExisting)
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum FileWriteError {
-    InvalidHandle,
-    NotEnoughMemory,
-    WriteProtect,
-    NotReady,
-    Crc,
-    WriteFault,
-    AccessDenied,
-    InvalidParam,
-    NoData,
-    DiskFull,
-    Unknonw(NtStatus),
-}
-
-impl fmt::Display for FileWriteError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
-impl Error for FileWriteError {}
-
 pub fn write_file(handle: &FileHandle, buf: &[u8]) -> Result<usize, FileWriteError> {
     const fn map_err(nt: NtStatus) -> FileWriteError {
         use super::fs::FileWriteError as FWE;
@@ -141,29 +91,6 @@ pub fn write_file(handle: &FileHandle, buf: &[u8]) -> Result<usize, FileWriteErr
 
     WriteFile(handle, buf).map_err(map_err)
 }
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum FileReadError {
-    BufTooSmall,
-    InvalidHandle,
-    EndOfFile,
-    NotEnoughMemory,
-    NotReady,
-    Crc,
-    ReadFault,
-    AccessDenied,
-    InvalidParam,
-    NoData,
-    Unknown(NtStatus),
-}
-
-impl fmt::Display for FileReadError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
-impl Error for FileReadError {}
 
 pub fn read_file(
     handle: &FileHandle,
@@ -193,33 +120,6 @@ pub fn read_file(
     }
     ReadFile(handle, buf, count, Some(start)).map_err(map_err)
 }
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum FileSizeError {
-    InvalidHandle,
-    FileClosed,
-    AccessDenied,
-    InvalidParam,
-    InvalidDeviceRequest,
-    InvalidInfoClass,
-    InfoLengthMismatch,
-    NotImplemented,
-    NotSupported,
-    FileInvalid,
-    NoSuchFile,
-    NotEnoughMemory,
-    Crc,
-    IoDeviceError,
-    Unknown(NtStatus),
-}
-
-impl fmt::Display for FileSizeError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
-impl Error for FileSizeError {}
 
 pub fn size_of_file(handle: &FileHandle) -> Result<usize, FileSizeError> {
     const fn map_err(nt: NtStatus) -> FileSizeError {
@@ -276,29 +176,6 @@ pub fn create_dir(path: &Path) -> Result<(), FileCreateError> {
 
     CreateDirectory(path, FileAttributes::new()).map_err(map_err)
 }
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum FileExistsError {
-    BadUnicode,
-    AccessDenied,
-    AccessPending,
-    InvalidParam,
-    InvalidName,
-    NotADir,
-    NoSystemResource,
-    BadPrivilege,
-    Crc,
-    IoDeviceError,
-    Unknown(NtStatus),
-}
-
-impl fmt::Display for FileExistsError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
-impl Error for FileExistsError {}
 
 pub fn exists(path: &Path) -> Result<bool, FileExistsError> {
     const fn map_err(err: FileAttributesError) -> Result<bool, FileExistsError> {
