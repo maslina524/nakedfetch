@@ -32,7 +32,7 @@ pub struct StatFs {
 
 /// # Errors
 ///
-/// `Err` if system failed to get statfs
+/// If system failed to get statfs
 pub fn fstatfs(fd: i32) -> Result<StatFs, Errno> {
     let mut buf = MaybeUninit::uninit();
     // SAFETY: The syscall complies with the documentation, errors are checked;

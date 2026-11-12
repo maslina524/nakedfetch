@@ -27,6 +27,12 @@ impl File {
     }
 }
 
+impl Drop for File {
+    fn drop(&mut self) {
+        let _ = unistd::close(self.as_raw_fd());
+    }
+}
+
 #[repr(i32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FileAccess {

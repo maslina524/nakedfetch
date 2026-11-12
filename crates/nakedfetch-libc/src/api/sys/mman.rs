@@ -10,7 +10,7 @@ pub const MAP_ANONYMOUS: i32 = 0x20;
 
 /// # Errors
 ///
-/// `Err` if failed to allocate mem
+/// If failed to allocate mem
 pub fn mmap(
     addr: Option<NonNull<()>>,
     length: usize,
@@ -28,7 +28,7 @@ pub fn mmap(
 
 /// # Errors
 ///
-/// `Err` if failed to deallocate mem
+/// If failed to deallocate mem
 pub fn munmap(addr: *mut (), length: usize) -> Result<(), Errno> {
     // let addr_ptr = addr.as_ptr();
     // SAFETY: We pass a valid nr,

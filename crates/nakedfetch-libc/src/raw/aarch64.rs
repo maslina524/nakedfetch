@@ -5,6 +5,7 @@ pub enum Table {
     MkDirAt = 34,
     FStatFs = 44,
     OpenAt = 56,
+    Close = 57,
     Read = 63,
     Write = 64,
     PRead64 = 67,

@@ -6,7 +6,7 @@ const AT_FDCWD: i32 = -100;
 
 /// # Errors
 ///
-/// `Err` if system failed to openat file
+/// If system failed to openat file
 pub fn openat(dirfd: i32, path: &CStr, flags: i32, mode: c_mode) -> Result<i32, Errno> {
     // SAFETY: We pass a valid nr,
     // all values are synchronized with https://syscalls.mebeim.net
@@ -16,7 +16,7 @@ pub fn openat(dirfd: i32, path: &CStr, flags: i32, mode: c_mode) -> Result<i32, 
 
 /// # Errors
 ///
-/// `Err` if system failed to open file
+/// If system failed to open file
 pub fn open(path: &CStr, flags: i32, mode: c_mode) -> Result<i32, Errno> {
     openat(AT_FDCWD, path, flags, mode)
 }

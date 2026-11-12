@@ -322,7 +322,7 @@ impl From<FileSizeReadError> for FileCreateReadError {
 
 /// # Errors
 ///
-/// `Err` if the system fails to open or read the file.
+/// If the system fails to open or read the file.
 pub fn read<T: AsRef<Path>>(path: T) -> Result<Vec<u8>, FileCreateReadError> {
     let file = File::<Read>::open(path)?;
     file.read().map_err(Into::into)
@@ -365,7 +365,7 @@ impl From<FromUtf8Error> for FileReadToStringError {
 
 /// # Errors
 ///
-/// `Err` if the system fails to open, read the file as UTF8.
+/// If the system fails to open, read the file as UTF8.
 pub fn read_to_string<T: AsRef<Path>>(path: T) -> Result<String, FileReadToStringError> {
     let file = File::<Read>::open(path)?;
     let buf = file.read()?;
@@ -374,7 +374,7 @@ pub fn read_to_string<T: AsRef<Path>>(path: T) -> Result<String, FileReadToStrin
 
 /// # Errors
 ///
-/// `Err` if the system fails to create dir.
+/// If the system fails to create dir.
 pub fn create_dir<T: AsRef<Path>>(path: T) -> Result<(), FileCreateError> {
     fs::create_dir(path.as_ref())
 }
@@ -405,7 +405,7 @@ impl From<FileExistsError> for CreateDirsError {
 
 /// # Errors
 ///
-/// `Err` if the system fails to create dirs.
+/// If the system fails to create dirs.
 pub fn create_dirs<T: AsRef<Path>>(path: T) -> Result<(), CreateDirsError> {
     create_dirs_inner(path.as_ref())
 }
@@ -422,7 +422,7 @@ fn create_dirs_inner(path: &Path) -> Result<(), CreateDirsError> {
 
 /// # Errors
 ///
-/// `Err` if the system fails to check file exists or no.
+/// If the system fails to check file exists or no.
 pub fn exists<T: AsRef<Path>>(path: T) -> Result<bool, FileExistsError> {
     fs::exists(path.as_ref())
 }
@@ -458,7 +458,7 @@ impl<'f, A: CanRead> FileByLine<'f, A> {
 
     /// # Errors
     ///
-    /// `Err` if it failed to read a line of the file, see [`FileByLineError`].
+    /// If it failed to read a line of the file, see [`FileByLineError`].
     pub fn next<'out>(
         &mut self,
         buf: &'out mut [u8],

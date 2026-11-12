@@ -259,7 +259,7 @@ impl Png {
 
     /// # Errors
     ///
-    /// `Err` if an invalid PNG stream is passed
+    /// If an invalid PNG stream is passed
     pub fn decode(bytes: &[u8]) -> Result<Self, PngError> {
         let mut iter = bytes.iter().copied();
 
