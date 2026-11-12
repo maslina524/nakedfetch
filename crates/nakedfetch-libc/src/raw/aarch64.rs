@@ -7,6 +7,7 @@ pub enum Table {
     Read = 63,
     Write = 64,
     PRead64 = 67,
+    NewFStat = 80,
     Exit = 93,
     Munmap = 215,
     Mmap = 222,

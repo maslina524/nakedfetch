@@ -32,7 +32,7 @@ pub struct StatFs {
 
 /// # Errors
 ///
-/// `Err` if system failed to get statsfs
+/// `Err` if system failed to get statfs
 pub fn fstatfs(fd: i32) -> Result<StatFs, Errno> {
     let mut buf = MaybeUninit::uninit();
     // SAFETY: The syscall complies with the documentation, errors are checked;
@@ -46,12 +46,15 @@ pub fn fstatfs(fd: i32) -> Result<StatFs, Errno> {
 
 #[cfg(test)]
 mod tests {
-    use crate::sys::vfs::StatFs;
+    use super::StatFs;
 
     #[test]
     fn fstatfs_comp_with_libc() {
+        use core::ffi::c_char;
+
         unsafe extern "C" {
-            unsafe fn open(path: *const i8, flags: i32, ...) -> i32;
+            unsafe fn open(path: *const c_char, flags: i32, ...) -> i32;
+            unsafe fn close(fd: i32) -> i32;
             safe fn fstatfs(fd: i32, buf: *mut StatFs) -> i32;
         }
 
@@ -62,6 +65,9 @@ mod tests {
         let my = super::fstatfs(fd).expect("Failed to get file stats");
         let mut libc = StatFs::default();
         assert!(fstatfs(fd, &raw mut libc) == 0, "Libc fstatfs failed");
+
+        // SAFETY: Close valid fd
+        unsafe { close(fd) };
 
         println!("{my:?}");
         assert_eq!(my, libc);

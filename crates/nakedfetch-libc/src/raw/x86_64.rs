@@ -4,6 +4,7 @@ use core::arch::asm;
 pub enum Table {
     Read = 0,
     Write = 1,
+    NewFStat = 5,
     Mmap = 9,
     Munmap = 11,
     PRead64 = 17,
