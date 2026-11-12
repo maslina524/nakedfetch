@@ -2,9 +2,11 @@ use core::arch::asm;
 
 #[repr(usize)]
 pub enum Table {
+    FStatFs = 44,
     OpenAt = 56,
     Read = 63,
     Write = 64,
+    PRead64 = 67,
     Exit = 93,
     Munmap = 215,
     Mmap = 222,

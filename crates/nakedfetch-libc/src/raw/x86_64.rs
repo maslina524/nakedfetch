@@ -6,7 +6,9 @@ pub enum Table {
     Write = 1,
     Mmap = 9,
     Munmap = 11,
+    PRead64 = 17,
     Exit = 60,
+    FStatFs = 138,
     OpenAt = 257,
 }
 

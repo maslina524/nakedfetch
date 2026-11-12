@@ -22,3 +22,16 @@ pub fn read(fd: i32, buf: &mut [u8], count: usize) -> Result<usize, Errno> {
     let ret = unsafe { syscall!(Table::Read, fd, buf.as_ptr(), buf.len()) };
     ret.map(|v| v as usize)
 }
+
+/// # Errors
+///
+/// `Err` if system failed to pread
+pub fn pread(fd: i32, buf: &mut [u8], count: usize, offset: usize) -> Result<usize, Errno> {
+    if count > buf.len() {
+        return Err(Errno::ERANGE);
+    }
+    // SAFETY: We pass a valid nr,
+    // all values are synchronized with https://syscalls.mebeim.net
+    let ret = unsafe { syscall!(Table::PRead64, fd, buf.as_ptr(), buf.len(), offset) };
+    ret.map(|v| v as usize)
+}
