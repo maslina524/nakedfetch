@@ -2,6 +2,7 @@
 mod windows {
     pub type OsStr = wtf8::Wtf8;
     pub type OsString = wtf8::Wtf8Buf;
+    pub type SmolOsInner = wtf8::SmolWtf8;
 
     pub static SEPARATOR: [char; 2] = ['/', '\\'];
     pub static INVALID_SYMBOLS: &[char] = &['<', '>', '|', '?', '*'];

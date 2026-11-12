@@ -1,18 +1,16 @@
 use alloc::{string::String, sync::Arc};
 use core::{fmt, ops::Deref};
 
-use wtf8::{SmolWtf8, Wtf8};
-
-use crate::{Path, PathBuf};
+use crate::{OsStr, Path, PathBuf, SmolOsInner};
 
 #[repr(transparent)]
 #[derive(Default, Clone)]
-pub struct SmolPath(SmolWtf8);
+pub struct SmolPath(SmolOsInner);
 
 impl SmolPath {
     #[must_use]
-    pub const fn from_static(s: &'static Wtf8) -> Self {
-        Self(SmolWtf8::from_static(s))
+    pub const fn from_static(s: &'static OsStr) -> Self {
+        Self(SmolOsInner::from_static(s))
     }
 
     #[must_use]
@@ -26,7 +24,7 @@ impl SmolPath {
     }
 
     #[must_use]
-    pub fn as_wtf8(&self) -> &Wtf8 {
+    pub fn as_os_str(&self) -> &OsStr {
         self.0.as_wtf8()
     }
 
@@ -42,7 +40,7 @@ impl SmolPath {
 
     #[must_use]
     pub fn as_bytes(&self) -> &[u8] {
-        self.as_wtf8().as_bytes()
+        self.as_os_str().as_bytes()
     }
 }
 
@@ -68,43 +66,43 @@ impl AsRef<Path> for SmolPath {
 
 impl From<&Path> for SmolPath {
     fn from(value: &Path) -> Self {
-        Self(SmolWtf8::from(value.as_os_str()))
+        Self(SmolOsInner::from(value.as_os_str()))
     }
 }
 
 impl From<PathBuf> for SmolPath {
     fn from(value: PathBuf) -> Self {
-        Self(SmolWtf8::from(value.as_os_str()))
+        Self(SmolOsInner::from(value.as_os_str()))
     }
 }
 
 impl From<&str> for SmolPath {
     fn from(value: &str) -> Self {
-        Self(SmolWtf8::from(value))
+        Self(SmolOsInner::from(value))
     }
 }
 
 impl From<String> for SmolPath {
     fn from(value: String) -> Self {
-        Self(SmolWtf8::from(value))
+        Self(SmolOsInner::from(value))
     }
 }
 
 impl From<Arc<Path>> for SmolPath {
     fn from(value: Arc<Path>) -> Self {
-        Self(SmolWtf8::from(value.as_os_str()))
+        Self(SmolOsInner::from(value.as_os_str()))
     }
 }
 
 impl fmt::Display for SmolPath {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_wtf8())
+        write!(f, "{}", self.as_path())
     }
 }
 
 impl fmt::Debug for SmolPath {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self.as_wtf8())
+        write!(f, "{:?}", self.as_path())
     }
 }
 

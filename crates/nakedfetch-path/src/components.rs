@@ -27,12 +27,12 @@ impl<'path> Components<'path> {
     }
 
     #[cfg(target_os = "windows")]
-    fn source_as_bytes(&self) -> &[u8] {
+    const fn source_as_bytes(&self) -> &[u8] {
         self.source.as_bytes()
     }
 
     #[cfg(target_family = "unix")]
-    fn source_as_bytes(&self) -> &[u8] {
+    const fn source_as_bytes(&self) -> &[u8] {
         self.source
     }
 }
