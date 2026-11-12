@@ -2,6 +2,7 @@ use core::arch::asm;
 
 #[repr(usize)]
 pub enum Table {
+    Read = 0,
     Write = 1,
     Mmap = 9,
     Munmap = 11,

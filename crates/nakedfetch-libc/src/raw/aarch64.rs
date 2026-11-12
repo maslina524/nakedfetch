@@ -3,6 +3,7 @@ use core::arch::asm;
 #[repr(usize)]
 pub enum Table {
     OpenAt = 56,
+    Read = 63,
     Write = 64,
     Exit = 93,
     Munmap = 215,
