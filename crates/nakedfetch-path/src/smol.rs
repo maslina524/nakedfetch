@@ -37,7 +37,7 @@ impl SmolPath {
 
     #[must_use]
     pub fn as_path(&self) -> &Path {
-        Path::from_os_str(self.as_os_str())
+        Path::from_bytes(self.as_os_str())
     }
 
     #[must_use]

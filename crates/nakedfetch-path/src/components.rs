@@ -108,7 +108,7 @@ mod tests {
 
     #[test]
     fn components_test() {
-        let mut comps = Components::new(r"C:\User\rustling/Проекты/Rust/");
+        let mut comps = Components::new(r"C:/User/rustling/Проекты/Rust/");
         next_is!(comps, "C:");
         next_is!(comps, "User");
         next_is!(comps, "rustling");
@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn next_back_components_test() {
-        let mut comps = Components::new(r"C:\User\rustling/Проекты/Rust/");
+        let mut comps = Components::new(r"C:/User/rustling/Проекты/Rust/");
         next_back_is!(comps, "Rust");
         next_back_is!(comps, "Проекты");
         next_back_is!(comps, "rustling");

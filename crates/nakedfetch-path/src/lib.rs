@@ -14,6 +14,8 @@ pub use smol::SmolPath;
 
 mod os;
 use alloc::string::String;
+#[cfg(target_family = "unix")]
+use core::ffi::CStr;
 use core::{fmt, ptr};
 
 #[repr(transparent)]
@@ -40,8 +42,8 @@ impl Path {
 
     #[cfg(target_family = "unix")]
     #[must_use]
-    pub const fn from_os_str(s: &OsStr) -> &Self {
-        Self::from_bytes(s)
+    pub const fn from_os_str(s: &CStr) -> &Self {
+        Self::from_bytes(s.to_bytes())
     }
 
     #[must_use]
@@ -82,9 +84,8 @@ impl Path {
         self.0.utf16_with_zero()
     }
 
-    #[must_use]
     #[cfg(target_family = "unix")]
-    pub fn with_c_str<F>(&self, f: impl FnOnce(&core::ffi::CStr) -> F) -> F {
+    pub fn with_c_str<F>(&self, f: impl FnOnce(&CStr) -> F) -> F {
         match self.len() {
             0..16 => self.with_buf_unchecked::<16, _>(f),
             16..32 => self.with_buf_unchecked::<32, _>(f),
@@ -104,7 +105,7 @@ impl Path {
     /// If buf is empty
     #[must_use]
     #[cfg(target_family = "unix")]
-    pub fn as_c_str<'c>(&self, buf: &'c mut [u8]) -> &'c core::ffi::CStr {
+    pub fn as_c_str<'c>(&self, buf: &'c mut [u8]) -> &'c CStr {
         use core::ffi::CStr;
 
         let len = self.0.len();
@@ -125,7 +126,7 @@ impl Path {
 
     #[inline(never)]
     #[cfg(target_family = "unix")]
-    fn with_buf_unchecked<const SIZE: usize, F>(&self, f: impl FnOnce(&core::ffi::CStr) -> F) -> F {
+    fn with_buf_unchecked<const SIZE: usize, F>(&self, f: impl FnOnce(&CStr) -> F) -> F {
         assert!(self.len() < SIZE);
         let mut buf = [0u8; SIZE];
         let c_str = self.as_c_str(&mut buf);
@@ -361,5 +362,14 @@ mod tests {
             formatted,
             format!("\"C:/Hello/World{}\"", char::REPLACEMENT_CHARACTER)
         );
+    }
+
+    #[cfg(target_family = "unix")]
+    #[test]
+    fn as_c_str() {
+        let path = Path::from_str("/home/rustling/nakedfetch");
+        path.with_c_str(|cstr| {
+            assert_eq!(cstr, c"/home/rustling/nakedfetch");
+        });
     }
 }

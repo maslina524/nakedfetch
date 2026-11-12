@@ -239,6 +239,7 @@ mod tests {
         assert_eq!(pathbuf.as_os_str(), os_str_from_str("C:/Hello/Rust"));
     }
 
+    #[cfg(target_os = "windows")]
     #[test]
     fn display_for_pathbuf_test() {
         let path = PathBuf::from(b"C:/Hello/World\xED");
@@ -249,6 +250,7 @@ mod tests {
         );
     }
 
+    #[cfg(target_os = "windows")]
     #[test]
     fn debug_for_pathbuf_test() {
         let path = PathBuf::from(b"C:/Hello/World\xED");
