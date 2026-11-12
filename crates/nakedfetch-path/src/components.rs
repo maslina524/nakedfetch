@@ -5,14 +5,14 @@ pub use crate::os::*;
 
 #[derive(Clone)]
 pub struct Components<'path> {
-    source: &'path OsStr,
+    source: &'path Path,
     pos: usize,
     end: usize,
 }
 
 impl<'path> Components<'path> {
     #[must_use]
-    pub fn new<T: AsRef<OsStr> + ?Sized>(source: &'path T) -> Self {
+    pub fn new<T: AsRef<Path> + ?Sized>(source: &'path T) -> Self {
         let source = source.as_ref();
         Self {
             source,

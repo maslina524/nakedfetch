@@ -16,8 +16,6 @@ mod os;
 use alloc::string::String;
 use core::{fmt, ptr};
 
-use wtf8::CodePoint;
-
 #[repr(transparent)]
 #[derive(PartialEq, Eq)]
 pub struct Path(OsStr);
@@ -34,9 +32,16 @@ impl Path {
         Self::from_bytes(s.as_bytes())
     }
 
+    #[cfg(target_os = "windows")]
     #[must_use]
     pub const fn from_os_str(s: &OsStr) -> &Self {
         Self::from_bytes(s.as_bytes())
+    }
+
+    #[cfg(target_family = "unix")]
+    #[must_use]
+    pub const fn from_os_str(s: &OsStr) -> &Self {
+        Self::from_bytes(s)
     }
 
     #[must_use]
@@ -54,9 +59,16 @@ impl Path {
         SmolPath::from(self)
     }
 
+    #[cfg(target_os = "windows")]
     #[must_use]
     pub const fn as_bytes(&self) -> &[u8] {
         self.0.as_bytes()
+    }
+
+    #[cfg(target_family = "unix")]
+    #[must_use]
+    pub const fn as_bytes(&self) -> &[u8] {
+        &self.0
     }
 
     #[must_use]
@@ -72,12 +84,12 @@ impl Path {
 
     #[must_use]
     pub fn to_str(&self) -> Option<&str> {
-        str::from_utf8(self.0.as_bytes()).ok()
+        str::from_utf8(self.as_bytes()).ok()
     }
 
     #[must_use]
     pub fn to_string_lossy(&self) -> String {
-        String::from_utf8_lossy(self.0.as_bytes()).into_owned()
+        String::from_utf8_lossy(self.as_bytes()).into_owned()
     }
 
     #[must_use]
@@ -104,8 +116,13 @@ impl Path {
             return None;
         }
 
-        let bytes = &self.0.as_bytes()[..offset];
-        Some(OsStr::from_bytes(bytes).as_ref())
+        let bytes = &self.as_bytes()[..offset];
+
+        #[cfg(target_os = "windows")]
+        return Some(OsStr::from_bytes(bytes).as_ref());
+
+        #[cfg(target_family = "unix")]
+        Some(bytes.as_ref())
     }
 
     #[must_use]
@@ -113,11 +130,33 @@ impl Path {
         self.components().next_back()
     }
 
+    #[cfg(target_os = "windows")]
     #[must_use]
     pub fn extension(&self) -> Option<&OsStr> {
+        use wtf8::CodePoint;
+
         let path_part = self.last()?;
         let name = path_part.as_os_str();
         let idx = name.rfind(CodePoint::Char('.'))?;
+        Some(&name[idx + 1..])
+    }
+
+    #[cfg(target_family = "unix")]
+    #[must_use]
+    pub fn extension(&self) -> Option<&OsStr> {
+        fn rfind(bytes: &[u8], cp: u8) -> Option<usize> {
+            let mut result = None;
+            for (i, icp) in bytes.iter().enumerate() {
+                if *icp == cp {
+                    result = Some(i);
+                }
+            }
+            result
+        }
+
+        let path_part = self.last()?;
+        let name = path_part.as_os_str();
+        let idx = rfind(self.as_bytes(), b'.')?;
         Some(&name[idx + 1..])
     }
 
@@ -166,15 +205,73 @@ impl AsRef<OsStr> for Path {
     }
 }
 
+#[cfg(target_os = "windows")]
 impl fmt::Display for Path {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", &self.0)
     }
 }
 
+#[cfg(target_os = "windows")]
 impl fmt::Debug for Path {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", &self.0)
+    }
+}
+
+#[cfg(target_family = "unix")]
+impl fmt::Display for Path {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use fmt::Write as _;
+
+        let iter = self.0.utf8_chunks();
+        for chunk in iter {
+            f.write_str(chunk.valid())?;
+            if !chunk.invalid().is_empty() {
+                f.write_char(char::REPLACEMENT_CHARACTER)?;
+            }
+        }
+        Ok(())
+    }
+}
+
+#[cfg(target_family = "unix")]
+impl fmt::Debug for Path {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use fmt::Write as _;
+        f.write_char('"')?;
+
+        let mut rest = &self.0;
+        while !rest.is_empty() {
+            match str::from_utf8(rest) {
+                Ok(s) => {
+                    for c in s.chars() {
+                        for e in c.escape_debug() {
+                            f.write_char(e)?;
+                        }
+                    }
+                    break;
+                },
+                Err(e) => {
+                    let valid = e.valid_up_to();
+                    // SAFETY: `str::from_utf8` guarantees the validity of
+                    // [..valid]
+                    let valid_s = unsafe { str::from_utf8_unchecked(&rest[..valid]) };
+                    for c in valid_s.chars() {
+                        for e in c.escape_debug() {
+                            f.write_char(e)?;
+                        }
+                    }
+                    let err_len = e.error_len().unwrap_or(rest.len() - valid);
+                    for &b in &rest[valid..valid + err_len] {
+                        write!(f, "\\x{b:02X}")?;
+                    }
+                    rest = &rest[valid + err_len..];
+                },
+            }
+        }
+
+        f.write_char('"')
     }
 }
 
