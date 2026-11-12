@@ -1,6 +1,6 @@
 use core::ffi::CStr;
 
-use crate::{errno::Errno, fcntl, sys::types::c_mode, unistd};
+use crate::{AsRawHandle, errno::Errno, fcntl, sys::types::c_mode, unistd};
 
 pub const O_RDONLY: i32 = 0o0;
 pub const O_WRONLY: i32 = 0o1;
@@ -20,16 +20,19 @@ pub struct File {
     fd: i32,
 }
 
-impl File {
-    #[must_use]
-    pub const fn as_raw_fd(&self) -> i32 {
+impl AsRawHandle for File {
+    fn as_raw(&self) -> i32 {
         self.fd
+    }
+
+    fn from_raw(raw: i32) -> Self {
+        Self { fd: raw }
     }
 }
 
 impl Drop for File {
     fn drop(&mut self) {
-        let _ = unistd::close(self.as_raw_fd());
+        let _ = unistd::close(self.as_raw());
     }
 }
 
@@ -38,7 +41,7 @@ impl Drop for File {
 pub enum FileAccess {
     Read = O_RDONLY,
     Write = O_WRONLY,
-    ReadWrite = O_RDWR,
+    All = O_RDWR,
 }
 
 #[repr(i32)]

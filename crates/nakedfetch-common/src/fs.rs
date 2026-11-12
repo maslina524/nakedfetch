@@ -3,14 +3,11 @@ use alloc::{
     vec,
     vec::Vec,
 };
-use core::{error::Error, ffi::c_void, fmt, marker::PhantomData, str::Utf8Error};
+use core::{error::Error, fmt, marker::PhantomData, str::Utf8Error};
 
 use path::Path;
 
-pub use crate::imp::fs::{
-    FileCreateError, FileExistsError, FileHandle, FileReadError, FileSizeError,
-};
-use crate::imp::{self, fs, handle};
+use crate::imp::{self, fs};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FileCreateError {
@@ -191,7 +188,7 @@ impl CanRead for All {}
 impl CanWrite for All {}
 
 pub struct File<A: Access> {
-    fd: FileHandle,
+    fd: fs::FileHandle,
     _marker: PhantomData<A>,
 }
 
@@ -234,14 +231,21 @@ impl<A: Access> File<A> {
     }
 
     #[must_use]
-    pub const fn as_handle(&self) -> &FileHandle {
+    pub const fn as_handle(&self) -> &fs::FileHandle {
         &self.fd
     }
 
-    #[must_use]
-    pub fn as_raw_handle(&self) -> *mut c_void {
-        handle::as_raw_handle(&self.fd)
-    }
+    // #[must_use]
+    // #[cfg(target_os = "windows")]
+    // pub(crate) fn as_raw_handle(&self) -> *mut core::ffi::c_void {
+    //     handle::as_raw_handle(&self.fd)
+    // }
+
+    // #[must_use]
+    // #[cfg(target_family = "unix")]
+    // pub(crate) fn as_raw_handle(&self) -> i32 {
+    //     handle::as_raw_handle(&self.fd)
+    // }
 }
 
 impl<A: CanRead> File<A> {
@@ -279,7 +283,7 @@ impl<A: CanWrite> File<A> {
         clippy::needless_pass_by_ref_mut,
         reason = "For good API with fmt::Write"
     )]
-    pub fn write_bytes(&mut self, bytes: &[u8]) -> Result<usize, fs::FileWriteError> {
+    pub fn write_bytes(&mut self, bytes: &[u8]) -> Result<usize, FileWriteError> {
         fs::write_file(&self.fd, bytes)
     }
 }

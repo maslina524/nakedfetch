@@ -4,6 +4,7 @@ use core::{
 };
 
 use crate::{
+    AsRawHandle as _,
     errno::Errno,
     raw::Table,
     stdio::{self, FileAccess, FileDispose},
@@ -119,7 +120,7 @@ pub fn fstat(fd: i32) -> Result<Stat, Errno> {
 /// If system failed to get stat
 pub fn stat(path: &CStr) -> Result<Stat, Errno> {
     let file = stdio::fopen(path, FileAccess::Read, FileDispose::OpenExisting)?;
-    fstat(file.as_raw_fd())
+    fstat(file.as_raw())
 }
 
 /// # Errors

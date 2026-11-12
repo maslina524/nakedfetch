@@ -1,5 +1,6 @@
 pub use libc::stdio::{File, FileAccess};
 use libc::{
+    AsRawHandle as _,
     errno::Errno,
     stdio::{self, FileDispose},
     sys::stat,
@@ -37,7 +38,7 @@ pub fn open_file(path: &Path, access: FileAccess) -> Result<FileHandle, FileCrea
 }
 
 pub fn write_file(handle: &FileHandle, buf: &[u8]) -> Result<usize, FileWriteError> {
-    unistd::write(handle.as_raw_fd(), buf).map_err(|e| FileWriteError::Unknown(e))
+    unistd::write(handle.as_raw(), buf).map_err(|e| FileWriteError::Unknown(e))
 }
 
 pub fn read_file(
@@ -49,11 +50,11 @@ pub fn read_file(
     if buf.len() < count {
         return Err(FileReadError::BufTooSmall);
     }
-    unistd::pread(handle.as_raw_fd(), buf, count, start).map_err(|e| FileReadError::Unknown(e))
+    unistd::pread(handle.as_raw(), buf, count, start).map_err(|e| FileReadError::Unknown(e))
 }
 
 pub fn size_of_file(handle: &FileHandle) -> Result<usize, FileSizeError> {
-    stat::fstat(handle.as_raw_fd())
+    stat::fstat(handle.as_raw())
         .map(|s| s.st_size as usize)
         .map_err(|e| FileSizeError::Unknown(e))
 }

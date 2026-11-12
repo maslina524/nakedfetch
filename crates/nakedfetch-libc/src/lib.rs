@@ -7,3 +7,8 @@ pub use api::{fcntl, stdio, sys, unistd};
 
 pub mod errno;
 pub mod raw;
+
+pub trait AsRawHandle {
+    fn from_raw(raw: i32) -> Self;
+    fn as_raw(&self) -> i32;
+}
