@@ -1,4 +1,6 @@
 mod syscalls;
+use core::{ffi::c_char, ptr, sync::atomic::AtomicPtr};
+
 pub use syscalls::*;
 
 use crate::{AsRawHandle as _, stdio::File};
@@ -17,3 +19,5 @@ impl ConsoleHandle {
 pub const STDIN: ConsoleHandle = ConsoleHandle(0);
 pub const STDOUT: ConsoleHandle = ConsoleHandle(1);
 pub const STDERR: ConsoleHandle = ConsoleHandle(2);
+
+pub static ENVIRON: AtomicPtr<*const c_char> = AtomicPtr::new(ptr::null_mut());

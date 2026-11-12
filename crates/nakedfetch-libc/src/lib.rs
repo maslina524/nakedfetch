@@ -2,6 +2,8 @@
 #![cfg_attr(not(test), no_main)]
 #![cfg(target_family = "unix")]
 
+extern crate alloc;
+
 mod api;
 pub use api::{fcntl, stdio, sys, unistd};
 
