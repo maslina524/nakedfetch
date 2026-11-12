@@ -1,6 +1,11 @@
-use core::{ffi, mem::MaybeUninit};
+use core::{
+    ffi::{self, CStr},
+    mem::MaybeUninit,
+};
 
-use crate::{errno::Errno, raw::Table, syscall};
+use crate::{errno::Errno, raw::Table, sys::types::c_mode, syscall};
+
+const AT_FDCWD: i32 = -100;
 
 // Ref: <https://elixir.bootlin.com/linux/v6.17/source/arch/arm/include/uapi/asm/stat.h#L21>
 #[cfg(target_arch = "arm")]
@@ -103,6 +108,23 @@ pub fn fstat(fd: i32) -> Result<Stat, Errno> {
     }
 }
 
+/// # Errors
+///
+/// `Err` if system failed to make dir.
+pub fn mkdirat(dirfd: i32, path: &CStr, mode: c_mode) -> Result<(), Errno> {
+    // SAFETY: We pass a valid nr,
+    // all values are synchronized with https://syscalls.mebeim.net
+    let ret = unsafe { syscall!(Table::MkDirAt, dirfd, path.as_ptr(), mode) };
+    ret.map(|_| ())
+}
+
+/// # Errors
+///
+/// If open(2) returned an error.
+pub fn mkdir(path: &CStr, mode: c_mode) -> Result<(), Errno> {
+    mkdirat(AT_FDCWD, path, mode)
+}
+
 #[cfg(test)]
 mod tests {
     use super::Stat;
@@ -130,5 +152,16 @@ mod tests {
 
         println!("{my:?}");
         assert_eq!(my, libc);
+    }
+
+    #[test]
+    fn makedir() {
+        let path = "Libc-Api-Sys-Stat-MkDir-1";
+        let c_path = c"Libc-Api-Sys-Stat-MkDir-1";
+
+        super::mkdir(c_path, 0o755).expect("Failed to make dir");
+        assert!(std::fs::exists(path).expect("std::fs::exists failed"));
+
+        std::fs::remove_dir(path).expect("std::fs::remove_dir failed");
     }
 }

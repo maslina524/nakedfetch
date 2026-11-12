@@ -11,6 +11,7 @@ pub enum Table {
     Exit = 60,
     FStatFs = 138,
     OpenAt = 257,
+    MkDirAt = 258,
 }
 
 /// # SAFETY

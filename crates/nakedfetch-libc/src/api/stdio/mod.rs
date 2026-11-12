@@ -61,6 +61,7 @@ impl FileDispose {
 }
 
 /// # Errors
+///
 /// If open(2) returned an error.
 pub fn fopen(path: &CStr, access: FileAccess, dispose: FileDispose) -> Result<File, Errno> {
     let flags = access as i32 | dispose as i32 | O_CLOEXEC;
@@ -73,6 +74,7 @@ pub fn fopen(path: &CStr, access: FileAccess, dispose: FileDispose) -> Result<Fi
 }
 
 /// # Errors
+///
 /// If read(2) returned an error.
 pub fn fgets(buf: &mut [u8], size: usize, stream: &File) -> Result<usize, Errno> {
     unistd::read(stream.fd, buf, size)
