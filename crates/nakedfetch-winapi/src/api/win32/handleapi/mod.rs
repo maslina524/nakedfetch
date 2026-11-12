@@ -9,10 +9,7 @@ pub fn CloseHandle<T: AsRawHandle>(handle: &mut T) -> NtStatus {
 mod tests {
     use crate::{
         AsRawHandle,
-        win32::{
-            fileapi::{FileHandle, Read},
-            handleapi::CloseHandle,
-        },
+        win32::{fileapi::FileHandle, handleapi::CloseHandle},
     };
 
     #[test]
@@ -55,7 +52,7 @@ mod tests {
             0x80,
             core::ptr::null_mut(),
         );
-        let mut handle = FileHandle::<Read>::from_raw(raw);
+        let mut handle = FileHandle::from_raw(raw);
 
         let attrs = get_handle_attrs(handle.as_raw());
         assert!(attrs.is_ok());

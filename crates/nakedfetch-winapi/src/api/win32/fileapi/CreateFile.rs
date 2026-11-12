@@ -7,7 +7,7 @@ use crate::{
     ntstatus::NtStatus,
     types::{HANDLE, IO_STATUS_BLOCK, OBJECT_ATTRIBUTES},
     unicode::UnicodeString,
-    win32::fileapi::{FileAccess, FileHandle},
+    win32::fileapi::FileHandle,
 };
 
 const NT_CREATE: u32 = 2;
@@ -145,41 +145,42 @@ impl CreateOptions {
     }
 }
 
+#[repr(u32)]
+pub enum FileAccess {
+    Read = 0x8000_0000,
+    Write = 0x4000_0000,
+    Append = 0x04,
+    All = 0x8000_0000 | 0x4000_0000,
+}
+
 /// # Errors
 ///
 /// On error returns `CreateFileError`, which is either a Unicode string
 /// allocation error or a `NtCreateFile` call error (Ntstatus).
-pub fn CreateFile<T: AsRef<Path>, A: FileAccess>(
+pub fn CreateFile<T: AsRef<Path>>(
     path: T,
+    access: FileAccess,
     share: FileShare,
     create: FileDispose,
     attributes: FileAttributes,
     options: CreateOptions,
-) -> Result<FileHandle<A>, CreateFileError> {
-    let access_val = A::raw();
-    create_file_inner(
-        path.as_ref(),
-        access_val,
-        share,
-        create,
-        attributes,
-        options,
-    )
-    .map(FileHandle::from_raw)
+) -> Result<FileHandle, CreateFileError> {
+    create_file_inner(path.as_ref(), access, share, create, attributes, options)
+        .map(FileHandle::from_raw)
 }
 
 fn create_file_inner(
     path: &Path,
-    access: u32,
+    access: FileAccess,
     share: FileShare,
     create: FileDispose,
     attributes: FileAttributes,
     options: CreateOptions,
 ) -> Result<HANDLE, CreateFileError> {
     let access = if options.build() & SYNC_FLAGS != 0 {
-        access | SYNCHRONIZE
+        access as u32 | SYNCHRONIZE
     } else {
-        access
+        access as u32
     };
 
     let unicode =

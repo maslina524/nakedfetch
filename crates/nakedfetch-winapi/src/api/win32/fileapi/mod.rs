@@ -1,5 +1,3 @@
-use core::marker::PhantomData;
-
 mod CreateFile;
 pub use CreateFile::*;
 
@@ -17,68 +15,20 @@ pub use WriteFile::*;
 
 use crate::{AsRawHandle, types::HANDLE, win32::handleapi};
 
-mod_sealed!();
-pub trait FileAccess: sealed::Sealed {
-    fn raw() -> u32;
-}
-
-pub trait CanRead: FileAccess {}
-pub trait CanWrite: FileAccess {}
-
-pub struct Read;
-pub struct Write;
-pub struct Append;
-pub struct All;
-
-impl_tag!(CanRead: Read, All);
-impl_tag!(CanWrite: Write, Append, All);
-
-impl_sealed!(Read, Write, Append, All);
-
-impl FileAccess for Read {
-    fn raw() -> u32 {
-        0x8000_0000
-    }
-}
-
-impl FileAccess for Write {
-    fn raw() -> u32 {
-        0x4000_0000
-    }
-}
-
-impl FileAccess for Append {
-    fn raw() -> u32 {
-        0x04
-    }
-}
-
-impl FileAccess for All {
-    fn raw() -> u32 {
-        0x8000_0000 | 0x4000_0000
-    }
-}
-
 #[repr(transparent)]
-pub struct FileHandle<Access> {
-    raw: HANDLE,
-    _marker: PhantomData<Access>,
-}
+pub struct FileHandle(HANDLE);
 
-impl<Access> AsRawHandle for FileHandle<Access> {
+impl AsRawHandle for FileHandle {
     fn from_raw(raw: HANDLE) -> Self {
-        Self {
-            raw,
-            _marker: PhantomData,
-        }
+        Self(raw)
     }
 
     fn as_raw(&self) -> HANDLE {
-        self.raw
+        self.0
     }
 }
 
-impl<Access> Drop for FileHandle<Access> {
+impl Drop for FileHandle {
     fn drop(&mut self) {
         handleapi::CloseHandle(self);
     }
@@ -87,10 +37,7 @@ impl<Access> Drop for FileHandle<Access> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        AsRawHandle,
-        win32::fileapi::{FileHandle, Write},
-    };
+    use crate::{AsRawHandle, win32::fileapi::FileHandle};
 
     const STDOUT: u32 = (-11i32).cast_unsigned();
 
@@ -106,7 +53,7 @@ mod tests {
         SetConsoleOutputCP(65001);
 
         let stdout = GetStdHandle(STDOUT);
-        let handle = FileHandle::<Write>::from_raw(stdout);
+        let handle = FileHandle::from_raw(stdout);
 
         let bytes = b"Hello world!!!\n";
         let written = WriteFile(&handle, bytes).expect("Failed to write to the console, Ntstatus");
@@ -119,8 +66,9 @@ mod tests {
 
     #[test]
     fn create_file_test() {
-        let _: FileHandle<Read> = CreateFile(
+        let _: FileHandle = CreateFile(
             "Cargo.toml",
+            FileAccess::Read,
             FileShare::ReadWrite,
             FileDispose::OpenAlways,
             FileAttributes::new(),
@@ -131,8 +79,9 @@ mod tests {
 
     #[test]
     fn read_file_test() {
-        let handle: FileHandle<Read> = CreateFile(
+        let handle: FileHandle = CreateFile(
             "Cargo.toml",
+            FileAccess::Read,
             FileShare::ReadWrite,
             FileDispose::OpenAlways,
             FileAttributes::new(),
@@ -170,8 +119,9 @@ mod tests {
             safe fn GetFileSizeEx(hFile: *mut c_void, lpFileSize: *mut i64) -> i32;
         }
 
-        let handle: FileHandle<Read> = CreateFile(
+        let handle: FileHandle = CreateFile(
             "Cargo.toml",
+            FileAccess::Read,
             FileShare::ReadWrite,
             FileDispose::OpenAlways,
             FileAttributes::new(),

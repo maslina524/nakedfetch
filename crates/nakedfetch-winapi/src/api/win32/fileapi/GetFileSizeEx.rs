@@ -1,28 +1,24 @@
 use crate::{
-    AsRawHandle, ntdll,
+    ntdll,
     ntstatus::NtStatus,
     types::{
-        HANDLE, IO_STATUS_BLOCK,
+        IO_STATUS_BLOCK,
         class::{FILE_INFORMATION_CLASS, FILE_STANDARD_INFORMATION},
     },
-    win32::fileapi::{FileAccess, FileHandle},
+    win32::fileapi::FileHandle,
 };
 
 /// # Errors
 ///
 /// Err when the kernel fails to correctly retrieve information about the file.
-pub fn GetFileSizeEx<A: FileAccess>(handle: &FileHandle<A>) -> Result<usize, NtStatus> {
-    get_file_size_ex(handle.as_raw())
-}
-
-fn get_file_size_ex(raw: HANDLE) -> Result<usize, NtStatus> {
+pub fn GetFileSizeEx(handle: &FileHandle) -> Result<usize, NtStatus> {
     let mut info = FILE_STANDARD_INFORMATION::default();
     let mut io = IO_STATUS_BLOCK::default();
 
     // SAFETY: All fields have been verified against ntdoc, safe
     let ret = unsafe {
         ntdll::NtQueryInformationFile(
-            raw,
+            handle.0,
             &raw mut io,
             (&raw mut info).cast(),
             size_of::<FILE_STANDARD_INFORMATION>() as u32,

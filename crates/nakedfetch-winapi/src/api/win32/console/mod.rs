@@ -1,10 +1,6 @@
 use core::mem::ManuallyDrop;
 
-use crate::{
-    AsRawHandle, ntdll,
-    types::HANDLE,
-    win32::fileapi::{FileHandle, Write},
-};
+use crate::{AsRawHandle, ntdll, types::HANDLE, win32::fileapi::FileHandle};
 
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy)]
@@ -20,7 +16,7 @@ impl AsRawHandle for ConsoleHandle {
     }
 }
 
-impl From<ConsoleHandle> for ManuallyDrop<FileHandle<Write>> {
+impl From<ConsoleHandle> for ManuallyDrop<FileHandle> {
     fn from(val: ConsoleHandle) -> Self {
         Self::new(FileHandle::from_raw(val.as_raw()))
     }

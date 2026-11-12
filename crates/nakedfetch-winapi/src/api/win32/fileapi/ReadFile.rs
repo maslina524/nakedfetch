@@ -4,7 +4,7 @@ use crate::{
     AsRawHandle, ntdll,
     ntstatus::NtStatus,
     types::{IO_STATUS_BLOCK, PVOID},
-    win32::fileapi::{CanRead, FileHandle},
+    win32::fileapi::FileHandle,
 };
 
 /// # Errors
@@ -14,8 +14,8 @@ use crate::{
 /// # Panics
 ///
 /// ``assert!(read <= buf.len())``
-pub fn ReadFile<A: CanRead>(
-    handle: &FileHandle<A>,
+pub fn ReadFile(
+    handle: &FileHandle,
     buf: &mut [u8],
     read: usize,
     offset: Option<usize>,

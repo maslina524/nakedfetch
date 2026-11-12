@@ -1,10 +1,7 @@
 use core::ptr;
 
 use crate::{
-    AsRawHandle as _, ntdll,
-    ntstatus::NtStatus,
-    types::IO_STATUS_BLOCK,
-    win32::fileapi::{CanWrite, FileHandle},
+    AsRawHandle as _, ntdll, ntstatus::NtStatus, types::IO_STATUS_BLOCK, win32::fileapi::FileHandle,
 };
 
 /// # Errors
@@ -12,7 +9,7 @@ use crate::{
 /// Mostly it always returns ``Ok()`` with the number of bytes written
 /// in it; situations where ``Err()`` is returned are kernel failures,
 /// for example the disk is full.
-pub fn WriteFile<T: CanWrite>(handle: &FileHandle<T>, buf: &[u8]) -> Result<usize, NtStatus> {
+pub fn WriteFile(handle: &FileHandle, buf: &[u8]) -> Result<usize, NtStatus> {
     let mut info = IO_STATUS_BLOCK::default();
 
     // SAFETY: The descriptor, buffer, and its length are always valid
