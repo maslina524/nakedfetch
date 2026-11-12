@@ -6,7 +6,7 @@ use core::{
 
 use common::{
     formatf,
-    fs::{self, AccessWrite, File},
+    fs::{self, File, Write},
 };
 use path::{Path, PathBuf};
 
@@ -137,7 +137,7 @@ fn set_cache(hour: u64, data: &str) -> Option<()> {
         warning!("Failed to create {path_dir}: {e}");
     }
     let path = path_dir.join("weather");
-    let mut file = File::<AccessWrite>::create_new_or_rewrite(path).ok()?;
+    let mut file = File::<Write>::create_new_or_rewrite(path).ok()?;
     let _ = write!(file, "{hour}\n{data}");
 
     Some(())

@@ -8,7 +8,7 @@ use winapi::{
     kernel32,
     win32::{
         console::{self, GetStdHandle, StdHandle},
-        fileapi::{FileHandle, Write, WriteFile},
+        fileapi::{FileHandle, WriteFile},
     },
 };
 
@@ -30,7 +30,7 @@ pub fn console_write(handle: ConsoleHandle, buf: &[u8]) -> usize {
         kernel32::SetConsoleOutputCP(65001);
     }
 
-    let filehandle: ManuallyDrop<FileHandle<Write>> = handle.into();
+    let filehandle: ManuallyDrop<FileHandle> = handle.into();
     match WriteFile(&filehandle, buf) {
         Ok(v) => v,
         Err(e) => panic!("Failed to write to the console: {e:?}"),

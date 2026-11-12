@@ -11,7 +11,7 @@ use core::{
 
 use common::{
     env, formatf,
-    fs::{self, AccessWrite, File, FileCreateError as FCErr, FileReadToStringError as FRTSErr},
+    fs::{self, File, FileCreateError as FCErr, FileReadToStringError as FRTSErr, Write},
     sync::Mutex,
     warning,
 };
@@ -37,7 +37,7 @@ pub fn flush_to_file() {
     let path_dir = env::cache_dir();
     let _ = fs::create_dirs(&path_dir);
     let path = path_dir.join("session");
-    let mut file = match File::<AccessWrite>::create_new_or_rewrite(path) {
+    let mut file = match File::<Write>::create_new_or_rewrite(path) {
         Ok(f) => f,
         Err(e) => {
             warning!("Failed to create cache/session: {e}");

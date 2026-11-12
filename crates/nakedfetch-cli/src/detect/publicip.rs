@@ -6,7 +6,7 @@ use core::{
 
 use common::{
     formatf,
-    fs::{self, AccessWrite, File},
+    fs::{self, File, Write},
 };
 use json::{Map, Value};
 use path::{Path, PathBuf};
@@ -113,7 +113,7 @@ fn set_cache(hour: u64, map: &Map) -> Option<()> {
     }
 
     let path = path_dir.join("publicip");
-    let mut file = File::<AccessWrite>::create_new(path).ok()?;
+    let mut file = File::<Write>::create_new(path).ok()?;
     let _ = write!(file, "{hour}\n{map}");
 
     Some(())

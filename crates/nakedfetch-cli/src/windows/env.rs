@@ -14,7 +14,7 @@ use core::{
 
 use common::{
     abort, formatf,
-    fs::{AccessRead, File},
+    fs::{File, Read},
     sync::OnceLock,
     warning,
 };
@@ -179,7 +179,7 @@ pub fn get_version() -> (u32, u32, u32) {
 
 pub fn terminal_handle() -> isize {
     *TERMINAL_HANDLE.get_or_init(|| {
-        let file = File::<AccessRead>::open("CONOUT$").unwrap();
+        let file = File::<Read>::open("CONOUT$").unwrap();
         let handle = file.as_raw_handle();
         mem::forget(file);
         handle as isize

@@ -3,13 +3,12 @@ use alloc::{
     vec,
     vec::Vec,
 };
-use core::{error::Error, ffi::c_void, fmt, str::Utf8Error};
+use core::{error::Error, ffi::c_void, fmt, marker::PhantomData, str::Utf8Error};
 
 use path::Path;
 
 pub use crate::imp::fs::{
-    AccessAll, AccessCanRead, AccessCanWrite, AccessRead, AccessWrite, FileCreateError,
-    FileExistsError, FileHandle, FileReadError, FileSizeError,
+    FileCreateError, FileExistsError, FileHandle, FileReadError, FileSizeError,
 };
 use crate::imp::{fs, handle};
 
@@ -37,49 +36,92 @@ impl From<FileReadError> for FileSizeReadError {
     }
 }
 
-pub struct File<A: fs::Access>(FileHandle<A>);
+pub trait Access {
+    fn into_file_access() -> fs::FileAccess;
+}
+pub trait CanRead: Access {}
+pub trait CanWrite: Access {}
 
-impl<A: fs::Access> File<A> {
+pub struct Read;
+impl Access for Read {
+    fn into_file_access() -> fs::FileAccess {
+        fs::FileAccess::Read
+    }
+}
+impl CanRead for Read {}
+
+pub struct Write;
+impl Access for Write {
+    fn into_file_access() -> fs::FileAccess {
+        fs::FileAccess::Write
+    }
+}
+impl CanWrite for Write {}
+
+pub struct All;
+impl Access for All {
+    fn into_file_access() -> fs::FileAccess {
+        fs::FileAccess::All
+    }
+}
+impl CanRead for All {}
+impl CanWrite for All {}
+
+pub struct File<A: Access> {
+    fd: FileHandle,
+    _marker: PhantomData<A>,
+}
+
+impl<A: Access> File<A> {
     /// # Errors
     ///
     /// Error if the system failed to open the file correctly.
     pub fn create_new_or_rewrite<T: AsRef<Path>>(path: T) -> Result<Self, FileCreateError> {
-        fs::create_or_rewrite_file(path.as_ref()).map(Self)
+        fs::create_or_rewrite_file(path.as_ref(), A::into_file_access()).map(|fd| Self {
+            fd,
+            _marker: PhantomData,
+        })
     }
 
     /// # Errors
     ///
     /// Error if the system failed to open the file correctly.
     pub fn create_new<T: AsRef<Path>>(path: T) -> Result<Self, FileCreateError> {
-        fs::create_file(path.as_ref()).map(Self)
+        fs::create_file(path.as_ref(), A::into_file_access()).map(|fd| Self {
+            fd,
+            _marker: PhantomData,
+        })
     }
 
     /// # Errors
     ///
     /// Error if the system failed to open the file correctly.
     pub fn open<T: AsRef<Path>>(path: T) -> Result<Self, FileCreateError> {
-        fs::open_file(path.as_ref()).map(Self)
+        fs::open_file(path.as_ref(), A::into_file_access()).map(|fd| Self {
+            fd,
+            _marker: PhantomData,
+        })
     }
 
     /// # Errors
     ///
     /// Error if the system failed to get size of file correctly.
     pub fn file_size(&self) -> Result<usize, FileSizeError> {
-        fs::size_of_file(&self.0)
+        fs::size_of_file(&self.fd)
     }
 
     #[must_use]
-    pub const fn as_handle(&self) -> &FileHandle<A> {
-        &self.0
+    pub const fn as_handle(&self) -> &FileHandle {
+        &self.fd
     }
 
     #[must_use]
     pub fn as_raw_handle(&self) -> *mut c_void {
-        handle::as_raw_handle(&self.0)
+        handle::as_raw_handle(&self.fd)
     }
 }
 
-impl<A: AccessCanRead> File<A> {
+impl<A: CanRead> File<A> {
     /// # Errors
     ///
     /// Error if the system failed to read the file correctly.
@@ -89,7 +131,7 @@ impl<A: AccessCanRead> File<A> {
         start: usize,
         count: usize,
     ) -> Result<usize, FileReadError> {
-        fs::read_file(&self.0, buf, start, count)
+        fs::read_file(&self.fd, buf, start, count)
     }
 
     /// # Errors
@@ -99,14 +141,14 @@ impl<A: AccessCanRead> File<A> {
         let size = self.file_size()?;
 
         let mut buf = vec![0u8; size];
-        let bytes_read = fs::read_file(&self.0, &mut buf, 0, size)?;
+        let bytes_read = fs::read_file(&self.fd, &mut buf, 0, size)?;
         buf.truncate(bytes_read);
 
         Ok(buf)
     }
 }
 
-impl<A: AccessCanWrite> File<A> {
+impl<A: CanWrite> File<A> {
     /// # Errors
     ///
     /// Error if the system failed to write to the file correctly.
@@ -115,11 +157,11 @@ impl<A: AccessCanWrite> File<A> {
         reason = "For good API with fmt::Write"
     )]
     pub fn write_bytes(&mut self, bytes: &[u8]) -> Result<usize, fs::FileWriteError> {
-        fs::write_file(&self.0, bytes)
+        fs::write_file(&self.fd, bytes)
     }
 }
 
-impl<A: AccessCanWrite> fmt::Write for File<A> {
+impl<A: CanWrite> fmt::Write for File<A> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         self.write_bytes(s.as_bytes())
             .map(|_| ())
@@ -159,7 +201,7 @@ impl From<FileSizeReadError> for FileCreateReadError {
 ///
 /// `Err` if the system fails to open or read the file.
 pub fn read<T: AsRef<Path>>(path: T) -> Result<Vec<u8>, FileCreateReadError> {
-    let file = File::<AccessRead>::open(path)?;
+    let file = File::<Read>::open(path)?;
     file.read().map_err(Into::into)
 }
 
@@ -202,7 +244,7 @@ impl From<FromUtf8Error> for FileReadToStringError {
 ///
 /// `Err` if the system fails to open, read the file as UTF8.
 pub fn read_to_string<T: AsRef<Path>>(path: T) -> Result<String, FileReadToStringError> {
-    let file = File::<AccessRead>::open(path)?;
+    let file = File::<Read>::open(path)?;
     let buf = file.read()?;
     String::from_utf8(buf).map_err(Into::into)
 }
@@ -280,12 +322,12 @@ impl fmt::Display for FileByLineError {
 
 impl Error for FileByLineError {}
 
-pub struct FileByLine<'f, A: AccessCanRead> {
+pub struct FileByLine<'f, A: CanRead> {
     file: &'f File<A>,
     pos: usize,
 }
 
-impl<'f, A: AccessCanRead> FileByLine<'f, A> {
+impl<'f, A: CanRead> FileByLine<'f, A> {
     #[must_use]
     pub const fn new(file: &'f File<A>) -> Self {
         Self { file, pos: 0 }
@@ -354,14 +396,13 @@ mod tests {
     use core::fmt::Write as _;
     use std::fs;
 
-    use crate::fs::{AccessRead, AccessWrite, File, FileByLine};
+    use crate::fs::{File, FileByLine, Read, Write};
 
     #[test]
     fn create_new_file() {
         let path = "Common-Fs-File-CreateNew-1.txt";
         {
-            let _ =
-                File::<AccessRead>::create_new_or_rewrite(path).expect("Failed to crate new file");
+            let _ = File::<Read>::create_new_or_rewrite(path).expect("Failed to crate new file");
             assert!(fs::exists(path).expect("fs::exits failed"));
         }
 
@@ -373,7 +414,7 @@ mod tests {
         let path = "Common-Fs-File-WriteBytes-1.txt";
         {
             let mut file =
-                File::<AccessWrite>::create_new_or_rewrite(path).expect("Failed to crate new file");
+                File::<Write>::create_new_or_rewrite(path).expect("Failed to crate new file");
             assert!(fs::exists(path).expect("fs::exits failed"));
 
             let bytes = b"Some bytes";
@@ -389,7 +430,7 @@ mod tests {
         let path = "Common-Fs-File-FmtWrite-1.txt";
         {
             let mut file =
-                File::<AccessWrite>::create_new_or_rewrite(path).expect("Failed to crate new file");
+                File::<Write>::create_new_or_rewrite(path).expect("Failed to crate new file");
             assert!(fs::exists(path).expect("fs::exits failed"));
 
             file.write_fmt(format_args!("Hello {}; 2 + 2 = {}", "World", 2 + 2))
@@ -407,7 +448,7 @@ mod tests {
     fn read_part_file() {
         let path = "Cargo.toml";
         {
-            let file = File::<AccessRead>::open(path).expect("Failed to crate new file");
+            let file = File::<Read>::open(path).expect("Failed to crate new file");
 
             let mut buf = [0u8; 20];
             let std = fs::read(path).expect("fs::read failed");
@@ -439,7 +480,7 @@ mod tests {
     fn file_size() {
         let path = "Cargo.toml";
 
-        let file = File::<AccessRead>::open(path).expect("Failed to open file");
+        let file = File::<Read>::open(path).expect("Failed to open file");
         let size = file.file_size().expect("Failed to get size");
         assert!(size > 0);
     }
@@ -487,7 +528,7 @@ mod tests {
         }
 
         fn next<'out>(
-            by_line: &'out mut FileByLine<'_, AccessRead>,
+            by_line: &'out mut FileByLine<'_, Read>,
             buf: &'out mut [u8],
         ) -> Option<&'out str> {
             by_line.next(buf).expect("Failed to read line")
@@ -497,7 +538,7 @@ mod tests {
         save_example_file(path);
 
         {
-            let file = File::<AccessRead>::open(path).expect("Failed to open file");
+            let file = File::<Read>::open(path).expect("Failed to open file");
             let mut by_line = FileByLine::new(&file);
             let mut buf = [0u8; 64];
 

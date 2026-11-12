@@ -1,11 +1,7 @@
 use core::{error::Error, fmt};
 
 use path::Path;
-pub use winapi::win32::fileapi::{
-    All as AccessAll, CanRead as AccessCanRead, CanWrite as AccessCanWrite, CreateFileError,
-    FileAccess as Access, FileAttributesError, FileHandle, Read as AccessRead,
-    Write as AccessWrite,
-};
+pub use winapi::win32::fileapi::{CreateFileError, FileAccess, FileAttributesError, FileHandle};
 use winapi::{
     ntstatus::NtStatus,
     win32::{
@@ -44,10 +40,11 @@ impl fmt::Display for FileCreateError {
 
 impl Error for FileCreateError {}
 
-fn create_with_dispose<A: Access>(
+fn create_with_dispose(
     path: &Path,
+    access: FileAccess,
     dispose: FileDispose,
-) -> Result<FileHandle<A>, FileCreateError> {
+) -> Result<FileHandle, FileCreateError> {
     const fn map_err(err: CreateFileError) -> FileCreateError {
         use super::fs::FileCreateError as FCE;
 
@@ -76,6 +73,7 @@ fn create_with_dispose<A: Access>(
 
     CreateFile(
         path,
+        access,
         FileShare::Read,
         dispose,
         FileAttributes::new(),
@@ -84,16 +82,19 @@ fn create_with_dispose<A: Access>(
     .map_err(map_err)
 }
 
-pub fn create_or_rewrite_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateError> {
-    create_with_dispose(path, FileDispose::CreateAlways)
+pub fn create_or_rewrite_file(
+    path: &Path,
+    access: FileAccess,
+) -> Result<FileHandle, FileCreateError> {
+    create_with_dispose(path, access, FileDispose::CreateAlways)
 }
 
-pub fn create_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateError> {
-    create_with_dispose(path, FileDispose::CreateNew)
+pub fn create_file(path: &Path, access: FileAccess) -> Result<FileHandle, FileCreateError> {
+    create_with_dispose(path, access, FileDispose::CreateNew)
 }
 
-pub fn open_file<A: Access>(path: &Path) -> Result<FileHandle<A>, FileCreateError> {
-    create_with_dispose(path, FileDispose::OpenExisting)
+pub fn open_file(path: &Path, access: FileAccess) -> Result<FileHandle, FileCreateError> {
+    create_with_dispose(path, access, FileDispose::OpenExisting)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -119,10 +120,7 @@ impl fmt::Display for FileWriteError {
 
 impl Error for FileWriteError {}
 
-pub fn write_file<A: AccessCanWrite>(
-    handle: &FileHandle<A>,
-    buf: &[u8],
-) -> Result<usize, FileWriteError> {
+pub fn write_file(handle: &FileHandle, buf: &[u8]) -> Result<usize, FileWriteError> {
     const fn map_err(nt: NtStatus) -> FileWriteError {
         use super::fs::FileWriteError as FWE;
 
@@ -167,8 +165,8 @@ impl fmt::Display for FileReadError {
 
 impl Error for FileReadError {}
 
-pub fn read_file<A: AccessCanRead>(
-    handle: &FileHandle<A>,
+pub fn read_file(
+    handle: &FileHandle,
     buf: &mut [u8],
     start: usize,
     count: usize,
@@ -223,7 +221,7 @@ impl fmt::Display for FileSizeError {
 
 impl Error for FileSizeError {}
 
-pub fn size_of_file<A: Access>(handle: &FileHandle<A>) -> Result<usize, FileSizeError> {
+pub fn size_of_file(handle: &FileHandle) -> Result<usize, FileSizeError> {
     const fn map_err(nt: NtStatus) -> FileSizeError {
         use super::fs::FileSizeError as FSE;
 
