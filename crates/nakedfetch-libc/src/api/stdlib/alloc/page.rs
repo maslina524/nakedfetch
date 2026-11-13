@@ -1,6 +1,6 @@
 use core::ptr::NonNull;
 
-use crate::sys::mman;
+use crate::{stdlib::sync::OnceLock, sys::mman};
 
 pub const PAGE_SIZE: usize = 1 << 12;
 pub const CHUNK_SIZE: usize = 32;
@@ -24,6 +24,12 @@ const _: () = {
     assert!(DATA_SIZE.is_multiple_of(CHUNK_SIZE));
     assert!(CHUNK_COUNT <= BITMASK_BYTES * 8);
 };
+
+static KING_PAGE: OnceLock<Page> = OnceLock::new();
+
+pub fn king_page() -> &'static Page {
+    KING_PAGE.get_or_init(Page::allocate_new)
+}
 
 #[repr(transparent)]
 pub struct Page(NonNull<()>);
@@ -70,6 +76,9 @@ impl Page {
         core::mem::forget(self);
     }
 }
+
+unsafe impl Send for Page {}
+unsafe impl Sync for Page {}
 
 #[repr(transparent)]
 pub struct BitMask<const BYTES: usize> {

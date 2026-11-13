@@ -1,1 +1,2 @@
-pub(crate) mod page;
+mod alloc;
+pub use alloc::*;
