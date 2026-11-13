@@ -1,3 +1,4 @@
+pub mod env;
 pub mod fs;
 pub(crate) mod handle;
 pub mod io;

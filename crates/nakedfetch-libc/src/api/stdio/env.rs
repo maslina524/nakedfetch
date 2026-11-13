@@ -3,9 +3,8 @@ use core::{ffi::CStr, sync::atomic::Ordering};
 
 use crate::unistd;
 
-pub fn getenv(name: &CStr) -> Option<Vec<u8>> {
-    let name_bytes = name.to_bytes();
-    let name_len = name.count_bytes();
+pub fn getenv(name: &[u8]) -> Option<Vec<u8>> {
+    let name_len = name.len();
     if name_len == 0 {
         return None;
     }
@@ -23,7 +22,7 @@ pub fn getenv(name: &CStr) -> Option<Vec<u8>> {
         let pair_bytes = c_pair.to_bytes();
 
         if pair_bytes.len() <= name_len
-            || name_bytes != &pair_bytes[..name_len]
+            || name != &pair_bytes[..name_len]
             || pair_bytes[name_len] != b'='
         {
             // SAFETY: Search in the next pair, if the pairs are exhausted, then

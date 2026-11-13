@@ -572,16 +572,24 @@ fn just_print_logo_and_info(logo_lines: &[(String, usize)]) {
 
 static ARGS: OnceLock<Vec<String>> = OnceLock::new();
 
-#[cfg(not(test))]
+// #[cfg(not(test))]
 #[allow(
     clippy::similar_names,
     reason = "that's what they're called in C, i don't give a fuck about clippy"
 )]
 #[cfg(target_family = "unix")]
 #[unsafe(no_mangle)]
-extern "C" fn main(argc: ffi::c_int, argv: *const *const ffi::c_char) -> ffi::c_int {
+extern "C" fn main(
+    argc: ffi::c_int,
+    argv: *const *const ffi::c_char,
+    envp: *const *const ffi::c_char,
+) -> ffi::c_int {
+    use core::sync::atomic::Ordering;
+
     use unixlib::api::alloc::init;
+
     init::falloc_init();
+    libc::unistd::ENVIRON.store(envp.cast_mut(), Ordering::Relaxed);
     let _ = ARGS.set(imp::env::args_init(argc as usize, argv.cast()));
     let ret = nakedfetch_main() as ffi::c_int;
     init::falloc_destroy();

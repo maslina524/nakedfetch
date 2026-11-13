@@ -1,25 +1,44 @@
 use alloc::string::String;
+use core::{error::Error, fmt};
 
-use path::PathBuf;
-use wtf8::{Wtf8, Wtf8Buf};
+use path::{OsStr, OsString, PathBuf};
 
-use crate::imp::env;
+use crate::imp::{self, env};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EnvVarError {
+    NotFound,
+    InvalidParam,
+    AccessDenied,
+    BufferTooSmall,
+    TooManyVariables,
+    NameTooLong,
+    NoSystemResource,
+    Unknown(imp::RawError),
+}
+
+impl fmt::Display for EnvVarError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl Error for EnvVarError {}
 
 /// # Errors
 ///
 /// If the system failed to correctly retrieve the Env variable or it was not
 /// found.
-pub fn var_os<T: AsRef<Wtf8>>(name: T) -> Result<Wtf8Buf, env::EnvVarError> {
-    env::var(name.as_ref())
+pub fn var_os<T: AsRef<OsStr>>(name: T) -> Result<OsString, EnvVarError> {
+    env::var_os(name.as_ref())
 }
 
 /// # Errors
 ///
 /// If the system failed to correctly retrieve the Env variable or it was not
 /// found.
-pub fn var<T: AsRef<Wtf8>>(name: T) -> Result<String, env::EnvVarError> {
-    let s = env::var(name.as_ref())?.to_string_lossy();
-    Ok(s)
+pub fn var<T: AsRef<OsStr>>(name: T) -> Result<String, EnvVarError> {
+    env::var(name.as_ref())
 }
 
 #[derive(Debug, Clone)]
@@ -50,13 +69,11 @@ pub fn cache_dir() -> PathBuf {
 #[cfg(test)]
 mod tests {
     #[cfg(target_os = "windows")]
-    pub const ENV_SEP: char = ';';
-
     #[test]
     fn env_var_test() {
         let var = super::var("PATH").expect("Failed to get env var");
         assert_ne!(var, "");
-        assert!(var.contains(ENV_SEP));
+        assert!(var.contains(';'));
     }
 
     #[test]

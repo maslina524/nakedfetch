@@ -17,6 +17,9 @@ zlib = { path = "../nakedfetch-zlib" }
 deflate = { path = "../nakedfetch-deflate" }
 image = { path = "../nakedfetch-image" }
 
+[target.'cfg(unix)'.dependencies]
+libc = { path = "../nakedfetch-libc" }
+
 [build-dependencies]
 chrono      = "0.4.45"
 zlib-rs     = "0.6.7"

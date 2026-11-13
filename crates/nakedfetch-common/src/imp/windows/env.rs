@@ -1,36 +1,16 @@
 use alloc::string::String;
 use core::{error::Error, fmt};
 
+use OsStr::{OsStr, OsString};
 use path::PathBuf;
 use winapi::{
     ntstatus::NtStatus,
     win32::processenv::{GetCommandLine, GetEnvironmentVariable},
 };
-use wtf8::{Wtf8, Wtf8Buf};
 
 use crate::sync::OnceLock;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum EnvVarError {
-    NotFound,
-    InvalidParam,
-    AccessDenied,
-    BufferTooSmall,
-    TooManyVariables,
-    NameTooLong,
-    NoSystemResource,
-    Unknown(NtStatus),
-}
-
-impl fmt::Display for EnvVarError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
-impl Error for EnvVarError {}
-
-pub fn var(name: &Wtf8) -> Result<Wtf8Buf, EnvVarError> {
+pub fn var_os(name: &OsStr) -> Result<OsString, EnvVarError> {
     const fn map_ntstatus(nt: NtStatus) -> EnvVarError {
         use super::env::EnvVarError as EVE;
 
@@ -47,6 +27,10 @@ pub fn var(name: &Wtf8) -> Result<Wtf8Buf, EnvVarError> {
     }
 
     GetEnvironmentVariable(name).map_err(map_ntstatus)
+}
+
+pub fn var(name: &OsStr) -> Result<String, EnvVarError> {
+    var_os(name).map(String::to_string_lossy)
 }
 
 static COMMAND_LINE_STRING: OnceLock<String> = OnceLock::new();
@@ -152,7 +136,7 @@ impl Iterator for ArgsInner {
     }
 }
 
-const LOCALAPPDATA_NAME: &Wtf8 = Wtf8::from_str("LOCALAPPDATA");
+const LOCALAPPDATA_NAME: &OsStr = OsStr::from_str("LOCALAPPDATA");
 
 pub fn cache() -> PathBuf {
     let mut base = match var(LOCALAPPDATA_NAME) {
