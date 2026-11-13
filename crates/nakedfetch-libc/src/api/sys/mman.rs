@@ -18,22 +18,24 @@ pub fn mmap(
     flags: i32,
     fd: i32,
     offset: c_off,
-) -> Result<*mut (), Errno> {
+) -> Result<NonNull<()>, Errno> {
     let addr_ptr = addr.map_or(ptr::null_mut(), NonNull::as_ptr);
     // SAFETY: We pass a valid nr,
     // all values are synchronized with https://syscalls.mebeim.net
-    let size = unsafe { syscall!(Table::Mmap, addr_ptr, length, prot, flags, fd, offset) };
-    size.map(|v| v as *mut ())
+    unsafe {
+        let size = syscall!(Table::Mmap, addr_ptr, length, prot, flags, fd, offset);
+        size.map(|v| NonNull::new_unchecked(v as *mut ()))
+    }
 }
 
 /// # Errors
 ///
 /// If failed to deallocate mem
-pub fn munmap(addr: *mut (), length: usize) -> Result<(), Errno> {
+pub fn munmap(addr: NonNull<()>, length: usize) -> Result<(), Errno> {
     // let addr_ptr = addr.as_ptr();
     // SAFETY: We pass a valid nr,
     // all values are synchronized with https://syscalls.mebeim.net
-    let ret = unsafe { syscall!(Table::Munmap, addr, length) };
+    let ret = unsafe { syscall!(Table::Munmap, addr.as_ptr(), length) };
     ret.map(|_| ())
 }
 
@@ -56,10 +58,10 @@ mod tests {
         .expect("Failed mmap");
 
         // SAFETY: We write bytes only to the allocated memory
-        unsafe { ptr::write_bytes(ptr.cast::<u8>(), 42u8, 128) };
+        unsafe { ptr::write_bytes(ptr.cast::<u8>().as_ptr(), 42u8, 128) };
         for i in 0..128 {
             // SAFETY: All 128 bytes must be equal to 42
-            let val = unsafe { ptr::read(ptr.cast::<u8>().add(i)) };
+            let val = unsafe { ptr::read(ptr.cast::<u8>().add(i).as_ptr()) };
             assert_eq!(val, 42u8);
         }
 

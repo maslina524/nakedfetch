@@ -5,7 +5,7 @@
 extern crate alloc;
 
 mod api;
-pub use api::{fcntl, stdio, sys, unistd};
+pub use api::*;
 
 pub mod errno;
 pub mod raw;
