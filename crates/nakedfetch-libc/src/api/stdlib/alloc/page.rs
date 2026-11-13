@@ -1,4 +1,7 @@
-use core::ptr::NonNull;
+use core::{
+    ptr::NonNull,
+    sync::atomic::{AtomicPtr, AtomicU8, Ordering},
+};
 
 use crate::{stdlib::sync::OnceLock, sys::mman};
 
@@ -49,22 +52,19 @@ impl Page {
         unsafe { self.0.cast().as_ref() }
     }
 
-    pub const fn meta_mut(&mut self) -> &mut Meta {
-        // SAFETY: According to the contract, Meta is always located at the
-        // beginning
-        unsafe { self.0.cast().as_mut() }
-    }
-
-    pub const fn data(&self) -> &[u8; DATA_SIZE] {
+    pub fn data_ptr(&self) -> *mut u8 {
         // SAFETY: According to the contract, after Meta, all subsequent bytes
         // on the page are allocated exclusively for data
-        unsafe { self.0.cast().add(META_SIZE).as_ref() }
+        unsafe { self.0.cast::<u8>().as_ptr().add(META_SIZE) }
     }
 
-    pub const fn data_mut(&mut self) -> &mut [u8; DATA_SIZE] {
-        // SAFETY: According to the contract, after Meta, all subsequent bytes
-        // on the page are allocated exclusively for data
-        unsafe { self.0.cast().add(META_SIZE).as_mut() }
+    pub fn chunk_ptr(&self, idx: usize) -> NonNull<[u8; CHUNK_SIZE]> {
+        assert!(idx < CHUNK_COUNT);
+        // SAFETY: idx will never go beyond the bounds of allocated memory
+        unsafe {
+            let ptr = self.data_ptr().add(idx * CHUNK_SIZE);
+            NonNull::new_unchecked(ptr.cast())
+        }
     }
 
     #[allow(
@@ -80,72 +80,64 @@ impl Page {
 unsafe impl Send for Page {}
 unsafe impl Sync for Page {}
 
-#[repr(transparent)]
-pub struct BitMask<const BYTES: usize> {
-    inner: [u8; BYTES],
-}
-
-impl<const BYTES: usize> BitMask<BYTES> {
-    pub const fn new() -> Self {
-        Self {
-            inner: [0u8; BYTES],
-        }
-    }
-
-    pub const fn get(&self, pos: usize) -> bool {
-        let byte = pos >> 3;
-        let bit = pos & 7;
-        (self.inner[byte] >> bit) & 1 == 1
-    }
-
-    pub const fn set(&mut self, pos: usize) {
-        let byte = pos >> 3;
-        let bit = pos & 7;
-        let mask = 1u8 << bit;
-        self.inner[byte] |= mask;
-    }
-
-    pub const fn unset(&mut self, pos: usize) {
-        let byte = pos >> 3;
-        let bit = pos & 7;
-        let mask = 1u8 << bit;
-        self.inner[byte] &= !mask;
-    }
-}
-
-impl<const BYTES: usize> Default for BitMask<BYTES> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 pub struct Meta {
-    next: Option<NonNull<Page>>,
-    bitmask: BitMask<BITMASK_BYTES>,
+    next: AtomicPtr<Page>,
+    bitmask: [AtomicU8; BITMASK_BYTES],
 }
 
 impl Meta {
-    pub const fn next(&self) -> Option<NonNull<Page>> {
-        self.next
-    }
-
-    /// # Errors
-    ///
-    /// If the pointer to the next page is already set
-    pub const fn set_next(&mut self, ptr: NonNull<Page>) -> Result<(), NonNull<Page>> {
-        if let Some(p) = self.next {
-            Err(p)
-        } else {
-            self.next = Some(ptr);
-            Ok(())
+    pub const fn new() -> Self {
+        Self {
+            next: AtomicPtr::new(core::ptr::null_mut()),
+            bitmask: [const { AtomicU8::new(0) }; BITMASK_BYTES],
         }
     }
 
-    pub const fn bitmask(&self) -> &BitMask<BITMASK_BYTES> {
-        &self.bitmask
+    pub fn next(&self) -> Option<NonNull<Page>> {
+        NonNull::new(self.next.load(Ordering::Acquire))
     }
 
-    pub const fn bitmask_mut(&mut self) -> &mut BitMask<BITMASK_BYTES> {
-        &mut self.bitmask
+    pub fn set_next(&self, ptr: NonNull<Page>) -> Result<(), NonNull<Page>> {
+        self.next
+            .compare_exchange(
+                core::ptr::null_mut(),
+                ptr.as_ptr(),
+                Ordering::AcqRel,
+                Ordering::Acquire,
+            )
+            .map(|_| ())
+            .map_err(|p| NonNull::new(p).unwrap())
+    }
+
+    pub fn try_acquire_chunk(&self, pos: usize) -> bool {
+        let byte = pos >> 3;
+        let bit = 1u8 << (pos & 7);
+        let mut cur = self.bitmask[byte].load(Ordering::Relaxed);
+        loop {
+            if cur & bit != 0 {
+                return false;
+            }
+            match self.bitmask[byte].compare_exchange_weak(
+                cur,
+                cur | bit,
+                Ordering::AcqRel,
+                Ordering::Relaxed,
+            ) {
+                Ok(_) => return true,
+                Err(actual) => cur = actual,
+            }
+        }
+    }
+
+    pub fn release_chunk(&self, pos: usize) {
+        let byte = pos >> 3;
+        let bit = 1u8 << (pos & 7);
+        self.bitmask[byte].fetch_and(!bit, Ordering::AcqRel);
+    }
+
+    pub fn is_free(&self, pos: usize) -> bool {
+        let byte = pos >> 3;
+        let bit = 1u8 << (pos & 7);
+        self.bitmask[byte].load(Ordering::Acquire) & bit == 0
     }
 }
