@@ -1,2 +1,1 @@
-mod malloc;
-pub use malloc::malloc;
+pub(crate) mod page;

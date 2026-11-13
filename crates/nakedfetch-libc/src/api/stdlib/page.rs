@@ -1,18 +1,31 @@
-use core::{alloc::Layout, ptr::NonNull};
+use core::ptr::NonNull;
 
 use crate::sys::mman;
 
 pub const PAGE_SIZE: usize = 1 << 12;
+pub const CHUNK_SIZE: usize = 32;
+pub const MAX_CHUNK_COUNT: usize = PAGE_SIZE / CHUNK_SIZE;
+pub const BITMASK_BYTES: usize = MAX_CHUNK_COUNT.div_ceil(8);
+
 pub const PAGE_ALIGN: usize = align_of::<Meta>();
-pub const META_SIZE: usize = size_of::<Meta>().next_multiple_of(PAGE_ALIGN);
+pub const META_ALIGN: usize = if PAGE_ALIGN > CHUNK_SIZE {
+    PAGE_ALIGN
+} else {
+    CHUNK_SIZE
+};
+pub const META_SIZE: usize = size_of::<Meta>().next_multiple_of(META_ALIGN);
 pub const DATA_SIZE: usize = PAGE_SIZE - META_SIZE;
+pub const CHUNK_COUNT: usize = DATA_SIZE / CHUNK_SIZE;
 
 const _: () = {
     assert!(PAGE_SIZE > META_SIZE);
     assert!(META_SIZE.is_multiple_of(PAGE_ALIGN));
     assert!(PAGE_SIZE.is_multiple_of(PAGE_ALIGN));
+    assert!(DATA_SIZE.is_multiple_of(CHUNK_SIZE));
+    assert!(CHUNK_COUNT <= BITMASK_BYTES * 8);
 };
 
+#[repr(transparent)]
 pub struct Page(NonNull<()>);
 
 impl Page {
@@ -58,8 +71,48 @@ impl Page {
     }
 }
 
+#[repr(transparent)]
+pub struct BitMask<const BYTES: usize> {
+    inner: [u8; BYTES],
+}
+
+impl<const BYTES: usize> BitMask<BYTES> {
+    pub const fn new() -> Self {
+        Self {
+            inner: [0u8; BYTES],
+        }
+    }
+
+    pub const fn get(&self, pos: usize) -> bool {
+        let byte = pos >> 3;
+        let bit = pos & 7;
+        (self.inner[byte] >> bit) & 1 == 1
+    }
+
+    pub const fn set(&mut self, pos: usize) {
+        let byte = pos >> 3;
+        let bit = pos & 7;
+        let mask = 1u8 << bit;
+        self.inner[byte] |= mask;
+    }
+
+    pub const fn unset(&mut self, pos: usize) {
+        let byte = pos >> 3;
+        let bit = pos & 7;
+        let mask = 1u8 << bit;
+        self.inner[byte] &= !mask;
+    }
+}
+
+impl<const BYTES: usize> Default for BitMask<BYTES> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct Meta {
     next: Option<NonNull<Page>>,
+    bitmask: BitMask<BITMASK_BYTES>,
 }
 
 impl Meta {
@@ -78,9 +131,12 @@ impl Meta {
             Ok(())
         }
     }
-}
 
-#[must_use]
-pub const fn malloc(_layout: Layout) -> NonNull<()> {
-    NonNull::dangling()
+    pub const fn bitmask(&self) -> &BitMask<BITMASK_BYTES> {
+        &self.bitmask
+    }
+
+    pub const fn bitmask_mut(&mut self) -> &mut BitMask<BITMASK_BYTES> {
+        &mut self.bitmask
+    }
 }
