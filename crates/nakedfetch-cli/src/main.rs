@@ -586,13 +586,11 @@ extern "C" fn main(
 ) -> ffi::c_int {
     use core::sync::atomic::Ordering;
 
-    use unixlib::api::alloc::init;
-
-    init::falloc_init();
+    libc::unistd::ARGC.store(argc, Ordering::Relaxed);
+    libc::unistd::ARGV.store(argv.cast_mut(), Ordering::Relaxed);
     libc::unistd::ENVIRON.store(envp.cast_mut(), Ordering::Relaxed);
-    let _ = ARGS.set(imp::env::args_init(argc as usize, argv.cast()));
+
     let ret = nakedfetch_main() as ffi::c_int;
-    init::falloc_destroy();
     ret
 }
 

@@ -1,5 +1,9 @@
 mod syscalls;
-use core::{ffi::c_char, ptr, sync::atomic::AtomicPtr};
+use core::{
+    ffi::c_char,
+    ptr,
+    sync::atomic::{AtomicPtr, AtomicUsize},
+};
 
 pub use syscalls::*;
 
@@ -20,4 +24,6 @@ pub const STDIN: ConsoleHandle = ConsoleHandle(0);
 pub const STDOUT: ConsoleHandle = ConsoleHandle(1);
 pub const STDERR: ConsoleHandle = ConsoleHandle(2);
 
+pub static ARGC: AtomicUsize = AtomicUsize::new(0);
+pub static ARGV: AtomicPtr<*const c_char> = AtomicPtr::new(ptr::null_mut());
 pub static ENVIRON: AtomicPtr<*const c_char> = AtomicPtr::new(ptr::null_mut());
