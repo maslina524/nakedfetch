@@ -24,7 +24,7 @@ mod tests {
 
         unsafe fn dealloc(&self, ptr: *mut u8, layout: core::alloc::Layout) {
             let nonnull = NonNull::new(ptr).expect("Null ptr in dealloc");
-            super::free(nonnull, layout);
+            super::free(nonnull.cast(), layout);
         }
     }
 

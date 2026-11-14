@@ -1,4 +1,5 @@
 use core::{
+    alloc::Layout,
     ops::Range,
     ptr::NonNull,
     sync::atomic::{AtomicPtr, AtomicU64, Ordering},
@@ -43,17 +44,15 @@ pub struct Page(NonNull<()>);
 
 impl Page {
     pub fn allocate_new() -> Self {
-        let ptr = match mman::mmap(
+        let ptr = mman::mmap(
             None,
             PAGE_SIZE,
             MmapProt::new().read().write(),
             MmapFlags::new().private().anonymous(),
             -1,
             0,
-        ) {
-            Ok(p) => p,
-            Err(e) => panic!("Failed to allocate new Page: {e}"),
-        };
+        )
+        .unwrap_or_else(|e| panic!("mmap({PAGE_SIZE}) for page failed: {e}"));
         Self(ptr)
     }
 
@@ -96,6 +95,55 @@ impl Page {
 unsafe impl Send for Page {}
 // SAFETY: The ptr in Page never changes
 unsafe impl Sync for Page {}
+
+#[repr(transparent)]
+pub struct PageLargeAlloc(NonNull<()>);
+
+impl PageLargeAlloc {
+    pub fn allocate_new(layout: Layout) -> Self {
+        let size = layout.size();
+        let align = layout.align();
+        assert!(align <= PAGE_SIZE, "alignment {align} > PAGE_SIZE");
+
+        let map_size = (size + PAGE_SIZE).next_multiple_of(PAGE_SIZE);
+
+        let ptr = mman::mmap(
+            None,
+            map_size,
+            MmapProt::new().read().write(),
+            MmapFlags::new().private().anonymous(),
+            -1,
+            0,
+        )
+        .unwrap_or_else(|e| panic!("mmap({map_size}) for large page failed: {e}"));
+
+        // SAFETY: Allocate more than 4096 bytes (PAGE_SIZE), check for errors
+        unsafe { ptr.cast::<usize>().write(map_size) };
+        Self(ptr)
+    }
+
+    pub const fn restore_from_data(data_ptr: NonNull<()>) -> Self {
+        // SAFETY: Move exactly to the beginning of the allocated memory.
+        let ptr = unsafe { data_ptr.byte_sub(PAGE_SIZE) };
+        Self(ptr)
+    }
+
+    pub const fn map_size(&self) -> usize {
+        // SAFETY: During allocation, we manually set the size, safe
+        unsafe { self.0.cast::<usize>().read() }
+    }
+
+    pub const fn data_ptr(&self) -> NonNull<u8> {
+        // SAFETY: Allocate more than 4096 bytes (PAGE_SIZE)
+        unsafe { self.0.cast::<u8>().add(PAGE_SIZE) }
+    }
+
+    pub fn free(self) {
+        let map_size = self.map_size();
+        mman::munmap(self.0, map_size)
+            .unwrap_or_else(|e| panic!("munmap({map_size}) for large page failed: {e}"));
+    }
+}
 
 pub struct Meta {
     next: AtomicPtr<()>,

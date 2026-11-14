@@ -1,22 +1,20 @@
 use core::{alloc::Layout, ptr::NonNull};
 
-use super::page::{CHUNK_SIZE, DATA_SIZE, PAGE_SIZE, SMALL_MAX, king_page};
-use crate::sys::mman;
+use super::page::{CHUNK_SIZE, DATA_SIZE, PageLargeAlloc, SMALL_MAX, king_page};
 
 #[allow(clippy::missing_panics_doc, reason = "Panics only in debug for test")]
-pub fn free(ptr: NonNull<u8>, layout: Layout) {
+pub fn free(ptr: NonNull<()>, layout: Layout) {
     let size = layout.size();
     let align = layout.align();
-    let ret = if size <= SMALL_MAX && align <= CHUNK_SIZE {
-        free_small(ptr, size)
-    } else {
-        free_large(ptr)
-    };
 
-    assert!(ret, "Pointer not found in Pages");
+    if size <= SMALL_MAX && align <= CHUNK_SIZE {
+        assert!(free_small(ptr, size), "Pointer not found in Pages");
+    } else {
+        free_large(ptr);
+    }
 }
 
-fn free_small(ptr: NonNull<u8>, size: usize) -> bool {
+fn free_small(ptr: NonNull<()>, size: usize) -> bool {
     let addr = ptr.addr().get();
     let mut page = king_page();
     loop {
@@ -45,17 +43,7 @@ fn free_small(ptr: NonNull<u8>, size: usize) -> bool {
     true
 }
 
-fn free_large(ptr: NonNull<u8>) -> bool {
-    // SAFETY: `malloc_large` returns `mmap_base + PAGE_SIZE`, where `mmap_base`
-    // is page-aligned (mmap guarantees `PAGE_SIZE == 4096`), so
-    // `align_of::<usize>() == 8` is satisfied by definition. The first 8 bytes
-    // of `mmap_base` store the total mapping size written by `malloc_large`
-    let (base, map_size) = unsafe {
-        let base: NonNull<()> =
-            NonNull::new_unchecked(ptr.cast::<u8>().as_ptr().sub(PAGE_SIZE).cast());
-        let size = base.cast::<usize>().as_ptr().read();
-        (base, size)
-    };
-
-    mman::munmap(base, map_size).is_ok()
+fn free_large(ptr: NonNull<()>) {
+    let large = PageLargeAlloc::restore_from_data(ptr);
+    large.free();
 }
