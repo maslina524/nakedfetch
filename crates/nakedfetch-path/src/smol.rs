@@ -35,6 +35,13 @@ impl SmolPath {
         self.0.as_slice()
     }
 
+    #[cfg(target_os = "windows")]
+    #[must_use]
+    pub fn as_path(&self) -> &Path {
+        Path::from_os_str(self.as_os_str())
+    }
+
+    #[cfg(target_family = "unix")]
     #[must_use]
     pub fn as_path(&self) -> &Path {
         Path::from_os_str(self.as_os_str())

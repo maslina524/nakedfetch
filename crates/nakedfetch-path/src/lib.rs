@@ -42,8 +42,8 @@ impl Path {
 
     #[cfg(target_family = "unix")]
     #[must_use]
-    pub const fn from_os_str(s: &CStr) -> &Self {
-        Self::from_bytes(s.to_bytes())
+    pub const fn from_os_str(s: &OsStr) -> &Self {
+        Self::from_bytes(s)
     }
 
     #[must_use]
@@ -253,6 +253,14 @@ impl AsRef<Path> for OsStr {
 impl AsRef<OsStr> for Path {
     fn as_ref(&self) -> &OsStr {
         &self.0
+    }
+}
+
+#[cfg(target_family = "unix")]
+impl AsRef<Path> for CStr {
+    fn as_ref(&self) -> &Path {
+        // SAFETY: Layout of Wtf8 == Path
+        unsafe { &*(ptr::from_ref(self.to_bytes()) as *const Path) }
     }
 }
 

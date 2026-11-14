@@ -190,7 +190,7 @@ impl CanWrite for All {}
 #[cfg(target_os = "windows")]
 pub type RawFileHandle = *mut core::ffi::c_void;
 #[cfg(target_family = "unix")]
-pub type RawFileHandle = *mut i32;
+pub type RawFileHandle = i32;
 
 pub struct File<A: Access> {
     fd: fs::FileHandle,
