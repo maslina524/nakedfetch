@@ -5,7 +5,7 @@ use core::{
 };
 
 use super::sync::OnceLock;
-use crate::sys::mman;
+use crate::sys::mman::{self, MmapFlags, MmapProt};
 
 pub const PAGE_SIZE: usize = 1 << 12;
 pub const CHUNK_SIZE: usize = 64;
@@ -42,7 +42,14 @@ pub struct Page(NonNull<()>);
 
 impl Page {
     pub fn allocate_new() -> Self {
-        let ptr = match mman::mmap(None, PAGE_SIZE, 0, 0, -1, 0) {
+        let ptr = match mman::mmap(
+            None,
+            PAGE_SIZE,
+            MmapProt::new().read().write(),
+            MmapFlags::new().private().anonymous(),
+            -1,
+            0,
+        ) {
             Ok(p) => p,
             Err(e) => panic!("Failed to allocate new Page: {e}"),
         };
