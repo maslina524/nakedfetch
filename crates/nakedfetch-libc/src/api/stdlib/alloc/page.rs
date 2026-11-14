@@ -7,6 +7,7 @@ use core::{
 use super::sync::OnceLock;
 use crate::sys::mman::{self, MmapFlags, MmapProt};
 
+pub const SMALL_MAX: usize = 1024;
 pub const PAGE_SIZE: usize = 1 << 12;
 pub const CHUNK_SIZE: usize = 64;
 
@@ -102,13 +103,6 @@ pub struct Meta {
 }
 
 impl Meta {
-    pub const fn new() -> Self {
-        Self {
-            next: AtomicPtr::new(core::ptr::null_mut()),
-            bitmask: AtomicU64::new(0),
-        }
-    }
-
     pub fn next(&self) -> Option<Page> {
         let ptr = self.next.load(Ordering::Acquire);
         if ptr.is_null() {
@@ -166,14 +160,14 @@ impl Meta {
         self.bitmask.fetch_and(!mask, Ordering::AcqRel);
     }
 
-    pub fn is_free(&self, pos: usize) -> bool {
-        self.is_free_range(pos..pos + 1)
-    }
+    // pub fn is_free(&self, pos: usize) -> bool {
+    //     self.is_free_range(pos..pos + 1)
+    // }
 
-    pub fn is_free_range(&self, range: Range<usize>) -> bool {
-        let mask = chunk_mask(&range);
-        self.bitmask.load(Ordering::Acquire) & mask == 0
-    }
+    // pub fn is_free_range(&self, range: Range<usize>) -> bool {
+    //     let mask = chunk_mask(&range);
+    //     self.bitmask.load(Ordering::Acquire) & mask == 0
+    // }
 }
 
 fn chunk_mask(range: &Range<usize>) -> u64 {

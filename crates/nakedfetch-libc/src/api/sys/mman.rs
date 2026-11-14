@@ -13,36 +13,50 @@ impl MmapProt {
     pub const SEM: i32 = 0x8;
     pub const WRITE: i32 = 0x2;
 
+    #[must_use]
     pub const fn new() -> Self {
         Self(0)
     }
 
+    #[must_use]
     pub const fn read(self) -> Self {
         Self(self.0 | Self::READ)
     }
 
+    #[must_use]
     pub const fn write(self) -> Self {
         Self(self.0 | Self::WRITE)
     }
 
+    #[must_use]
     pub const fn exec(self) -> Self {
         Self(self.0 | Self::EXEC)
     }
 
+    #[must_use]
     pub const fn sem(self) -> Self {
         Self(self.0 | Self::SEM)
     }
 
+    #[must_use]
     pub const fn growsdown(self) -> Self {
         Self(self.0 | Self::GROWSDOWN)
     }
 
+    #[must_use]
     pub const fn growsup(self) -> Self {
         Self(self.0 | Self::GROWSUP)
     }
 
+    #[must_use]
     pub const fn build(self) -> i32 {
         self.0
+    }
+}
+
+impl Default for MmapProt {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -66,85 +80,107 @@ impl MmapFlags {
     pub const SHARED_VALIDATE: i32 = 0x03;
     pub const STACK: i32 = 0x20000;
     pub const SYNC: i32 = 0x80000;
-    pub const _32BIT: i32 = 0x40;
 
+    #[must_use]
     pub const fn new() -> Self {
         Self(0)
     }
 
+    #[must_use]
     pub const fn shared(self) -> Self {
         Self((self.0 & !0x03) | Self::SHARED)
     }
 
+    #[must_use]
     pub const fn private(self) -> Self {
         Self((self.0 & !0x03) | Self::PRIVATE)
     }
 
+    #[must_use]
     pub const fn shared_validate(self) -> Self {
         Self((self.0 & !0x03) | Self::SHARED_VALIDATE)
     }
 
+    #[must_use]
     pub const fn fixed(self) -> Self {
         Self(self.0 | Self::FIXED)
     }
 
+    #[must_use]
     pub const fn anonymous(self) -> Self {
         Self(self.0 | Self::ANONYMOUS)
     }
 
-    pub const fn _32bit(self) -> Self {
-        Self(self.0 | Self::_32BIT)
-    }
-
+    #[must_use]
     pub const fn growsdown(self) -> Self {
         Self(self.0 | Self::GROWSDOWN)
     }
 
+    #[must_use]
     pub const fn denywrite(self) -> Self {
         Self(self.0 | Self::DENYWRITE)
     }
 
+    #[must_use]
     pub const fn executable(self) -> Self {
         Self(self.0 | Self::EXECUTABLE)
     }
 
+    #[must_use]
     pub const fn locked(self) -> Self {
         Self(self.0 | Self::LOCKED)
     }
 
+    #[must_use]
     pub const fn noreserve(self) -> Self {
         Self(self.0 | Self::NORESERVE)
     }
 
+    #[must_use]
     pub const fn populate(self) -> Self {
         Self(self.0 | Self::POPULATE)
     }
 
+    #[must_use]
     pub const fn nonblock(self) -> Self {
         Self(self.0 | Self::NONBLOCK)
     }
 
+    #[must_use]
     pub const fn stack(self) -> Self {
         Self(self.0 | Self::STACK)
     }
 
+    #[must_use]
     pub const fn hugetlb(self) -> Self {
         Self(self.0 | Self::HUGETLB)
     }
 
+    #[must_use]
     pub const fn sync(self) -> Self {
         Self(self.0 | Self::SYNC)
     }
 
+    #[must_use]
     pub const fn fixed_noreplace(self) -> Self {
         Self(self.0 | Self::FIXED_NOREPLACE)
     }
 
+    #[must_use]
     pub const fn build(self) -> i32 {
         self.0
     }
 }
 
+impl Default for MmapFlags {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// # Errors
+///
+/// If system failed to allocate mem
 pub fn mmap(
     addr: Option<NonNull<()>>,
     length: usize,
