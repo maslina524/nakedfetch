@@ -187,6 +187,11 @@ impl Access for All {
 impl CanRead for All {}
 impl CanWrite for All {}
 
+#[cfg(target_os = "windows")]
+pub type RawFileHandle = *mut core::ffi::c_void;
+#[cfg(target_family = "unix")]
+pub type RawFileHandle = *mut i32;
+
 pub struct File<A: Access> {
     fd: fs::FileHandle,
     _marker: PhantomData<A>,
@@ -235,17 +240,10 @@ impl<A: Access> File<A> {
         &self.fd
     }
 
-    // #[must_use]
-    // #[cfg(target_os = "windows")]
-    // pub(crate) fn as_raw_handle(&self) -> *mut core::ffi::c_void {
-    //     handle::as_raw_handle(&self.fd)
-    // }
-
-    // #[must_use]
-    // #[cfg(target_family = "unix")]
-    // pub(crate) fn as_raw_handle(&self) -> i32 {
-    //     handle::as_raw_handle(&self.fd)
-    // }
+    #[must_use]
+    pub fn as_raw_handle(&self) -> RawFileHandle {
+        imp::handle::as_raw_handle(&self.fd)
+    }
 }
 
 impl<A: CanRead> File<A> {

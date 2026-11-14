@@ -1,14 +1,12 @@
 use alloc::string::String;
-use core::{error::Error, fmt};
 
-use OsStr::{OsStr, OsString};
-use path::PathBuf;
+use path::{OsStr, OsString, PathBuf};
 use winapi::{
     ntstatus::NtStatus,
     win32::processenv::{GetCommandLine, GetEnvironmentVariable},
 };
 
-use crate::sync::OnceLock;
+use crate::{env::EnvVarError, sync::OnceLock};
 
 pub fn var_os(name: &OsStr) -> Result<OsString, EnvVarError> {
     const fn map_ntstatus(nt: NtStatus) -> EnvVarError {
@@ -30,7 +28,7 @@ pub fn var_os(name: &OsStr) -> Result<OsString, EnvVarError> {
 }
 
 pub fn var(name: &OsStr) -> Result<String, EnvVarError> {
-    var_os(name).map(String::to_string_lossy)
+    var_os(name).map(|s| s.to_string_lossy())
 }
 
 static COMMAND_LINE_STRING: OnceLock<String> = OnceLock::new();

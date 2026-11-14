@@ -1,5 +1,3 @@
-use core::{error::Error, fmt};
-
 use path::Path;
 pub use winapi::win32::fileapi::{CreateFileError, FileAccess, FileAttributesError, FileHandle};
 use winapi::{
@@ -12,6 +10,8 @@ use winapi::{
         winbase::{CreateDirError, CreateDirectory},
     },
 };
+
+use crate::fs::{FileCreateError, FileExistsError, FileReadError, FileSizeError, FileWriteError};
 
 fn create_with_dispose(
     path: &Path,
@@ -85,7 +85,7 @@ pub fn write_file(handle: &FileHandle, buf: &[u8]) -> Result<usize, FileWriteErr
             0xC000_000D => FWE::InvalidParam,
             0xC000_00F2 | 0xC000_00AE => FWE::NoData,
             0xC000_007F => FWE::DiskFull,
-            _ => FWE::Unknonw(nt),
+            _ => FWE::Unknown(nt),
         }
     }
 

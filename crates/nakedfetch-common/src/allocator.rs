@@ -9,27 +9,19 @@ pub struct Allocator;
 // part of the heap are passed
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        match alloc::alloc(layout) {
-            Ok(p) => p,
-            Err(e) => panic!("Failed to alloc: {e}"),
-        }
+        alloc::alloc(layout)
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-        let ret = alloc::dealloc(ptr, layout);
-        assert!(ret.is_ok(), "Failed to free");
+        alloc::dealloc(ptr, layout);
     }
 
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        match alloc::alloc_zeroed(layout) {
-            Ok(p) => p,
-            Err(e) => panic!("Failed to alloc: {e}"),
-        }
+        alloc::alloc_zeroed(layout)
     }
 
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
         alloc::realloc(ptr, layout, new_size)
-            .unwrap_or_else(|_| panic!("Failed to realloc (returned old ptr)"))
     }
 }
 
