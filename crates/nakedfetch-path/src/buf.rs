@@ -4,7 +4,7 @@ use core::{fmt, ops::Deref, ptr, slice};
 use crate::{OsString, Path};
 
 #[repr(transparent)]
-#[derive(Default, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct PathBuf(OsString);
 
 impl PathBuf {

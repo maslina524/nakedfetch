@@ -22,7 +22,7 @@ impl DatetimeInfo {
         let year = time.wYear;
         let month = time.wMonth;
         let month_name = Self::month_name(time.wMonth);
-        let month_name_short = month_name[..3].to_owned();
+        let month_name_short = &month_name[..3];
 
         let hour = time.wHour;
         let minute = time.wMinute;
@@ -31,7 +31,7 @@ impl DatetimeInfo {
         let day_in_year = Self::day_in_year(&time);
         let week = day_in_year / 7 + 1;
         let weekday = Self::day_of_week(time.wDayOfWeek);
-        let weekday_short = weekday[..3].to_owned();
+        let weekday_short = &weekday[..3];
 
         let day_in_month = time.wDay;
         let day_in_week = time.wDayOfWeek;
@@ -60,7 +60,7 @@ impl DatetimeInfo {
         }
     }
 
-    fn month_name(num: u16) -> String {
+    fn month_name(num: u16) -> &'static str {
         match num {
             1 => "January",
             2 => "February",
@@ -76,10 +76,9 @@ impl DatetimeInfo {
             12 => "December",
             _ => unreachable!(),
         }
-        .to_owned()
     }
 
-    fn day_of_week(num: u16) -> String {
+    fn day_of_week(num: u16) -> &'static str {
         match num {
             0 => "Sunday",
             1 => "Monday",
@@ -90,7 +89,6 @@ impl DatetimeInfo {
             6 => "Saturday",
             _ => unreachable!(),
         }
-        .to_owned()
     }
 
     fn day_in_year(time: &SYSTEMTIME) -> u16 {

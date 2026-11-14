@@ -23,15 +23,15 @@ pub struct Datetime {
     #[doc = "Month with leading zero"]
     pub month_pretty: ZeroPaddedTwo<u16>,
     #[doc = "Month name"]
-    pub month_name: String,
+    pub month_name: &'static str,
     #[doc = "Month name short"]
-    pub month_name_short: String,
+    pub month_name_short: &'static str,
     #[doc = "Week number on year"]
     pub week: u16,
     #[doc = "Weekday"]
-    pub weekday: String,
+    pub weekday: &'static str,
     #[doc = "Weekday short"]
-    pub weekday_short: String,
+    pub weekday_short: &'static str,
     #[doc = "Day in year"]
     pub day_in_year: u16,
     #[doc = "Day in month"]

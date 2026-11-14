@@ -1,25 +1,18 @@
-use crate::{
-    modules::Board,
-    str::SmolStr,
-    unix::{
-        fs::{self, ReadError},
-        path::Path,
-    },
+use common::{
+    fs::{self, FileReadError, FileReadToStringError},
     warning,
 };
+use path::{Path, PathBuf, SmolPath};
+
+use crate::{modules::Board, str::SmolStr};
 
 const EACCES: i32 = 13;
 
-fn read_file(path: Path) -> SmolStr {
-    match fs::read_to_string(path) {
+fn read_file<T: AsRef<Path>>(path: T) -> SmolStr {
+    match fs::read_to_string(path.as_ref()) {
         Ok(s) => SmolStr::from(s.trim()),
-        Err(ReadError::Code(e)) => {
-            if e.code() != EACCES {
-                warning!("Failed to read file: {e} ({})", e.code());
-            }
-            SmolStr::empty()
-        },
-        Err(ReadError::Utf8(e)) => {
+        Err(e) => {
+            // if e.code() != EACCES {
             warning!("Failed to read file: {e}");
             SmolStr::empty()
         },
@@ -27,11 +20,11 @@ fn read_file(path: Path) -> SmolStr {
 }
 
 pub fn get() -> Board {
-    let root_path = Path::from("/sys/devices/virtual/dmi/id/");
+    let root_path = PathBuf::from("/sys/devices/virtual/dmi/id/");
 
-    let name = read_file(root_path.join("board_name"));
-    let vendor = read_file(root_path.join("board_vendor"));
-    let version = read_file(root_path.join("board_version"));
+    let name = read_file(root_path.clone().join("board_name"));
+    let vendor = read_file(root_path.clone().join("board_vendor"));
+    let version = read_file(root_path.clone().join("board_version"));
     let serial = read_file(root_path.join("board_serial"));
 
     Board {

@@ -3,17 +3,20 @@ pub use libc::unistd::ConsoleHandle;
 
 use crate::imp::fs;
 
+#[allow(clippy::missing_const_for_fn, reason = "For comp API with windows")]
 pub fn stdout() -> ConsoleHandle {
     unistd::STDOUT
 }
 
+#[allow(clippy::missing_const_for_fn, reason = "For comp API with windows")]
 pub fn stderr() -> ConsoleHandle {
     unistd::STDERR
 }
 
 pub fn console_write(handle: ConsoleHandle, buf: &[u8]) -> usize {
-    match fs::write_file(&handle.into_file(), buf) {
+    let manually_drop = handle.into_file();
+    match fs::write_file(&manually_drop, buf) {
         Ok(v) => v,
-        Err(e) => panic!("Failed to write to the console: {e:?}"),
+        Err(e) => 0, // panic!("Failed to write to the console: {e:?}"),
     }
 }

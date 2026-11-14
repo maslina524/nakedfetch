@@ -84,8 +84,8 @@ mod panic_impl {
 
     #[panic_handler]
     #[cfg(no_alloc_in_panic)]
-    fn panic(info: &PanicInfo) -> ! {
-        use crate::imp::io;
+    fn panic(info: &PanicInfo<'_>) -> ! {
+        use common::io;
 
         fn push_to_buf(s: &str, buf: &mut [u8], pos: &mut usize) {
             let bytes = s.as_bytes();
@@ -127,7 +127,7 @@ mod panic_impl {
         push_to_buf(message, &mut buf, &mut pos);
         push_to_buf("\n", &mut buf, &mut pos);
 
-        io::write(io::stderr(), &buf[..pos]);
+        io::Stderr::new().write_bytes(&buf[..pos]);
 
         exit(101)
     }
@@ -247,7 +247,7 @@ fn build_info_buf(max_len: usize) -> Vec<&'static str> {
 pub fn exit(code: u32) -> ! {
     cfg_if! {
         if #[cfg(target_family = "unix")] {
-            unixlib::process::exit(code)
+            libc::unistd::exit(code as i32)
         } else if #[cfg(target_os = "windows")] {
             // SAFETY: Run in binary, safe
             unsafe { windows::link::ExitProcess(code) }
@@ -570,12 +570,13 @@ fn just_print_logo_and_info(logo_lines: &[(String, usize)]) {
     }
 }
 
-static ARGS: OnceLock<Vec<String>> = OnceLock::new();
+#[cfg(target_family = "unix")]
+use core::ffi;
 
 // #[cfg(not(test))]
 #[allow(
     clippy::similar_names,
-    reason = "that's what they're called in C, i don't give a fuck about clippy"
+    reason = "That's what they're called in C, i don't give a fuck about clippy"
 )]
 #[cfg(target_family = "unix")]
 #[unsafe(no_mangle)]
@@ -586,11 +587,11 @@ extern "C" fn main(
 ) -> ffi::c_int {
     use core::sync::atomic::Ordering;
 
-    libc::unistd::ARGC.store(argc, Ordering::Relaxed);
+    libc::unistd::ARGC.store(argc as usize, Ordering::Relaxed);
     libc::unistd::ARGV.store(argv.cast_mut(), Ordering::Relaxed);
     libc::unistd::ENVIRON.store(envp.cast_mut(), Ordering::Relaxed);
 
-    let ret = nakedfetch_main() as ffi::c_int;
+    let ret = nakedfetch_main();
     ret
 }
 

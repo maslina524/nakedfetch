@@ -1,6 +1,8 @@
 use alloc::{borrow::ToOwned, string::String};
 use core::ffi::{CStr, c_char};
 
+use path::SmolPath;
+
 use crate::{
     detect::wallpaper::WallpaperInfo,
     unix::{
@@ -10,11 +12,10 @@ use crate::{
 };
 
 impl WallpaperInfo {
-    #[allow(clippy::option_if_let_else)]
     pub fn new() -> Self {
         let full_path = Self::xdg()
             .and_then(|s| Self::call(&s.trim().to_lowercase()))
-            .map_or_default(|s| Path::from(s.trim().trim_start_matches("file://")));
+            .map_or_default(|s| SmolPath::from(s.trim().trim_start_matches("file://")));
 
         Self { full_path }
     }

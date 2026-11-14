@@ -3,10 +3,11 @@ use alloc::{
     borrow::ToOwned
 };
 
+use common::fs;
+
 use crate::{
     detect::kernel::KernelInfo, 
-    formats::MemorySize, 
-    unix::fs,
+    formats::MemorySize,
     unix::libc::sysconf,
     abort
 };

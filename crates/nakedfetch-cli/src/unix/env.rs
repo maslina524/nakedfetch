@@ -8,13 +8,11 @@ use core::{
     slice,
 };
 
-use crate::{
-    ARGS, abort, format,
-    unix::{
-        fs,
-        libc::{Timespec, Winsize, clock_gettime, getenv, gmtime, ioctl, localtime, strftime},
-    },
-    warning,
+use common::{abort, formatf, warning};
+
+use crate::unix::{
+    fs,
+    libc::{Timespec, Winsize, clock_gettime, getenv, gmtime, ioctl, localtime, strftime},
 };
 
 const TIOCGWINSZ: u64 = 0x5413;
@@ -42,10 +40,6 @@ pub fn args_init(argc: usize, argv: *const *const u8) -> Vec<String> {
     }
 
     ret
-}
-
-pub fn args() -> &'static Vec<String> {
-    ARGS.get().expect("Unreachable")
 }
 
 pub fn timestamp_mils() -> u64 {
@@ -89,8 +83,8 @@ pub fn find_pid_by_name(name: &str) -> u32 {
             continue;
         };
 
-        let path = format!("/proc/{pid}/stat");
-        let content = fs::read_to_string(path).unwrap();
+        let path = formatf!("/proc/{pid}/stat");
+        let content = common::fs::read_to_string(path).unwrap();
 
         let lparen_index = content.find('(').unwrap_or(0);
         let rparen_index = content.find(')').unwrap_or(0);
@@ -110,7 +104,7 @@ pub fn terminal_size() -> (usize, usize) {
         if ptr.is_null() {
             return None;
         }
-        // SAFETY: Libs are guaranteed to store a valid cstr
+        // SAFETY: env var contains valid `CStr`
         let cstr = unsafe { CStr::from_ptr(ptr) };
         let bytes = cstr.to_bytes();
         if bytes.is_empty() {
@@ -120,30 +114,32 @@ pub fn terminal_size() -> (usize, usize) {
         for &b in bytes {
             if !b.is_ascii_digit() {
                 warning!(
-                    "Failed to get {} (terminal_size)",
-                    str::from_utf8(name).unwrap()
+                    "Failed to parse {} (terminal_size)",
+                    core::str::from_utf8(name).unwrap_or("<non-utf8>")
                 );
                 return None;
             }
-            value = value * 10 + (b - b'0') as usize;
+            value = value.saturating_mul(10).saturating_add((b - b'0') as usize);
         }
-        Some(value)
+        if value == 0 { None } else { Some(value) }
     }
 
     let lines = parse_env_var(b"LINES\0").unwrap_or(0);
     let cols = parse_env_var(b"COLUMNS\0").unwrap_or(0);
-
-    if lines == 0 || cols == 0 {
-        let mut info = Winsize::default();
-        let ret = ioctl(1, TIOCGWINSZ, &raw mut info);
-        if ret == -1 {
-            abort!("failet to call ioctl");
-        }
-
-        (info.ws_col as usize, info.ws_row as usize)
-    } else {
-        (cols, lines)
+    if lines != 0 && cols != 0 {
+        return (cols, lines);
     }
+
+    for fd in 0..=2 {
+        let mut info = Winsize::default();
+        // SAFETY: fd is a known stdio handle, info is a valid Winsize
+        let ret = unsafe { ioctl(fd, TIOCGWINSZ, &raw mut info) };
+        if ret == 0 && info.ws_col > 0 && info.ws_row > 0 {
+            return (info.ws_col as usize, info.ws_row as usize);
+        }
+    }
+
+    (80, 24)
 }
 
 pub fn format_timestamp(time: u64, format: Option<&str>) -> String {

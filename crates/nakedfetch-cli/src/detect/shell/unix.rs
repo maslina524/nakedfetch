@@ -1,17 +1,16 @@
 use core::sync::atomic::Ordering::Relaxed;
 
+use common::{formatf, fs as fsc, sync::OnceLock, warning};
+use path::{Path, SmolPath};
+
 use crate::{
     detect::shell::SHELL_PID,
-    format,
     modules::Shell,
     str::SmolStr,
-    sync::OnceLock,
     unix::{
         error, fs,
         libc::{c_pid, getppid},
-        path::Path,
     },
-    warning,
 };
 
 static BLACKLIST: [&str; 6] = [
@@ -28,15 +27,16 @@ static NAME: OnceLock<SmolStr> = OnceLock::new();
 #[derive(Default)]
 struct Process {
     pid: c_pid,
-    name: SmolStr,
-    arg: Path,
-    exe_path: Path,
+    name: SmolPath,
+    arg: SmolPath,
+    exe_path: SmolPath,
     tty: i32,
 }
 
 impl Process {
     pub fn new(pid: c_pid, name: &str) -> error::Result<Self> {
-        let cmdline = fs::read(format!("/proc/{pid}/cmdline"))?;
+        let cmdline =
+            fsc::read(formatf!("/proc/{pid}/cmdline")).map_err(|_| error::ErrorCode::new(999))?;
 
         let arg = if cmdline.len() > 1 {
             let mut null_idx = 0;
@@ -45,23 +45,24 @@ impl Process {
             }
 
             let slice = &cmdline[..null_idx];
-            Path::from(str::from_utf8(slice).unwrap_or_default())
+            SmolPath::from(str::from_utf8(slice).unwrap_or_default())
         } else {
-            Path::default()
+            SmolPath::default()
         };
 
-        let exe = fs::read_link(format!("/proc/{pid}/exe"), 1024).unwrap_or_default();
-        let exe_path = Path::from(exe);
+        let exe = fs::read_link(formatf!("/proc/{pid}/exe"), 1024).unwrap_or_default();
+        let exe_path = SmolPath::from(exe);
 
-        let tty_path = fs::read_link(format!("/proc/{pid}/fd/0"), 512).unwrap_or_default();
-        let tty = Path::from(tty_path)
+        let tty_path = fs::read_link(formatf!("/proc/{pid}/fd/0"), 512).unwrap_or_default();
+        let tty = SmolPath::from(tty_path)
             .last()
+            .and_then(|s| s.to_str())
             .and_then(|s| s.parse::<i32>().ok())
             .unwrap_or(-1);
 
         Ok(Self {
             pid,
-            name: SmolStr::from(name),
+            name: SmolPath::from(name),
             arg,
             exe_path,
             tty,
@@ -77,7 +78,7 @@ pub fn get_shell_pid() -> u32 {
 
     let mut pid = getppid();
     loop {
-        let state = match fs::read_to_string(format!("/proc/{pid}/stat")) {
+        let state = match fsc::read_to_string(formatf!("/proc/{pid}/stat")) {
             Ok(s) => s,
             Err(e) => {
                 warning!("Failed to read /proc/pid/stat: {e}");
@@ -122,7 +123,7 @@ pub fn get() -> Shell {
         Process::default()
     });
 
-    let exe_name = info.arg.last().map(SmolStr::from).unwrap_or_default();
+    let exe_name = info.arg.last().map(SmolPath::from).unwrap_or_default();
     let pretty_name = info.name.clone();
 
     Shell {

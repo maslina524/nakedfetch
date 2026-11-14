@@ -1,9 +1,10 @@
 use alloc::{borrow::ToOwned, string::String};
 use core::{ffi::CStr, ptr};
 
+use common::formatf;
+
 use crate::{
     detect::datetime::{AmPm, DatetimeInfo},
-    format,
     unix::libc::{localtime, time},
 };
 
@@ -18,7 +19,7 @@ impl DatetimeInfo {
         let month = info.tm_mon as u16;
 
         let month_name = Self::month_name(month);
-        let month_name_short = month_name[..3].to_owned();
+        let month_name_short = &month_name[..3];
 
         let hour = info.tm_hour as u16;
         let minute = info.tm_min as u16;
@@ -26,7 +27,7 @@ impl DatetimeInfo {
 
         let week = (info.tm_wday as u16 + 6) % 7 + 1;
         let weekday = Self::day_of_week(week);
-        let weekday_short = weekday[..3].to_owned();
+        let weekday_short = &weekday[..3];
 
         let day_in_year = info.tm_yday as u16 + 1;
         let day_in_month = info.tm_mday as u16;
@@ -70,10 +71,10 @@ impl DatetimeInfo {
         let hours = offset / 60;
         let mins = offset % 60;
 
-        format!("{symb}{hours:02}{mins:02}")
+        formatf!("{symb}{hours:02}{mins:02}")
     }
 
-    fn month_name(num: u16) -> String {
+    fn month_name(num: u16) -> &'static str {
         match num {
             0 => "January",
             1 => "February",
@@ -89,10 +90,9 @@ impl DatetimeInfo {
             11 => "December",
             _ => unreachable!(),
         }
-        .to_owned()
     }
 
-    fn day_of_week(num: u16) -> String {
+    fn day_of_week(num: u16) -> &'static str {
         match num {
             1 => "Monday",
             2 => "Tuesday",
@@ -103,6 +103,5 @@ impl DatetimeInfo {
             7 => "Sunday",
             _ => unreachable!(),
         }
-        .to_owned()
     }
 }

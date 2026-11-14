@@ -28,8 +28,10 @@ fn malloc_small(size: usize) -> NonNull<u8> {
             page = next;
         } else {
             let next = Page::allocate_new();
-            let _ = page.meta().set_next(next);
-            page = next;
+            match page.meta().set_next(next) {
+                Ok(()) => page = next,
+                Err(existing) => page = existing,
+            }
         }
     }
 }

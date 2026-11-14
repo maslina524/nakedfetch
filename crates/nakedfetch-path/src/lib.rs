@@ -264,6 +264,13 @@ impl AsRef<Path> for CStr {
     }
 }
 
+#[cfg(target_family = "unix")]
+impl<'a> From<&'a CStr> for &'a Path {
+    fn from(value: &'a CStr) -> Self {
+        value.as_ref()
+    }
+}
+
 #[cfg(target_os = "windows")]
 impl fmt::Display for Path {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

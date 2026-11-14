@@ -2,7 +2,7 @@ use alloc::{boxed::Box, string::String, vec::Vec};
 use core::{ffi::CStr, sync::atomic::Ordering};
 
 use libc::{stdio, unistd};
-use path::{OsStr, OsString};
+use path::{OsStr, OsString, PathBuf};
 
 use crate::{env::EnvVarError, sync::OnceLock};
 
@@ -25,6 +25,8 @@ fn args_vec() -> &'static [&'static str] {
 
         let mut buf = Vec::with_capacity(arg_count);
         for i in 0..arg_count {
+            // SAFETY: POSIX guarantees that within argc there are pointers to
+            // `CStr`
             let arg_ptr = unsafe { arg_values.add(i).read() };
             if arg_ptr.is_null() {
                 break;
@@ -48,6 +50,7 @@ pub struct ArgsInner {
 }
 
 impl ArgsInner {
+    #[allow(clippy::missing_const_for_fn, reason = "For comp API with windows")]
     #[must_use]
     pub fn new() -> Self {
         Self { pos: 0 }
@@ -62,4 +65,15 @@ impl Iterator for ArgsInner {
         self.pos += 1;
         Some(val)
     }
+}
+
+const HOME_NAME: &[u8] = b"HOME";
+
+fn home() -> PathBuf {
+    let buf = stdio::getenv(HOME_NAME).unwrap_or_else(|| panic!("HOME env not found"));
+    PathBuf::from(buf)
+}
+
+pub fn cache() -> PathBuf {
+    home().join("cache/nakedfetch")
 }

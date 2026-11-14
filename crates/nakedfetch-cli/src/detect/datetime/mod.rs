@@ -38,16 +38,16 @@ impl core::fmt::Display for AmPm {
 pub struct DatetimeInfo {
     pub year: u16,
     pub month: u16,
-    pub month_name: String,
-    pub month_name_short: String,
+    pub month_name: &'static str,
+    pub month_name_short: &'static str,
 
     pub hour: u16,
     pub minute: u16,
     pub second: u16,
 
     pub week: u16,
-    pub weekday: String,
-    pub weekday_short: String,
+    pub weekday: &'static str,
+    pub weekday_short: &'static str,
     pub day_in_year: u16,
     pub day_in_month: u16,
     pub day_in_week: u16,

@@ -1,4 +1,6 @@
 use alloc::{string::String, sync::Arc};
+#[cfg(target_family = "unix")]
+use core::ffi::CStr;
 use core::{fmt, ops::Deref};
 
 use crate::{OsStr, Path, PathBuf, SmolOsInner};
@@ -11,6 +13,11 @@ impl SmolPath {
     #[must_use]
     pub const fn from_static(s: &'static OsStr) -> Self {
         Self(SmolOsInner::from_static(s))
+    }
+
+    #[must_use]
+    pub const fn empty() -> Self {
+        Self(SmolOsInner::new())
     }
 
     #[must_use]
@@ -128,6 +135,14 @@ impl From<String> for SmolPath {
 impl From<Arc<Path>> for SmolPath {
     fn from(value: Arc<Path>) -> Self {
         Self(SmolOsInner::from(value.as_os_str()))
+    }
+}
+
+#[cfg(target_family = "unix")]
+impl From<&CStr> for SmolPath {
+    fn from(value: &CStr) -> Self {
+        let bytes = value.to_bytes();
+        Self(SmolOsInner::from_slice(bytes))
     }
 }
 

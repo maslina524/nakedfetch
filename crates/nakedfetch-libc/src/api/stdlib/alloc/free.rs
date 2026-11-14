@@ -7,8 +7,12 @@ pub fn free(ptr: NonNull<u8>, layout: Layout) {
     let size = layout.size();
     let align = layout.align();
 
+    if size == 0 {
+        return;
+    }
+
     if size <= SMALL_MAX && align <= CHUNK_SIZE {
-        assert!(free_small(ptr, size), "Pointer not found in Pages");
+        debug_assert!(free_small(ptr, size), "Pointer not found in Pages");
     } else {
         free_large(ptr);
     }

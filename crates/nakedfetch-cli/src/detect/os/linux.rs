@@ -3,9 +3,10 @@ use alloc::{
     string::String,
 };
 
+use common::fs;
+
 use crate::{
     detect::os::OsInfo,
-    imp::fs,
     parser::LineBased,
     str::{ConcatStr, SmolStr},
 };

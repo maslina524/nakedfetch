@@ -2,16 +2,15 @@ use core::ffi::{c_char, CStr};
 
 use alloc::string::{String, ToString};
 
+use path::{Path, SmolPath};
+use common::{abort, warning, formatf};
+
 use crate::{
-    abort,
     detect::title::TitleInfo,
-    format,
     imp::fs,
     imp::libc::{getcwd, gethostname, getpid, getpwuid, getuid},
-    imp::path::Path,
     unix::error::ErrorCode,
     logo::LogoInfo,
-    warning,
 };
 
 const HOST_NAME_MAX: usize = 64;
@@ -36,13 +35,11 @@ impl TitleInfo {
 
         // SAFETY: Libs are guaranteed to store a valid cstr
         let home_dir_c_str = unsafe { CStr::from_ptr(pw.pw_dir) };
-        let home_dir_string = home_dir_c_str.to_string_lossy().into_owned();
-        let home_dir = Path::from(home_dir_string);
+        let home_dir = SmolPath::from(home_dir_c_str);
 
         // SAFETY: Libs are guaranteed to store a valid cstr
         let user_shell_c_str = unsafe { CStr::from_ptr(pw.pw_shell) };
-        let user_shell_string = user_shell_c_str.to_string_lossy().into_owned();
-        let user_shell = Path::from(user_shell_string);
+        let user_shell = SmolPath::from(user_shell_c_str);
 
         let host_name = Self::host_name();
         let exe_path = Self::exe_path();
@@ -67,22 +64,21 @@ impl TitleInfo {
         }
     }
 
-    fn cwd() -> Path {
+    fn cwd() -> SmolPath {
         let mut buf = [0i8; PATH_MAX];
         let ret = getcwd(buf.as_mut_ptr().cast(), PATH_MAX);
         if ret.is_null() {
             warning!("Failed to call `getcwd`");
-            return Path::new();
+            return SmolPath::empty();
         }
 
         // SAFETY: Libs are guaranteed to store a valid cstr
         let c_str = unsafe { CStr::from_ptr(buf.as_ptr().cast()) };
-        let string = c_str.to_string_lossy().into_owned();
-        Path::from(string)
+        SmolPath::from(c_str)
     }
 
     fn colored(s: &str) -> String {
-        format!(
+        formatf!(
             "\x1b[1;{}m{}\x1b[0m",
             LogoInfo::get().unwrap().color_title,
             s
@@ -102,12 +98,12 @@ impl TitleInfo {
         }
     }
 
-    fn exe_path() -> Path {
+    fn exe_path() -> SmolPath {
         let Some(path_string) = fs::read_link("/proc/self/exe", PATH_MAX) else {
             warning!("Failed to get exe path");
-            return Path::new();
+            return SmolPath::empty();
         };
-        Path::from(path_string)
+        SmolPath::from(path_string)
     }
 }
 

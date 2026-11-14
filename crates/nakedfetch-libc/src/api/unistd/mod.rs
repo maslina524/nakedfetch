@@ -1,6 +1,7 @@
 mod syscalls;
 use core::{
     ffi::c_char,
+    mem::ManuallyDrop,
     ptr,
     sync::atomic::{AtomicPtr, AtomicUsize},
 };
@@ -15,8 +16,8 @@ pub struct ConsoleHandle(i32);
 
 impl ConsoleHandle {
     #[must_use]
-    pub fn into_file(self) -> File {
-        File::from_raw(self.0)
+    pub fn into_file(self) -> ManuallyDrop<File> {
+        ManuallyDrop::new(File::from_raw(self.0))
     }
 }
 

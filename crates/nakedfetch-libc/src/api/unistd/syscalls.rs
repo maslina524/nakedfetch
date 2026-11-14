@@ -1,3 +1,5 @@
+use core::hint;
+
 use crate::{errno::Errno, raw::Table, syscall};
 
 /// # Errors
@@ -44,4 +46,17 @@ pub fn close(fd: i32) -> Result<(), Errno> {
     // all values are synchronized with https://syscalls.mebeim.net
     let ret = unsafe { syscall!(Table::Close, fd) };
     ret.map(|_| ())
+}
+
+pub fn exit(error_code: i32) -> ! {
+    // SAFETY: We pass a valid nr,
+    // all values are synchronized with https://syscalls.mebeim.net
+    let _ = unsafe { syscall!(Table::Exit, error_code) };
+
+    // Here we have already exited the program, if this is not the case, it
+    // means exit failed with an error
+    let _ = write(2, b"Failed to exit");
+    loop {
+        hint::spin_loop();
+    }
 }

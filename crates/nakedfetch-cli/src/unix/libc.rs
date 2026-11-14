@@ -9,7 +9,7 @@
 
 use core::ffi::{CStr, c_char, c_int, c_long, c_uchar, c_uint, c_ulong, c_ushort, c_void};
 
-use crate::sync::OnceLock;
+use common::sync::OnceLock;
 
 pub type FileHandle = *mut c_void;
 pub type Dir = *mut c_void;

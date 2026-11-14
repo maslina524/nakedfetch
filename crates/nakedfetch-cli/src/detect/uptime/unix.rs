@@ -1,8 +1,9 @@
 use alloc::string::String;
 
+use common::formatf;
+
 use crate::{
     detect::uptime::{UPTIME_INFO, UptimeInfo},
-    format,
     imp::env,
     unix::libc::{Tm, c_time, get_sysinfo, localtime_r, time},
 };
@@ -33,7 +34,7 @@ impl UptimeInfo {
         let ms_remainder = (rem % SEC_MS) as u16;
 
         let years = (days / 365) as u16;
-        #[allow(clippy::cast_precision_loss)]
+        #[allow(clippy::cast_precision_loss, reason = "Too big")]
         let years_fraction = (days as f32) / 365.0;
 
         let boot_time = Self::boot_time(uptime_secs);
@@ -65,7 +66,7 @@ impl UptimeInfo {
         let mut tm = Tm::default();
         localtime_r((&raw const boot_ts).cast(), &raw mut tm);
 
-        format!(
+        formatf!(
             "{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
             tm.tm_year + 1900,
             tm.tm_mon + 1,

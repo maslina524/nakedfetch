@@ -5,8 +5,10 @@ use alloc::{
 };
 use core::{ffi::c_int, ptr};
 
+use common::formatf;
+
 use crate::{
-    abort, format,
+    abort,
     unix::{
         error::ErrorCode,
         libc::{AddrInfo, close, connect, freeaddrinfo, getaddrinfo, recv, send, socket},
@@ -25,8 +27,8 @@ pub struct Request {
 }
 
 impl Request {
-    pub fn new(url: impl Into<String>) -> Option<Self> {
-        let url = Url::new(url.into())?;
+    pub fn new<T: AsRef<str>>(url: T) -> Option<Self> {
+        let url = Url::new(url.as_ref())?;
         Some(Self { url })
     }
 
@@ -41,9 +43,9 @@ impl Request {
     fn send(self, method: &str) -> Result<Response, ErrorCode> {
         // crate::println!("Url: {:#?}", self.url);
         let full_domain = if self.url.subdomains.is_empty() {
-            format!("{}.{}", self.url.domain, self.url.tld)
+            formatf!("{}.{}", self.url.domain, self.url.tld)
         } else {
-            format!(
+            formatf!(
                 "{}.{}.{}",
                 self.url.subdomains.join("."),
                 self.url.domain,

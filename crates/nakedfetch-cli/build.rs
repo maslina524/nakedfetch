@@ -227,6 +227,8 @@ fn generate_logo_info(entry: &LogoEntry) -> TokenStream {
 }
 
 mod setup {
+    use std::ffi::OsString;
+
     pub fn windows_resource() {
         use winresource::WindowsResource;
         let res = WindowsResource::new();
@@ -256,7 +258,12 @@ mod setup {
 
         match (crate::target_os(), crate::target_arch()) {
             ("linux", "x86_64") => {
-                println!("cargo:rustc-link-search=native=/usr/lib/x86_64-linux-gnu");
+                println!(
+                    "cargo:rustc-link-search=native={}",
+                    env::var_os("LUA_LIB_DIR")
+                        .unwrap_or_else(|| OsString::from("/usr/lib/"))
+                        .display()
+                );
                 println!("cargo:rustc-link-lib=static=lua5.4");
                 println!("cargo:rustc-link-lib=dylib=dl");
                 println!("cargo:rustc-link-lib=dylib=m");
@@ -264,8 +271,8 @@ mod setup {
                 println!("cargo:rustc-link-arg=-lc");
             },
             ("android", "aarch64") => {
-                let lua_dir = env::var("LUA_ANDROID_LIB_DIR")
-                    .unwrap_or_else(|_| "bin/android-aarch64".to_owned());
+                let lua_dir =
+                    env::var("LUA_LIB_DIR").unwrap_or_else(|_| "bin/android-aarch64".to_owned());
                 println!("cargo:rustc-link-search=native={lua_dir}");
                 println!("cargo:rustc-link-lib=static=lua5.4");
                 println!("cargo:rustc-link-arg=-Wl,--no-as-needed");

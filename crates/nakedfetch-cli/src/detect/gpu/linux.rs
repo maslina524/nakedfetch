@@ -1,12 +1,12 @@
 use alloc::{borrow::ToOwned, string::String};
 
+use common::{formatf, fs as fsc, warning};
+
 use crate::{
     detect::gpu::{GpuInfo, GpuType},
-    format,
     formats::MemorySize,
     parser::LineBased,
     unix::fs::{self, ItemType},
-    warning,
 };
 
 const GPU_CLASSES: [&str; 6] = [
@@ -40,8 +40,8 @@ impl GpuInfo {
     }
 
     fn device_id(pci_address: &str) -> u32 {
-        let path = format!("/sys/bus/pci/devices/{pci_address}/device");
-        let content = match fs::read_to_string(&path) {
+        let path = formatf!("/sys/bus/pci/devices/{pci_address}/device");
+        let content = match fsc::read_to_string(&path) {
             Ok(c) => c,
             Err(e) => {
                 warning!("Failed to read {path}: {e}");
@@ -54,7 +54,7 @@ impl GpuInfo {
     }
 
     fn driver(pci_address: &str) -> Option<&'static str> {
-        let path = format!("/sys/bus/pci/devices/{pci_address}/uevent");
+        let path = formatf!("/sys/bus/pci/devices/{pci_address}/uevent");
         let parsed = match LineBased::parse_file(&path, '=') {
             Ok(c) => c,
             Err(e) => {
@@ -80,8 +80,8 @@ impl GpuInfo {
                 continue;
             }
             let name = entry.name();
-            let content_path = format!("/sys/bus/pci/devices/{name}/class");
-            if let Ok(content) = fs::read_to_string(content_path)
+            let content_path = formatf!("/sys/bus/pci/devices/{name}/class");
+            if let Ok(content) = fsc::read_to_string(content_path)
                 && GPU_CLASSES.contains(&content.trim())
             {
                 return Some(entry.into_name());
@@ -93,7 +93,7 @@ impl GpuInfo {
     }
 
     fn vendor_id(pci_address: &str) -> u32 {
-        let content = fs::read_to_string(format!("/sys/bus/pci/devices/{pci_address}/vendor"))
+        let content = fsc::read_to_string(formatf!("/sys/bus/pci/devices/{pci_address}/vendor"))
             .unwrap_or_else(|e| {
                 warning!("Failed to read /sys/class/drm/card0/device/vendor: {e}");
                 "0x0".to_owned()

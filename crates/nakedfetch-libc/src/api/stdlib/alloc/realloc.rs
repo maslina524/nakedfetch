@@ -5,6 +5,10 @@ use core::{
 
 #[must_use]
 pub fn realloc(ptr: NonNull<u8>, layout: Layout, new_layout: Layout) -> NonNull<u8> {
+    if layout.size() == 0 {
+        return super::malloc(new_layout);
+    }
+
     let new_ptr = super::malloc(new_layout);
     // SAFETY: Copy the data from the old area to the new one, malloc guarantees
     // that the areas cannot overlap in any way

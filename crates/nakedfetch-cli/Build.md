@@ -4,6 +4,24 @@
 $ cargo build --release
 ```
 
+## For linux install Lua
+
+```bash
+$ sudo pacman -Sy --needed --noconfirm lua54
+```
+
+## Or build
+
+```bash
+$ sudo pacman -S --needed base-devel readline
+$ cd /tmp
+$ curl -RLO https://www.lua.org/ftp/lua-5.4.7.tar.gz
+$ tar zxf lua-5.4.7.tar.gz
+$ cd lua-5.4.7
+$ make linux-readline
+$ sudo install -Dm644 src/liblua.a /usr/lib/liblua5.4.a
+```
+
 # Android Build
 
 ## Install toolchains
