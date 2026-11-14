@@ -182,13 +182,13 @@ impl Default for MmapFlags {
 ///
 /// If system failed to allocate mem
 pub fn mmap(
-    addr: Option<NonNull<()>>,
+    addr: Option<NonNull<u8>>,
     length: usize,
     prot: MmapProt,
     flags: MmapFlags,
     fd: i32,
     offset: c_off,
-) -> Result<NonNull<()>, Errno> {
+) -> Result<NonNull<u8>, Errno> {
     let addr_ptr = addr.map_or(ptr::null_mut(), NonNull::as_ptr);
     // SAFETY: We pass a valid nr,
     // all values are synchronized with https://syscalls.mebeim.net
@@ -202,14 +202,14 @@ pub fn mmap(
             fd,
             offset
         );
-        size.map(|v| NonNull::new_unchecked(v as *mut ()))
+        size.map(|v| NonNull::new_unchecked(v as *mut u8))
     }
 }
 
 /// # Errors
 ///
 /// If failed to deallocate mem
-pub fn munmap(addr: NonNull<()>, length: usize) -> Result<(), Errno> {
+pub fn munmap(addr: NonNull<u8>, length: usize) -> Result<(), Errno> {
     // let addr_ptr = addr.as_ptr();
     // SAFETY: We pass a valid nr,
     // all values are synchronized with https://syscalls.mebeim.net

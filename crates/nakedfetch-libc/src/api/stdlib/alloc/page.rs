@@ -40,7 +40,7 @@ pub fn king_page() -> Page {
 
 #[repr(transparent)]
 #[derive(Clone, Copy)]
-pub struct Page(NonNull<()>);
+pub struct Page(NonNull<u8>);
 
 impl Page {
     pub fn allocate_new() -> Self {
@@ -77,7 +77,7 @@ impl Page {
         }
     }
 
-    pub(crate) const fn as_raw(self) -> *mut () {
+    pub(crate) const fn as_raw(self) -> *mut u8 {
         self.0.as_ptr()
     }
 
@@ -85,7 +85,7 @@ impl Page {
     ///
     /// Ptr must be non-null and point to a page previously produced by
     /// `Page::as_raw`
-    pub(crate) const unsafe fn from_raw(ptr: *mut ()) -> Self {
+    pub(crate) const unsafe fn from_raw(ptr: *mut u8) -> Self {
         // SAFETY: caller guarantees `ptr` is non-null and valid
         Self(unsafe { NonNull::new_unchecked(ptr) })
     }
@@ -97,7 +97,7 @@ unsafe impl Send for Page {}
 unsafe impl Sync for Page {}
 
 #[repr(transparent)]
-pub struct PageLargeAlloc(NonNull<()>);
+pub struct PageLargeAlloc(NonNull<u8>);
 
 impl PageLargeAlloc {
     pub fn allocate_new(layout: Layout) -> Self {
@@ -122,7 +122,7 @@ impl PageLargeAlloc {
         Self(ptr)
     }
 
-    pub const fn restore_from_data(data_ptr: NonNull<()>) -> Self {
+    pub const fn restore_from_data(data_ptr: NonNull<u8>) -> Self {
         // SAFETY: Move exactly to the beginning of the allocated memory.
         let ptr = unsafe { data_ptr.byte_sub(PAGE_SIZE) };
         Self(ptr)
@@ -146,7 +146,7 @@ impl PageLargeAlloc {
 }
 
 pub struct Meta {
-    next: AtomicPtr<()>,
+    next: AtomicPtr<u8>,
     bitmask: AtomicU64,
 }
 

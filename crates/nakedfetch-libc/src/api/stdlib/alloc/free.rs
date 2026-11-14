@@ -3,7 +3,7 @@ use core::{alloc::Layout, ptr::NonNull};
 use super::page::{CHUNK_SIZE, DATA_SIZE, PageLargeAlloc, SMALL_MAX, king_page};
 
 #[allow(clippy::missing_panics_doc, reason = "Panics only in debug for test")]
-pub fn free(ptr: NonNull<()>, layout: Layout) {
+pub fn free(ptr: NonNull<u8>, layout: Layout) {
     let size = layout.size();
     let align = layout.align();
 
@@ -14,7 +14,7 @@ pub fn free(ptr: NonNull<()>, layout: Layout) {
     }
 }
 
-fn free_small(ptr: NonNull<()>, size: usize) -> bool {
+fn free_small(ptr: NonNull<u8>, size: usize) -> bool {
     let addr = ptr.addr().get();
     let mut page = king_page();
     loop {
@@ -43,7 +43,7 @@ fn free_small(ptr: NonNull<()>, size: usize) -> bool {
     true
 }
 
-fn free_large(ptr: NonNull<()>) {
+fn free_large(ptr: NonNull<u8>) {
     let large = PageLargeAlloc::restore_from_data(ptr);
     large.free();
 }
