@@ -1,4 +1,4 @@
-use core::hint;
+use core::{hint, mem::MaybeUninit};
 
 use crate::{errno::Errno, raw::Table, syscall};
 
@@ -28,7 +28,12 @@ pub fn read(fd: i32, buf: &mut [u8], count: usize) -> Result<usize, Errno> {
 /// # Errors
 ///
 /// If system failed to pread
-pub fn pread(fd: i32, buf: &mut [u8], count: usize, offset: usize) -> Result<usize, Errno> {
+pub fn pread(
+    fd: i32,
+    buf: &mut [MaybeUninit<u8>],
+    count: usize,
+    offset: usize,
+) -> Result<usize, Errno> {
     if count > buf.len() {
         return Err(Errno::ERANGE);
     }

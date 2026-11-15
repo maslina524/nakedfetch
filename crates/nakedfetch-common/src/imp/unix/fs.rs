@@ -1,3 +1,5 @@
+use core::mem::MaybeUninit;
+
 pub use libc::stdio::{File, FileAccess};
 use libc::{
     AsRawHandle as _,
@@ -41,7 +43,7 @@ pub fn write_file(handle: &FileHandle, buf: &[u8]) -> Result<usize, FileWriteErr
 
 pub fn read_file(
     handle: &FileHandle,
-    buf: &mut [u8],
+    buf: &mut [MaybeUninit<u8>],
     start: usize,
     count: usize,
 ) -> Result<usize, FileReadError> {

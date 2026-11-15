@@ -2,7 +2,7 @@ use alloc::{
     string::{FromUtf8Error, String},
     vec::Vec,
 };
-use core::{error::Error, fmt, marker::PhantomData, str::Utf8Error};
+use core::{error::Error, fmt, marker::PhantomData, mem::MaybeUninit, str::Utf8Error};
 
 use path::Path;
 
@@ -251,7 +251,7 @@ impl<A: CanRead> File<A> {
     /// Error if the system failed to read the file correctly.
     pub fn read_part(
         &self,
-        buf: &mut [u8],
+        buf: &mut [MaybeUninit<u8>],
         start: usize,
         count: usize,
     ) -> Result<usize, FileReadError> {
@@ -262,23 +262,49 @@ impl<A: CanRead> File<A> {
     ///
     /// Error if the system failed to read the file correctly.
     pub fn read(&self) -> Result<Vec<u8>, FileSizeReadError> {
-        let hint = self.file_size().unwrap_or(0).max(4096);
-        let mut buf = Vec::with_capacity(hint);
-
-        let mut chunk = [0u8; 4096];
-        let len = chunk.len();
-        loop {
-            let n = fs::read_file(&self.fd, &mut chunk, buf.len(), len)?;
-            if n == 0 {
-                break;
-            }
-            buf.extend_from_slice(&chunk[..n]);
-
-            if buf.len() > 16 * 1024 * 1024 {
-                return Err(FileSizeReadError::Read(FileReadError::NoData));
-            }
+        fn via_file_size(fd: &fs::FileHandle, size: usize) -> Result<Vec<u8>, FileSizeReadError> {
+            let mut buf = Vec::with_capacity(size);
+            let readed = fs::read_file(fd, buf.spare_capacity_mut(), 0, size)?;
+            // SAFETY: Set the size exactly to the initialized part
+            unsafe { buf.set_len(readed) };
+            buf.shrink_to_fit();
+            Ok(buf)
         }
-        Ok(buf)
+
+        fn unknown_file_size(fd: &fs::FileHandle) -> Result<Vec<u8>, FileSizeReadError> {
+            // the size of one page is less than 4096 bytes, the program mostly
+            // reads very small files, so reading in large steps is overkill
+            const BYTE_STEP: usize = 1024;
+
+            let mut buf: Vec<u8> = Vec::with_capacity(BYTE_STEP);
+            let mut chunk = [MaybeUninit::uninit(); BYTE_STEP];
+            let mut len = 0;
+
+            loop {
+                let n = fs::read_file(fd, &mut chunk, len, BYTE_STEP)?;
+                if n == 0 {
+                    break;
+                }
+                len += n;
+
+                // SAFETY: Take the slice only from the initialized bytes into
+                // which the function wrote the data
+                let initialized = unsafe { &*(&raw const chunk[..n] as *const [u8]) };
+                buf.extend_from_slice(initialized);
+
+                if len > 4 * 1024 * 1024 {
+                    return Err(FileSizeReadError::Read(FileReadError::NoData));
+                }
+            }
+            Ok(buf)
+        }
+
+        let size = self.file_size()?;
+        if size > 0 {
+            via_file_size(&self.fd, size)
+        } else {
+            unknown_file_size(&self.fd)
+        }
     }
 }
 
@@ -472,7 +498,7 @@ impl<'f, A: CanRead> FileByLine<'f, A> {
     /// If it failed to read a line of the file, see [`FileByLineError`].
     pub fn next<'out>(
         &mut self,
-        buf: &'out mut [u8],
+        buf: &'out mut [MaybeUninit<u8>],
     ) -> Result<Option<&'out str>, FileByLineError> {
         if buf.is_empty() {
             return Err(FileByLineError::LineTooLong);
@@ -492,6 +518,10 @@ impl<'f, A: CanRead> FileByLine<'f, A> {
             return Ok(None);
         }
 
+        // SAFETY: Take the slice only from the initialized bytes into
+        // which the function wrote the data
+        let initialized: &[u8] = unsafe { &*(&raw const buf[..readed] as *const [u8]) };
+
         let at_eof = self.pos + readed >= size;
 
         let mut new_line_idx = 0;
@@ -499,7 +529,7 @@ impl<'f, A: CanRead> FileByLine<'f, A> {
             if new_line_idx >= readed {
                 break false;
             }
-            if buf[new_line_idx] == b'\n' {
+            if initialized[new_line_idx] == b'\n' {
                 break true;
             }
             new_line_idx += 1;
@@ -515,11 +545,11 @@ impl<'f, A: CanRead> FileByLine<'f, A> {
         }
 
         // Trim \r
-        if new_line_idx > 0 && buf[new_line_idx - 1] == b'\r' {
+        if new_line_idx > 0 && initialized[new_line_idx - 1] == b'\r' {
             new_line_idx -= 1;
         }
 
-        str::from_utf8(&buf[..new_line_idx])
+        str::from_utf8(&initialized[..new_line_idx])
             .map(Some)
             .map_err(FileByLineError::InvalidUtf8)
     }
@@ -527,7 +557,7 @@ impl<'f, A: CanRead> FileByLine<'f, A> {
 
 #[cfg(test)]
 mod tests {
-    use core::fmt::Write as _;
+    use core::{fmt::Write as _, mem::MaybeUninit};
     use std::fs;
 
     use crate::fs::{File, FileByLine, Read, Write};
@@ -584,16 +614,25 @@ mod tests {
         {
             let file = File::<Read>::open(path).expect("Failed to crate new file");
 
-            let mut buf = [0u8; 20];
+            let mut buf = [MaybeUninit::uninit(); 20];
             let std = fs::read(path).expect("fs::read failed");
 
-            file.read_part(&mut buf, 10, 20)
+            let readed = file
+                .read_part(&mut buf, 10, 20)
                 .expect("Failed to read bytes");
-            assert_eq!(&std[10..30], buf);
+
+            // SAFETY: Take the slice only from the initialized bytes into
+            // which the function wrote the data
+            let initialized: &[u8] = unsafe { &*(&raw const buf[..readed] as *const [u8]) };
+            assert_eq!(&std[10..30], initialized);
 
             file.read_part(&mut buf, 10, 20)
                 .expect("Failed to read bytes");
-            assert_eq!(&std[10..30], buf);
+
+            // SAFETY: Take the slice only from the initialized bytes into
+            // which the function wrote the data
+            let initialized: &[u8] = unsafe { &*(&raw const buf[..readed] as *const [u8]) };
+            assert_eq!(&std[10..30], initialized);
         }
     }
 
@@ -663,7 +702,7 @@ mod tests {
 
         fn next<'out>(
             by_line: &'out mut FileByLine<'_, Read>,
-            buf: &'out mut [u8],
+            buf: &'out mut [MaybeUninit<u8>],
         ) -> Option<&'out str> {
             by_line.next(buf).expect("Failed to read line")
         }
@@ -674,7 +713,7 @@ mod tests {
         {
             let file = File::<Read>::open(path).expect("Failed to open file");
             let mut by_line = FileByLine::new(&file);
-            let mut buf = [0u8; 64];
+            let mut buf = [MaybeUninit::uninit(); 64];
 
             assert_eq!(next(&mut by_line, &mut buf), Some("First Line"));
             assert_eq!(next(&mut by_line, &mut buf), Some("Second Line"));
