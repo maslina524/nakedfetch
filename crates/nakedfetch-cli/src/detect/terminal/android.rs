@@ -1,33 +1,28 @@
 use core::ffi::CStr;
 
-use crate::{
-    modules::Terminal,
-    str::SmolStr,
-    unix::{libc::getenv, path::Path},
-    warning,
-};
+use common::env;
+use path::SmolPath;
 
-static ENV_NAMES: [&CStr; 6] = [
-    c"TERMUX_VERSION",
-    c"TERMUX_APP_PACKAGE_MANAGER",
-    c"TERMUX_APP__PACKAGE_NAME",
-    c"TERMUX_MAIN_PACKAGE_FORMAT",
-    c"TERMUX_APP__VERSION_NAME",
-    c"TERMUX_APP__VERSION_CODE",
+use crate::{modules::Terminal, str::SmolStr, warning};
+
+static ENV_NAMES: [&[u8]; 6] = [
+    b"TERMUX_VERSION",
+    b"TERMUX_APP_PACKAGE_MANAGER",
+    b"TERMUX_APP__PACKAGE_NAME",
+    b"TERMUX_MAIN_PACKAGE_FORMAT",
+    b"TERMUX_APP__VERSION_NAME",
+    b"TERMUX_APP__VERSION_CODE",
 ];
 
-const TERMUX: &str = "Termux";
+const TERMUX: &[u8] = b"Termux";
 
 fn get_version() -> Option<SmolStr> {
     for env in ENV_NAMES {
-        let ptr = getenv(env.as_ptr());
-        if ptr.is_null() {
+        let Ok(val) = env::var(env) else {
             continue;
-        }
+        };
 
-        // SAFETY: Valid ptr, safe
-        let c_str = unsafe { CStr::from_ptr(ptr) };
-        match SmolStr::try_from(c_str) {
+        match SmolStr::try_from(val) {
             Ok(s) => return Some(s),
             Err(e) => {
                 warning!("Failed to parse CStr: {e}");
@@ -42,13 +37,13 @@ pub fn get() -> Terminal {
     let version = get_version().unwrap_or_default();
 
     Terminal {
-        process_name: SmolStr::from_static(TERMUX),
-        exe: Path::new(),
-        exe_name: SmolStr::empty(),
+        process_name: SmolPath::from_static(TERMUX),
+        exe: SmolPath::empty(),
+        exe_name: SmolPath::empty(),
         version,
         pid: 0,
-        pretty_name: SmolStr::from_static(TERMUX),
-        exe_path: Path::new(),
+        pretty_name: SmolPath::from_static(TERMUX),
+        exe_path: SmolPath::empty(),
         tty: -1,
     }
 }

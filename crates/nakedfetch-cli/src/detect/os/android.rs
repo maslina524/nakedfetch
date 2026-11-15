@@ -4,10 +4,12 @@ use alloc::{
 };
 use core::ffi::CStr;
 
+use common::fs;
+
 use crate::{
     detect::os::{OsInfo, get_id},
     str::SmolStr,
-    unix::{fs, libc::__system_property_get},
+    unix::libc::__system_property_get,
 };
 
 const PROP_VALUE_MAX: usize = 92;

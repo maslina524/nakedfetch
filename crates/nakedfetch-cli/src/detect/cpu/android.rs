@@ -1,15 +1,12 @@
 use alloc::{borrow::Cow, vec::Vec};
 use core::ffi::CStr;
 
+use common::{formatf, fs};
+use path::Path;
+
 use crate::{
-    abort,
-    detect::cpu,
-    format,
-    formats::Frequency,
-    modules::cpu::Cpu,
-    parser::parse_range_notation,
-    unix::{fs, libc::__system_property_get, path::Path},
-    warning,
+    abort, detect::cpu, formats::Frequency, modules::cpu::Cpu, parser::parse_range_notation,
+    unix::libc::__system_property_get, warning,
 };
 
 const PROP_VALUE_MAX: usize = 92;
@@ -86,8 +83,8 @@ fn physical_cores_count() -> usize {
     let mut ret = Vec::with_capacity(24);
     let mut n = 0;
     loop {
-        let path = Path::from(format!("/sys/devices/system/cpu/cpu{n}/topology/core_id"));
-        if !path.exists() {
+        let path = formatf!("/sys/devices/system/cpu/cpu{n}/topology/core_id");
+        if !fs::exists(&path).unwrap_or(false) {
             break;
         }
         let content = fs::read_to_string(path).unwrap();
@@ -105,8 +102,8 @@ fn physical_cores_count() -> usize {
 fn logical_cores_count() -> usize {
     let mut n = 0;
     loop {
-        let path = Path::from(format!("/sys/devices/system/cpu/cpu{n}/"));
-        if path.exists() {
+        let path = formatf!("/sys/devices/system/cpu/cpu{n}/");
+        if fs::exists(&path).unwrap_or(false) {
             n += 1;
         } else {
             break;
@@ -129,10 +126,8 @@ fn package_count() -> usize {
     let mut ret = Vec::with_capacity(24);
     let mut n = 0;
     loop {
-        let path = Path::from(format!(
-            "/sys/devices/system/cpu/cpu{n}/topology/physical_package_id"
-        ));
-        if !path.exists() {
+        let path = formatf!("/sys/devices/system/cpu/cpu{n}/topology/physical_package_id");
+        if !fs::exists(&path).unwrap_or(false) {
             break;
         }
         let content = fs::read_to_string(path).unwrap();
@@ -150,8 +145,8 @@ fn package_count() -> usize {
 fn numa_nodes_count() -> usize {
     let mut n = 0;
     loop {
-        let path = Path::from(format!("/sys/devices/system/node/node{n}"));
-        if !path.exists() {
+        let path = formatf!("/sys/devices/system/node/node{n}");
+        if !fs::exists(&path).unwrap_or(false) {
             break;
         }
         n += 1;

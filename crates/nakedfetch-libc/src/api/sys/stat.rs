@@ -14,41 +14,6 @@ use crate::{
 
 const AT_FDCWD: i32 = -100;
 
-// Ref: <https://elixir.bootlin.com/linux/v6.17/source/arch/arm/include/uapi/asm/stat.h#L21>
-#[cfg(target_arch = "arm")]
-#[repr(C)]
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct Stat {
-    #[cfg(target_endian = "big")]
-    pub st_dev: ffi::c_ushort,
-    #[cfg(target_endian = "big")]
-    __pad1: ffi::c_ushort,
-    #[cfg(target_endian = "little")]
-    pub st_dev: ffi::c_ulong,
-    pub st_ino: ffi::c_ulong,
-    pub st_mode: ffi::c_ushort,
-    pub st_nlink: ffi::c_ushort,
-    pub st_uid: ffi::c_ushort,
-    pub st_gid: ffi::c_ushort,
-    #[cfg(target_endian = "big")]
-    pub st_rdev: ffi::c_ushort,
-    #[cfg(target_endian = "big")]
-    __pad2: ffi::c_ushort,
-    #[cfg(target_endian = "little")]
-    pub st_rdev: ffi::c_ulong,
-    pub st_size: ffi::c_ulong,
-    pub st_blksize: ffi::c_ulong,
-    pub st_blocks: ffi::c_ulong,
-    pub st_atime: ffi::c_ulong,
-    pub st_atime_nsec: ffi::c_ulong,
-    pub st_mtime: ffi::c_ulong,
-    pub st_mtime_nsec: ffi::c_ulong,
-    pub st_ctime: ffi::c_ulong,
-    pub st_ctime_nsec: ffi::c_ulong,
-    __unused4: ffi::c_ulong,
-    __unused5: ffi::c_ulong,
-}
-
 // Ref: <https://elixir.bootlin.com/linux/v6.17/source/arch/x86/include/uapi/asm/stat.h#L10>
 #[cfg(target_arch = "x86")]
 #[repr(C)]
@@ -75,7 +40,7 @@ pub struct Stat {
 }
 
 /// Ref: <https://elixir.bootlin.com/linux/v6.17/source/include/uapi/asm-generic/stat.h#L24>
-#[cfg(target_arch = "x86_64")]
+#[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
 #[repr(C)]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Stat {

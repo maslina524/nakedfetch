@@ -4,13 +4,14 @@ use alloc::{
 };
 use core::ffi::CStr;
 
+use path::SmolPath;
+
 use crate::{
     detect::initsystem::InitSystemInfo,
     str::SmolStr,
     unix::{
         fs::{self, ItemType},
         libc::__system_property_get,
-        path::Path,
     },
 };
 
@@ -29,25 +30,21 @@ impl InitSystemInfo {
 
         Self {
             exe,
-            name: Cow::Owned(name),
+            name: Cow::Borrowed(name),
             version,
         }
     }
 
-    fn name_and_exe() -> (String, Path) {
-        Self::read_rc().unwrap_or_else(|| ("Unknown".to_owned(), Path::new()))
+    fn name_and_exe() -> (&'static str, SmolPath) {
+        Self::read_rc().unwrap_or_else(|| ("Unknown", SmolPath::empty()))
     }
 
-    fn read_rc() -> Option<(String, Path)> {
+    fn read_rc() -> Option<(&'static str, SmolPath)> {
         let entries = fs::read_dir_all("/system/etc/init").ok()?;
 
         for entry in entries {
-            #[allow(clippy::case_sensitive_file_extension_comparisons)]
             if entry.typ() == ItemType::File && entry.name().ends_with(".rc") {
-                return Some((
-                    "Android init (AOSP)".to_owned(),
-                    Path::from("/system/etc/init"),
-                ));
+                return Some(("Android init (AOSP)", SmolPath::from("/system/etc/init")));
             }
         }
 
