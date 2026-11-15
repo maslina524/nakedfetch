@@ -88,7 +88,7 @@ pub fn get_shell_pid() -> u32 {
         let item_iter = state.split(' ');
 
         let mut item_iter = item_iter.skip(1); // pid
-        let raw = item_iter.next().expect("Strange unix /proc/pid/state");
+        let raw = item_iter.next().expect("Strange unix /proc/pid/stat");
 
         let name = if raw.starts_with('(') && raw.ends_with(')') {
             // Valid unix format

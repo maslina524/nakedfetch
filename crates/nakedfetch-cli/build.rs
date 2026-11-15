@@ -267,8 +267,8 @@ mod setup {
                 println!("cargo:rustc-link-lib=static=lua5.4");
                 println!("cargo:rustc-link-lib=dylib=dl");
                 println!("cargo:rustc-link-lib=dylib=m");
-                println!("cargo:rustc-link-arg=-pthread");
-                println!("cargo:rustc-link-arg=-lc");
+                // println!("cargo:rustc-link-arg=-pthread");
+                // println!("cargo:rustc-link-arg=-lc");
             },
             ("android", "aarch64") => {
                 let lua_dir =

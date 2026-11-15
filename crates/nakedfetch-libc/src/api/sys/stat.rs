@@ -75,21 +75,20 @@ pub struct Stat {
 }
 
 /// Ref: <https://elixir.bootlin.com/linux/v6.17/source/include/uapi/asm-generic/stat.h#L24>
-#[cfg(target_arch = "x86_64")] // & others
+#[cfg(target_arch = "x86_64")]
 #[repr(C)]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Stat {
     pub st_dev: ffi::c_ulong,
     pub st_ino: ffi::c_ulong,
+    pub st_nlink: ffi::c_ulong,
     pub st_mode: ffi::c_uint,
-    pub st_nlink: ffi::c_uint,
     pub st_uid: ffi::c_uint,
     pub st_gid: ffi::c_uint,
+    __pad0: ffi::c_uint,
     pub st_rdev: ffi::c_ulong,
-    __pad1: ffi::c_ulong,
     pub st_size: ffi::c_long,
-    pub st_blksize: ffi::c_int,
-    __pad2: ffi::c_int,
+    pub st_blksize: ffi::c_long,
     pub st_blocks: ffi::c_long,
     pub st_atime: ffi::c_long,
     pub st_atime_nsec: ffi::c_ulong,
@@ -97,9 +96,10 @@ pub struct Stat {
     pub st_mtime_nsec: ffi::c_ulong,
     pub st_ctime: ffi::c_long,
     pub st_ctime_nsec: ffi::c_ulong,
-    __unused4: ffi::c_uint,
-    __unused5: ffi::c_uint,
+    __unused: [ffi::c_long; 3],
 }
+
+const _: () = assert!(size_of::<Stat>() == 144);
 
 /// # Errors
 ///

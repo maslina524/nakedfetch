@@ -1,6 +1,5 @@
 use alloc::{
     string::{FromUtf8Error, String},
-    vec,
     vec::Vec,
 };
 use core::{error::Error, fmt, marker::PhantomData, str::Utf8Error};
@@ -263,12 +262,22 @@ impl<A: CanRead> File<A> {
     ///
     /// Error if the system failed to read the file correctly.
     pub fn read(&self) -> Result<Vec<u8>, FileSizeReadError> {
-        let size = self.file_size()?;
+        let hint = self.file_size().unwrap_or(0).max(4096);
+        let mut buf = Vec::with_capacity(hint);
 
-        let mut buf = vec![0u8; size];
-        let bytes_read = fs::read_file(&self.fd, &mut buf, 0, size)?;
-        buf.truncate(bytes_read);
+        let mut chunk = [0u8; 4096];
+        let len = chunk.len();
+        loop {
+            let n = fs::read_file(&self.fd, &mut chunk, buf.len(), len)?;
+            if n == 0 {
+                break;
+            }
+            buf.extend_from_slice(&chunk[..n]);
 
+            if buf.len() > 16 * 1024 * 1024 {
+                return Err(FileSizeReadError::Read(FileReadError::NoData));
+            }
+        }
         Ok(buf)
     }
 }

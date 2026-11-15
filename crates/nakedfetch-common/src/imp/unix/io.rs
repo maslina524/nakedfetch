@@ -15,8 +15,6 @@ pub fn stderr() -> ConsoleHandle {
 
 pub fn console_write(handle: ConsoleHandle, buf: &[u8]) -> usize {
     let manually_drop = handle.into_file();
-    match fs::write_file(&manually_drop, buf) {
-        Ok(v) => v,
-        Err(e) => 0, // panic!("Failed to write to the console: {e:?}"),
-    }
+    fs::write_file(&manually_drop, buf).unwrap_or_default()
+    // panic!("Failed to write to the console: {e:?}")
 }
