@@ -179,8 +179,24 @@ struct LogoEntry {
 
 fn generate(input_json: &Path, out_dir: &Path) -> std::io::Result<()> {
     let text = fs::read_to_string(input_json)?;
-    let map: HashMap<String, Vec<LogoEntry>> =
+    let mut map: HashMap<String, Vec<LogoEntry>> =
         serde_json::from_str(&text).expect("invalid logo JSON");
+
+    for v in map.values_mut() {
+        for entry in v {
+            let Some(first) = entry.colors.first() else {
+                break;
+            };
+
+            if entry.color_keys == "color::FG_DEFAULT" {
+                entry.color_keys = first.clone();
+            }
+
+            if entry.color_title == "color::FG_DEFAULT" {
+                entry.color_title = first.clone();
+            }
+        }
+    }
 
     for (letter, entries) in &map {
         let code = generate_module(letter, entries);
