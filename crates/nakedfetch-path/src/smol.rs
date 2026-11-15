@@ -17,7 +17,7 @@ impl SmolPath {
 
     #[must_use]
     pub const fn empty() -> Self {
-        Self(SmolOsInner::new())
+        Self(SmolOsInner::empty())
     }
 
     #[must_use]

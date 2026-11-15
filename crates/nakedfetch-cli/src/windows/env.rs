@@ -21,7 +21,6 @@ use common::{
 use path::Path;
 
 use crate::{
-    ARGS,
     str::SmolStr,
     w,
     windows::{
@@ -268,10 +267,6 @@ pub fn args_init() -> Vec<String> {
     }
 
     ret
-}
-
-pub fn args() -> &'static [String] {
-    ARGS.get().expect("Unreachable")
 }
 
 pub fn get_file_product_version<T: AsRef<Path>>(path: T) -> error::Result<SmolStr> {

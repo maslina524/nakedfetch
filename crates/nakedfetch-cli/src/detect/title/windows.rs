@@ -44,7 +44,7 @@ impl TitleInfo {
         let user_name_colored = Self::colored(&user_name);
         let host_name = Self::host_name();
         let host_name_colored = Self::colored(&host_name);
-        let home_dir_buf = Self::home_dir(&user_name.as_ref());
+        let home_dir_buf = Self::home_dir(user_name.as_ref());
         let home_dir = home_dir_buf.as_smol_path();
         let exe_path = Self::exe_path();
         let user_shell = Self::user_shell();
@@ -135,8 +135,8 @@ impl TitleInfo {
     }
 
     pub fn exe_path() -> SmolPath {
-        let args = env::args();
-        SmolPath::from(args[0].clone())
+        let arg = common::env::args().next().unwrap_or_else(|| unreachable!());
+        SmolPath::from(arg)
     }
 
     pub fn user_shell() -> SmolPath {

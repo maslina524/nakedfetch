@@ -83,6 +83,11 @@ pub struct SmolWtf8(Repr);
 
 impl SmolWtf8 {
     #[must_use]
+    pub const fn empty() -> Self {
+        Self(Repr::Empty)
+    }
+
+    #[must_use]
     pub const fn from_static(s: &'static Wtf8) -> Self {
         Self(Repr::Static(s))
     }

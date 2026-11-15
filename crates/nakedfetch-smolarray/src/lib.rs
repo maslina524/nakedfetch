@@ -36,7 +36,7 @@ impl<T, const N: usize> SmolArray<T, N> {
     };
 
     #[must_use]
-    pub const fn new() -> Self {
+    pub const fn empty() -> Self {
         let () = Self::ASSERT;
         Self(Repr::Empty)
     }
@@ -136,7 +136,7 @@ impl<T, const N: usize> Drop for SmolArray<T, N> {
 
 impl<T, const N: usize> Default for SmolArray<T, N> {
     fn default() -> Self {
-        Self::new()
+        Self::empty()
     }
 }
 
@@ -238,7 +238,7 @@ mod tests {
 
     #[test]
     fn empty() {
-        let a: SmolArray<u8, 22> = SmolArray::new();
+        let a: SmolArray<u8, 22> = SmolArray::empty();
         assert!(a.is_empty());
         assert_eq!(a.as_slice(), &[]);
     }

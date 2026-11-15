@@ -599,10 +599,9 @@ extern "C" fn main(
 #[cfg(target_os = "windows")]
 #[unsafe(no_mangle)]
 extern "C" fn main() -> i32 {
-    let _ = ARGS.set(env::args_init());
     let ret = nakedfetch_main();
 
-    if env::args().iter().any(|a| a == "--alloc-snapshot") {
+    if common::env::args().any(|a| a == "--alloc-snapshot") {
         fprintln!("{}", allocator::Snapshot::create());
     }
 
