@@ -1,4 +1,4 @@
-use core::ptr;
+use core::{mem::MaybeUninit, ptr};
 
 use crate::{
     AsRawHandle, ntdll,
@@ -16,7 +16,7 @@ use crate::{
 /// ``assert!(read <= buf.len())``
 pub fn ReadFile(
     handle: &FileHandle,
-    buf: &mut [u8],
+    buf: &mut [MaybeUninit<u8>],
     read: usize,
     offset: Option<usize>,
 ) -> Result<usize, NtStatus> {
@@ -26,7 +26,7 @@ pub fn ReadFile(
 
 fn read_file_inner(
     raw: PVOID,
-    buf: &mut [u8],
+    buf: &mut [MaybeUninit<u8>],
     read: usize,
     offset: Option<usize>,
 ) -> Result<usize, NtStatus> {

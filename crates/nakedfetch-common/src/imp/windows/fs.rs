@@ -1,3 +1,5 @@
+use core::mem::MaybeUninit;
+
 use path::Path;
 pub use winapi::win32::fileapi::{CreateFileError, FileAccess, FileAttributesError, FileHandle};
 use winapi::{
@@ -94,7 +96,7 @@ pub fn write_file(handle: &FileHandle, buf: &[u8]) -> Result<usize, FileWriteErr
 
 pub fn read_file(
     handle: &FileHandle,
-    buf: &mut [u8],
+    buf: &mut [MaybeUninit<u8>],
     start: usize,
     count: usize,
 ) -> Result<usize, FileReadError> {

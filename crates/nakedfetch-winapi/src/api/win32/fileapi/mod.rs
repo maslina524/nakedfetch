@@ -36,6 +36,8 @@ impl Drop for FileHandle {
 
 #[cfg(test)]
 mod tests {
+    use core::mem::MaybeUninit;
+
     use super::*;
     use crate::{AsRawHandle, win32::fileapi::FileHandle};
 
@@ -89,11 +91,14 @@ mod tests {
         )
         .expect("Failed to open file");
 
-        let mut buf = [0u8; 1024];
+        let mut buf = [MaybeUninit::uninit(); 1024];
         let readed = ReadFile(&handle, &mut buf, 1024, None).expect("Failed to read file");
         assert!(readed > 0);
 
-        let string = str::from_utf8(&buf).expect("Incorrect file read");
+        // SAFETY: Take the slice only from the initialized bytes into
+        // which the function wrote the data
+        let initialized = unsafe { &*(&raw const buf[..readed] as *const [u8]) };
+        let string = str::from_utf8(initialized).expect("Incorrect file read");
         assert!(string.contains("[package]"));
     }
 
