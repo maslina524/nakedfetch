@@ -17,6 +17,7 @@ impl From<LuaType> for &'static str {
     }
 }
 
+#[derive(Clone)]
 pub enum LuaValue<'a> {
     Display(&'a dyn fmt::Display),
     Debug(&'a dyn fmt::Debug),
@@ -56,6 +57,34 @@ macro_rules! impl_as_lua {
             $crate::aslua::LuaValue::Debug(self)
         }
     };
+    (@Display $Type:ty) => {
+        const INTO_LUA_TYPE: $crate::aslua::LuaType = $crate::aslua::LuaType::String;
+        fn as_lua_value(&self) -> $crate::aslua::LuaValue<'_> {
+            $crate::aslua::LuaValue::Display(self)
+        }
+    };
+    (@AsF64 $Type:ty) => {
+        const INTO_LUA_TYPE: $crate::aslua::LuaType = $crate::aslua::LuaType::Number;
+        #[allow(
+            clippy::cast_precision_loss,
+            clippy::cast_lossless,
+            trivial_numeric_casts,
+            reason = "f64 to f64. Cast lossless should not cause problems"
+        )]
+        fn as_lua_value(&self) -> $crate::aslua::LuaValue<'_> {
+            $crate::aslua::LuaValue::Number(*self as f64)
+        }
+    };
+    (@AsBool $Type:ty) => {
+        const INTO_LUA_TYPE: $crate::aslua::LuaType = $crate::aslua::LuaType::Boolean;
+        #[allow(
+            trivial_casts,
+            reason = "bool to bool"
+        )]
+        fn as_lua_value(&self) -> $crate::aslua::LuaValue<'_> {
+            $crate::aslua::LuaValue::Boolean(*self as bool)
+        }
+    };
 }
 
 use alloc::{borrow::Cow, string::String};
@@ -66,5 +95,13 @@ impl_as_lua! {
         &str,
         char,
         Cow<'static, str>
+    }
+    AsF64 {
+        usize,u8, u16, u32, u64, u128,
+        isize, i8, i16, i32, i64, i128,
+        f32, f64,
+    }
+    AsBool {
+        bool
     }
 }

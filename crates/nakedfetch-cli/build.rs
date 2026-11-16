@@ -243,8 +243,6 @@ fn generate_logo_info(entry: &LogoEntry) -> TokenStream {
 }
 
 mod setup {
-    use std::ffi::OsString;
-
     pub fn windows_resource() {
         use winresource::WindowsResource;
         let res = WindowsResource::new();
@@ -269,37 +267,21 @@ mod setup {
         println!("cargo:rerun-if-env-changed=BUILD_TIMESTAMP_{timestamp}");
     }
 
-    pub fn lua_and_libc() {
-        use std::env;
-
+    pub fn libc() {
         match (crate::target_os(), crate::target_arch()) {
             ("linux", "x86_64") => {
-                println!(
-                    "cargo:rustc-link-search=native={}",
-                    env::var_os("LUA_LIB_DIR")
-                        .unwrap_or_else(|| OsString::from("/usr/lib/"))
-                        .display()
-                );
-                println!("cargo:rustc-link-lib=static=lua5.4");
                 println!("cargo:rustc-link-lib=dylib=dl");
                 println!("cargo:rustc-link-lib=dylib=m");
                 // println!("cargo:rustc-link-arg=-pthread");
                 // println!("cargo:rustc-link-arg=-lc");
             },
             ("android", "aarch64") => {
-                let lua_dir =
-                    env::var("LUA_LIB_DIR").unwrap_or_else(|_| "bin/android-aarch64".to_owned());
-                println!("cargo:rustc-link-search=native={lua_dir}");
-                println!("cargo:rustc-link-lib=static=lua5.4");
                 println!("cargo:rustc-link-arg=-Wl,--no-as-needed");
                 println!("cargo:rustc-link-arg=-lc");
                 println!("cargo:rustc-link-lib=dylib=m");
                 println!("cargo:rustc-link-lib=dylib=dl");
             },
             ("windows", _) => {
-                println!("cargo:rustc-link-search=native=bin/windows");
-                println!("cargo:rustc-link-lib=static=lua55");
-
                 // FIXME: This just suppresses the error rather than solving it,
                 // in the future Lua should be built manually for the linker
                 // that Rust uses
@@ -537,14 +519,6 @@ mod setup {
     }
 
     pub mod cfg {
-        pub fn lua() {
-            if crate::target_os() == "windows" {
-                println!("cargo:rustc-cfg=lua5_5");
-            } else {
-                println!("cargo:rustc-cfg=lua5_4");
-            }
-        }
-
         pub fn libc() {
             match crate::target_os() {
                 "linux" => println!("cargo:rustc-cfg=glibc"),
@@ -574,7 +548,7 @@ fn main() {
     }
 
     setup::build_bypass();
-    setup::lua_and_libc();
+    setup::libc();
 
     // Setup env
     setup::env::target();
@@ -587,7 +561,6 @@ fn main() {
     setup::env::libc_version();
 
     // Setup cfg
-    setup::cfg::lua();
     setup::cfg::libc();
     setup::cfg::no_alloc_in_panic();
 
