@@ -1,6 +1,7 @@
 #![cfg_attr(not(test), no_std)]
 #![cfg_attr(not(test), no_main)]
 
-// extern crate alloc;
+extern crate alloc;
 
+pub mod aslua;
 pub mod types;
