@@ -20,8 +20,8 @@ static ARGS_VEC: OnceLock<Vec<&str>> = OnceLock::new();
 
 fn args_vec() -> &'static [&'static str] {
     ARGS_VEC.get_or_init(|| {
-        let arg_count = unistd::ARGC.load(Ordering::Relaxed);
-        let arg_values = unistd::ARGV.load(Ordering::Relaxed);
+        let arg_count = unistd::argc();
+        let arg_values = unistd::argv();
 
         let mut buf = Vec::with_capacity(arg_count);
         for i in 0..arg_count {

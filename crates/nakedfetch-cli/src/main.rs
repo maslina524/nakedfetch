@@ -585,13 +585,12 @@ extern "C" fn main(
     argv: *const *const ffi::c_char,
     envp: *const *const ffi::c_char,
 ) -> ffi::c_int {
-    use core::sync::atomic::Ordering;
-
-    libc::unistd::ARGC.store(argc as usize, Ordering::Relaxed);
-    libc::unistd::ARGV.store(argv.cast_mut(), Ordering::Relaxed);
-    libc::unistd::ENVIRON.store(envp.cast_mut(), Ordering::Relaxed);
-
     let ret = nakedfetch_main();
+
+    if common::env::args().any(|a| a == "--alloc-snapshot") {
+        fprintln!("{}", allocator::Snapshot::create());
+    }
+
     ret
 }
 

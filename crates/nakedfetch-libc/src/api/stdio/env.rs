@@ -1,15 +1,16 @@
 use alloc::vec::Vec;
-use core::{ffi::CStr, sync::atomic::Ordering};
+use core::ffi::CStr;
 
 use crate::unistd;
 
+#[must_use]
 pub fn getenv(name: &[u8]) -> Option<Vec<u8>> {
     let name_len = name.len();
     if name_len == 0 {
         return None;
     }
 
-    let mut pairs = unistd::ENVIRON.load(Ordering::Acquire);
+    let mut pairs = unistd::envp();
     loop {
         // SAFETY: According to POSIX, the pointer is always valid
         let pair_ptr = unsafe { pairs.read() };
