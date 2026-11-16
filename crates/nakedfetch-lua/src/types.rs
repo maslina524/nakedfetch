@@ -1,24 +1,29 @@
-use core::ffi::{c_char, c_int};
+#[repr(C)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct State(());
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub struct State;
+pub mod api {
+    use core::ffi::{c_char, c_int};
 
-unsafe extern "C" {
-    #[link_name = "lua_pcallk"]
-    pub unsafe fn pcallk(
-        state: *mut State,
-        nargs: c_int,
-        nresults: c_int,
-        errfunc: c_int,
-        ctx: isize,
-        k: Option<unsafe extern "C" fn(*mut State, c_int, isize)>,
-    ) -> c_int;
-    #[link_name = "lua_close"]
-    pub unsafe fn close(state: *mut State);
-    #[link_name = "lua_tolstring"]
-    pub unsafe fn to_lstring(state: *mut State, idx: c_int, len: *mut usize) -> *const c_char;
-    #[link_name = "lua_settop"]
-    pub unsafe fn set_top(state: *mut State, idx: c_int);
+    use super::State;
+
+    unsafe extern "C" {
+        #[link_name = "lua_pcallk"]
+        pub unsafe fn pcallk(
+            state: *mut State,
+            nargs: c_int,
+            nresults: c_int,
+            errfunc: c_int,
+            ctx: isize,
+            k: Option<unsafe extern "C" fn(*mut State, c_int, isize)>,
+        ) -> c_int;
+        #[link_name = "lua_close"]
+        pub unsafe fn close(state: *mut State);
+        #[link_name = "lua_tolstring"]
+        pub unsafe fn to_lstring(state: *mut State, idx: c_int, len: *mut usize) -> *const c_char;
+        #[link_name = "lua_settop"]
+        pub unsafe fn set_top(state: *mut State, idx: c_int);
+    }
 }
 
 pub mod aux {
