@@ -57,7 +57,7 @@ macro_rules! feprintln {
 #[macro_export]
 macro_rules! formatf {
     ($($tt:tt)*) => {{
-        let mut string = ::alloc::string::String::with_capacity(32);
+        let mut string = ::alloc::string::String::new();
         let _ = ::core::fmt::Write::write_fmt(&mut string, ::core::format_args!($($tt)*));
         string
     }};

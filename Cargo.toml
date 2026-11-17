@@ -17,6 +17,7 @@ members = [
     "crates/nakedfetch-lua",
     "crates/nakedfetch-allocator",
     "crates/nakedfetch-libc",
+    "crates/nakedfetch-smolstr",
 ]
 
 default-members = ["crates/nakedfetch-cli"]

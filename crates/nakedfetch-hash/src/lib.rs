@@ -1,6 +1,4 @@
 #![cfg_attr(not(test), no_std)]
-#![cfg_attr(not(test), no_main)]
-
 // SOURCE:
 // https://github.com/python/cpython/blob/main/Modules/zlibmodule.c
 

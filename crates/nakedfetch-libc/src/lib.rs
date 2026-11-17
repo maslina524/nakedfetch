@@ -1,5 +1,4 @@
 #![cfg_attr(not(test), no_std)]
-#![cfg_attr(not(test), no_main)]
 #![cfg(target_family = "unix")]
 
 extern crate alloc;
