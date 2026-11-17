@@ -2,67 +2,12 @@
 
 extern crate alloc;
 
+mod repr;
+
 use alloc::{borrow::Cow, string::String, sync::Arc};
-use core::{ffi::CStr, fmt, mem, ops::Deref};
+use core::{ffi::CStr, fmt, ops::Deref};
 
-const INLINE_CAP: usize = 23;
-
-#[repr(u8)]
-#[derive(Clone, Copy)]
-pub enum InlineLen {
-    _V1 = 1,
-    _V2 = 2,
-    _V3 = 3,
-    _V4 = 4,
-    _V5 = 5,
-    _V6 = 6,
-    _V7 = 7,
-    _V8 = 8,
-    _V9 = 9,
-    _V10 = 10,
-    _V11 = 11,
-    _V12 = 12,
-    _V13 = 13,
-    _V14 = 14,
-    _V15 = 15,
-    _V16 = 16,
-    _V17 = 17,
-    _V18 = 18,
-    _V19 = 19,
-    _V20 = 20,
-    _V21 = 21,
-    _V22 = 22,
-    _V23 = 23,
-}
-
-impl TryFrom<u8> for InlineLen {
-    type Error = ();
-
-    fn try_from(value: u8) -> Result<Self, ()> {
-        if (1u8..=INLINE_CAP as u8).contains(&value) {
-            // SAFETY: Enum bounds are checked, it has the same layout as u8,
-            // safe
-            let len = unsafe { mem::transmute::<u8, Self>(value) };
-            Ok(len)
-        } else {
-            Err(())
-        }
-    }
-}
-
-#[derive(Default, Clone)]
-pub enum Repr {
-    #[default]
-    Empty,
-    Inline {
-        len: InlineLen,
-        data: [u8; INLINE_CAP],
-    },
-    Heap(Arc<str>),
-    Static(&'static str),
-}
-
-const _: () = assert!(size_of::<Repr>() == 24);
+use repr::{INLINE_CAP, Repr};
 
 /// [`SmolStr`] only stores the string, does not modify it
 #[derive(Default, Clone)]
@@ -103,6 +48,24 @@ impl Deref for SmolStr {
 
     fn deref(&self) -> &Self::Target {
         self.as_str()
+    }
+}
+
+impl PartialEq for SmolStr {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_str() == other.as_str()
+    }
+}
+
+impl PartialEq<&str> for SmolStr {
+    fn eq(&self, other: &&str) -> bool {
+        self.as_str() == *other
+    }
+}
+
+impl PartialEq<SmolStr> for &str {
+    fn eq(&self, other: &SmolStr) -> bool {
+        *self == other.as_str()
     }
 }
 
@@ -174,5 +137,76 @@ impl fmt::Display for SmolStr {
 impl fmt::Debug for SmolStr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self.as_str())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use alloc::borrow::Cow;
+
+    use crate::{SmolStr, repr::Repr};
+
+    const S23: &str = "01020304050607080910111";
+    const S24: &str = "010203040506070809101112";
+
+    #[test]
+    fn empty_str() {
+        let smolstr = SmolStr::empty();
+        assert!(matches!(smolstr.0, Repr::Empty));
+    }
+
+    #[test]
+    fn static_str() {
+        let smolstr = SmolStr::from_static(S23);
+        assert!(matches!(smolstr.0, Repr::Static(_)));
+
+        let smolstr = SmolStr::from_static(S24);
+        assert!(matches!(smolstr.0, Repr::Static(_)));
+    }
+
+    #[test]
+    fn inline_or_heap() {
+        let smolstr = SmolStr::from(S23);
+        assert!(matches!(smolstr.0, Repr::Inline { .. }));
+
+        let smolstr = SmolStr::from(S24);
+        assert!(matches!(smolstr.0, Repr::Heap(_)));
+    }
+
+    #[test]
+    fn display_and_debug() {
+        let smol_str = SmolStr::from(S23);
+
+        assert_eq!(smol_str, S23);
+        assert_eq!(format!("{smol_str:?}"), format!("{S23:?}"));
+    }
+
+    #[test]
+    fn from_x_for_smolstr() {
+        let smol_str = SmolStr::try_from(c"&CStr").expect("From &CStr failed");
+        assert_eq!(smol_str, "&CStr");
+
+        let smol_str = SmolStr::from(Cow::Borrowed("Borrowed"));
+        assert_eq!(smol_str, "Borrowed");
+        let smol_str = SmolStr::from(Cow::Owned("Owned".to_string()));
+        assert_eq!(smol_str, "Owned");
+
+        let smol_str = SmolStr::from("String".to_string());
+        assert_eq!(smol_str, "String");
+    }
+
+    #[test]
+    fn non_ascii() {
+        let smol_str = SmolStr::from("Привет Мир!");
+        assert_eq!(smol_str, "Привет Мир!");
+
+        let smol_str = SmolStr::from("Прывітанне Мір!");
+        assert_eq!(smol_str, "Прывітанне Мір!");
+
+        let smol_str = SmolStr::from("Γεια σου κόσμε!");
+        assert_eq!(smol_str, "Γεια σου κόσμε!");
+
+        let smol_str = SmolStr::from("你好世界！");
+        assert_eq!(smol_str, "你好世界！");
     }
 }
