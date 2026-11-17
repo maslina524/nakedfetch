@@ -482,15 +482,19 @@ impl fmt::Display for FileByLineError {
 
 impl Error for FileByLineError {}
 
-pub struct FileByLine<'f, A: CanRead> {
-    file: &'f File<A>,
+pub struct FileByLine<A: CanRead> {
+    file: File<A>,
     pos: usize,
 }
 
-impl<'f, A: CanRead> FileByLine<'f, A> {
+impl<A: CanRead> FileByLine<A> {
     #[must_use]
-    pub const fn new(file: &'f File<A>) -> Self {
+    pub const fn new(file: File<A>) -> Self {
         Self { file, pos: 0 }
+    }
+
+    pub const fn pos_mut(&mut self) -> &mut usize {
+        &mut self.pos
     }
 
     /// # Errors
@@ -701,7 +705,7 @@ mod tests {
         }
 
         fn next<'out>(
-            by_line: &'out mut FileByLine<'_, Read>,
+            by_line: &'out mut FileByLine<Read>,
             buf: &'out mut [MaybeUninit<u8>],
         ) -> Option<&'out str> {
             by_line.next(buf).expect("Failed to read line")
@@ -711,8 +715,8 @@ mod tests {
         save_example_file(path);
 
         {
-            let file = File::<Read>::open(path).expect("Failed to open file");
-            let mut by_line = FileByLine::new(&file);
+            let file = File::open(path).expect("Failed to open file");
+            let mut by_line = FileByLine::new(file);
             let mut buf = [MaybeUninit::uninit(); 64];
 
             assert_eq!(next(&mut by_line, &mut buf), Some("First Line"));

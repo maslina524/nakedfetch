@@ -1,5 +1,5 @@
 use alloc::{boxed::Box, string::String, vec::Vec};
-use core::{ffi::CStr, sync::atomic::Ordering};
+use core::ffi::CStr;
 
 use libc::{stdio, unistd};
 use path::{OsStr, OsString, PathBuf};

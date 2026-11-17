@@ -12,6 +12,8 @@ pub mod fs;
 pub mod io;
 pub mod sync;
 
+#[cfg(target_family = "unix")]
+pub mod unix;
 #[cfg(target_os = "windows")]
 pub mod windows;
 
