@@ -6,6 +6,7 @@ use std::{
 
 static TARGET: OnceLock<Target> = OnceLock::new();
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Target {
     arch: Box<OsStr>,
     os: Box<OsStr>,
@@ -43,14 +44,14 @@ impl Target {
     }
 
     pub fn os() -> &'static OsStr {
-        &Self::get_or_init().arch
+        &Self::get_or_init().os
     }
 
     pub fn family() -> &'static OsStr {
-        &Self::get_or_init().arch
+        &Self::get_or_init().family
     }
 
     pub fn env() -> &'static OsStr {
-        &Self::get_or_init().arch
+        &Self::get_or_init().env
     }
 }

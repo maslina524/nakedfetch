@@ -30,6 +30,7 @@ quote       = "1.0.47"
 proc-macro2 = "1"
 syn         = "3.0.5"
 winresource = "0.1.31"
+rustc_version = "0.4.1"
 
 [lints]
 workspace = true
