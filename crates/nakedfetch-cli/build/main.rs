@@ -2,6 +2,7 @@
 mod macros;
 
 mod libc;
+mod setup_cfg;
 mod setup_env;
 mod target;
 mod windows;
@@ -38,6 +39,8 @@ fn main() -> Result<(), MainError> {
     setup_env::rustc_version()?;
     setup_env::llvm_version()?;
 
-    panic!();
+    setup_cfg::libc()?;
+    setup_cfg::no_alloc_in_panic();
+
     Ok(())
 }
