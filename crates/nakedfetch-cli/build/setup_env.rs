@@ -1,4 +1,4 @@
-use crate::target::Target;
+use crate::{commit::Commit, target::Target};
 
 pub fn target() {
     set_env!("TARGET={}", Target::full_name().display());
@@ -30,4 +30,34 @@ pub fn llvm_version() -> Result<(), rustc_version::Error> {
     };
     set_env!("LLVM_VERSION={}", ver);
     Ok(())
+}
+
+pub fn commit(commit: &Commit) {
+    println!("cargo:rerun-if-env-changed=GITHUB_SHA");
+    println!("cargo:rerun-if-env-changed=GITHUB_REF_NAME");
+    println!("cargo:rerun-if-env-changed=GITHUB_HEAD_REF");
+
+    // Commit
+    set_env!("COMMIT_AUTHOR={}", commit.author);
+    set_env!("COMMIT_EMAIL={}", commit.email);
+    set_env!("COMMIT_DATE={}", commit.date);
+    set_env!("COMMIT_SHA={}", commit.hash);
+    set_env!("COMMIT_SHA_SMALL={}", &commit.hash[..7]);
+    set_env!("COMMIT_MESSAGE={}", commit.message);
+
+    if let Some(index) = commit.date.find(',') {
+        let smol = &commit.date[..index];
+        set_env!("COMMIT_DATE_SMALL={}", smol);
+    } else {
+        set_env!("COMMIT_DATE_SMALL=");
+    }
+
+    // Diff
+    set_env!("COMMIT_FILES={}", commit.diff.files);
+    set_env!("COMMIT_ADDED={}", commit.diff.insertions);
+    set_env!("COMMIT_DELETED={}", commit.diff.deletions);
+    set_env!(
+        "COMMIT_TOTAL={}",
+        commit.diff.insertions + commit.diff.deletions
+    );
 }

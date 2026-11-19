@@ -1,6 +1,7 @@
 #[macro_use]
 mod macros;
 
+mod commit;
 mod link;
 mod setup_cfg;
 mod setup_env;
@@ -9,6 +10,7 @@ mod windows;
 
 use std::{error::Error, fmt};
 
+use commit::Commit;
 use target::Target;
 
 struct MainError(Box<dyn Error>);
@@ -26,6 +28,8 @@ impl fmt::Debug for MainError {
 }
 
 fn main() -> Result<(), MainError> {
+    println!("cargo:rerun-if-changed=force-rebuild-always");
+
     if Target::os() == "windows" {
         windows::setup_resource()?;
     }
@@ -39,6 +43,9 @@ fn main() -> Result<(), MainError> {
     setup_env::compile_time();
     setup_env::rustc_version()?;
     setup_env::llvm_version()?;
+
+    let commit = Commit::read_git()?;
+    setup_env::commit(&commit);
 
     setup_cfg::libc()?;
     setup_cfg::no_alloc_in_panic();
