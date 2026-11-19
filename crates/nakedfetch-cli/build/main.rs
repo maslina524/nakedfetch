@@ -1,6 +1,7 @@
 #[macro_use]
 mod macros;
 
+mod libc;
 mod target;
 mod windows;
 
@@ -26,6 +27,8 @@ fn main() -> Result<(), MainError> {
     if Target::os() == "windows" {
         windows::setup_resource()?;
     }
+
+    libc::link_libc()?;
 
     Ok(())
 }

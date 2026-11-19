@@ -27,3 +27,13 @@ macro_rules! set_env {
         ::std::println!(::std::concat!("cargo:rustc-env=", $fmt), $($args)*);
     }};
 }
+
+macro_rules! link_arg {
+    () => {{}};
+    ($fmt:literal) => {{
+        ::std::println!(::std::concat!("cargo:rustc-link-arg=", $fmt));
+    }};
+    ($fmt:literal, $($args:tt)*) => {{
+        ::std::println!(::std::concat!("cargo:rustc-link-arg=", $fmt), $($args)*);
+    }};
+}
