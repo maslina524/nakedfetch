@@ -32,6 +32,7 @@ pub fn libc() -> Result<(), UnknownLibc> {
     match os_bytes {
         b"linux" => set_cfg!("glibc"),
         b"android" => set_cfg!("bionic"),
+        b"windows" => {},
         _ => return Err(UnknownLibc::new(os)),
     }
 

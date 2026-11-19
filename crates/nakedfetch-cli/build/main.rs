@@ -1,7 +1,7 @@
 #[macro_use]
 mod macros;
 
-mod libc;
+mod link;
 mod setup_cfg;
 mod setup_env;
 mod target;
@@ -30,7 +30,8 @@ fn main() -> Result<(), MainError> {
         windows::setup_resource()?;
     }
 
-    libc::link_libc()?;
+    link::libc()?;
+    link::lua_lib()?;
 
     setup_env::target();
     setup_env::target_os();

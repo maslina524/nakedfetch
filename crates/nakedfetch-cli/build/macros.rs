@@ -37,3 +37,23 @@ macro_rules! link_arg {
         ::std::println!(::std::concat!("cargo:rustc-link-arg=", $fmt), $($args)*);
     }};
 }
+
+macro_rules! link_lib {
+    () => {{}};
+    ($fmt:literal) => {{
+        ::std::println!(::std::concat!("cargo:rustc-link-arg=", $fmt));
+    }};
+    ($fmt:literal, $($args:tt)*) => {{
+        ::std::println!(::std::concat!("cargo:rustc-link-arg=", $fmt), $($args)*);
+    }};
+}
+
+macro_rules! link_search {
+    () => {{}};
+    ($fmt:literal) => {{
+        ::std::println!(::std::concat!("cargo:rustc-link-arg=", $fmt));
+    }};
+    ($fmt:literal, $($args:tt)*) => {{
+        ::std::println!(::std::concat!("cargo:rustc-link-arg=", $fmt), $($args)*);
+    }};
+}

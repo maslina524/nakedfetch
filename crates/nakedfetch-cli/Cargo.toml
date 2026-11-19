@@ -22,15 +22,16 @@ image = { path = "../nakedfetch-image" }
 libc = { path = "../nakedfetch-libc" }
 
 [build-dependencies]
-chrono      = "0.4.45"
-zlib-rs     = "0.6.7"
-serde_json  = "1.0.151"
-serde       = { version = "1", features = ["derive"] }
-quote       = "1.0.47"
-proc-macro2 = "1"
-syn         = "3.0.5"
 winresource = "0.1.31"
 rustc_version = "0.4.1"
+chrono      = "0.4.45"
+
+# zlib-rs     = "0.6.7"
+# serde_json  = "1.0.151"
+# serde       = { version = "1", features = ["derive"] }
+# quote       = "1.0.47"
+# proc-macro2 = "1"
+# syn         = "3.0.5"
 
 [lints]
 workspace = true
