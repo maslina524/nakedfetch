@@ -2,6 +2,7 @@
 mod macros;
 
 mod libc;
+mod setup_env;
 mod target;
 mod windows;
 
@@ -30,5 +31,13 @@ fn main() -> Result<(), MainError> {
 
     libc::link_libc()?;
 
+    setup_env::target();
+    setup_env::target_os();
+    setup_env::target_arch();
+    setup_env::compile_time();
+    setup_env::rustc_version()?;
+    setup_env::llvm_version()?;
+
+    panic!();
     Ok(())
 }
