@@ -1,0 +1,56 @@
+use std::{
+    env,
+    ffi::{OsStr, OsString},
+    sync::OnceLock,
+};
+
+static TARGET: OnceLock<Target> = OnceLock::new();
+
+pub struct Target {
+    arch: Box<OsStr>,
+    os: Box<OsStr>,
+    family: Box<OsStr>,
+    env: Box<OsStr>,
+}
+
+impl Target {
+    pub fn detect() -> Self {
+        fn get_env<K: AsRef<OsStr>>(key: K) -> OsString {
+            let key = key.as_ref();
+            env::var_os(key)
+                .unwrap_or_else(|| panic!("Env variable '{}' is not set!", key.display()))
+        }
+
+        let arch = get_env("CARGO_CFG_TARGET_ARCH").into_boxed_os_str();
+        let os = get_env("CARGO_CFG_TARGET_OS").into_boxed_os_str();
+        let family = get_env("CARGO_CFG_TARGET_FAMILY").into_boxed_os_str();
+        let env = get_env("CARGO_CFG_TARGET_ENV").into_boxed_os_str();
+
+        Self {
+            arch,
+            os,
+            family,
+            env,
+        }
+    }
+
+    fn get_or_init() -> &'static Self {
+        TARGET.get_or_init(Self::detect)
+    }
+
+    pub fn arch() -> &'static OsStr {
+        &Self::get_or_init().arch
+    }
+
+    pub fn os() -> &'static OsStr {
+        &Self::get_or_init().arch
+    }
+
+    pub fn family() -> &'static OsStr {
+        &Self::get_or_init().arch
+    }
+
+    pub fn env() -> &'static OsStr {
+        &Self::get_or_init().arch
+    }
+}

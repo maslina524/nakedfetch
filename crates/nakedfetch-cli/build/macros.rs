@@ -1,0 +1,29 @@
+macro_rules! warning {
+    () => {{}};
+    ($fmt:literal) => {{
+        ::std::println!(::std::concat!("cargo:warning=", $fmt));
+    }};
+    ($fmt:literal, $($args:tt)*) => {{
+        ::std::println!(::std::concat!("cargo:warning=", $fmt), $($args)*);
+    }};
+}
+
+macro_rules! set_cfg {
+    () => {{}};
+    ($fmt:literal) => {{
+        ::std::println!(::std::concat!("cargo:rustc-cfg=", $fmt));
+    }};
+    ($fmt:literal, $($args:tt)*) => {{
+        ::std::println!(::std::concat!("cargo:rustc-cfg=", $fmt), $($args)*);
+    }};
+}
+
+macro_rules! set_env {
+    () => {{}};
+    ($fmt:literal) => {{
+        ::std::println!(::std::concat!("cargo:rustc-env=", $fmt));
+    }};
+    ($fmt:literal, $($args:tt)*) => {{
+        ::std::println!(::std::concat!("cargo:rustc-env=", $fmt), $($args)*);
+    }};
+}

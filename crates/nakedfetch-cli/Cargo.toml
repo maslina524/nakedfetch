@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
+build = "build/main.rs"
 
 [dependencies]
 allocator = { path = "../nakedfetch-allocator" }

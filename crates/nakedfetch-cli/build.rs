@@ -540,6 +540,50 @@ mod setup {
             }
         }
     }
+
+    pub mod link {
+        use std::{env, ffi::OsString};
+
+        use crate::{target_arch, target_os};
+
+        pub fn lua() {
+            match (target_os(), target_arch()) {
+                ("linux", "x86_64") => {
+                    println!(
+                        "cargo:rustc-link-search=native={}",
+                        env::var_os("LUA_LIB_DIR")
+                            .unwrap_or_else(|| OsString::from("/usr/lib/"))
+                            .display()
+                    );
+                    println!("cargo:rustc-link-lib=static=lua5.4");
+                    println!("cargo:rustc-link-lib=dylib=dl");
+                    println!("cargo:rustc-link-lib=dylib=m");
+                    // println!("cargo:rustc-link-arg=-pthread");
+                    // println!("cargo:rustc-link-arg=-lc");
+                },
+                ("android", "aarch64") => {
+                    let lua_dir =
+                        env::var("LUA_LIB_DIR").unwrap_or_else(|_| "bin/android-aarch64".to_owned());
+                    println!("cargo:rustc-link-search=native={lua_dir}");
+                    println!("cargo:rustc-link-lib=static=lua5.4");
+                    println!("cargo:rustc-link-arg=-Wl,--no-as-needed");
+                    println!("cargo:rustc-link-arg=-lc");
+                    println!("cargo:rustc-link-lib=dylib=m");
+                    println!("cargo:rustc-link-lib=dylib=dl");
+                },
+                ("windows", _) => {
+                    println!("cargo:rustc-link-search=native=bin/windows");
+                    println!("cargo:rustc-link-lib=static=lua55");
+
+                    // FIXME: This just suppresses the error rather than solving it,
+                    // in the future Lua should be built manually for the linker
+                    // that Rust uses
+                    println!("cargo:rustc-link-arg=/NODEFAULTLIB:LIBCMT");
+                },
+                _ => {},
+            }
+        }
+    }
 }
 
 fn main() {
@@ -563,6 +607,9 @@ fn main() {
     // Setup cfg
     setup::cfg::libc();
     setup::cfg::no_alloc_in_panic();
+
+    // Link with lua
+    setup::link::lua();
 
     // Check is nightly
     // let is_nightly = ver.contains("nightly") || ver.contains("dev");
