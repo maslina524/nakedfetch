@@ -1,6 +1,7 @@
 #[macro_use]
 mod macros;
 
+mod codegen;
 mod commit;
 mod link;
 mod logo;
@@ -64,6 +65,7 @@ fn main() -> Result<(), MainError> {
             (enc as f64 / raw as f64).mul_add(-100.0, 100.0)
         );
     }
+    codegen::generate_logo()?;
 
     Ok(())
 }
