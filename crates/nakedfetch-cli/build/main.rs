@@ -3,6 +3,7 @@ mod macros;
 
 mod commit;
 mod link;
+mod logo;
 mod setup_cfg;
 mod setup_env;
 mod target;
@@ -49,6 +50,20 @@ fn main() -> Result<(), MainError> {
 
     setup_cfg::libc()?;
     setup_cfg::no_alloc_in_panic();
+
+    let (raw, enc) = logo::compress()?;
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "It will work correctly as long as encoded and raw are less than 2^52 bytes"
+    )]
+    {
+        println!(
+            "cargo:warning={}b -> {}b = {:.02}%",
+            raw,
+            enc,
+            (enc as f64 / raw as f64).mul_add(-100.0, 100.0)
+        );
+    }
 
     Ok(())
 }
