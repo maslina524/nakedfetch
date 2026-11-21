@@ -74,7 +74,7 @@ impl fmt::Display for GenLogoError {
         match self {
             Self::EnvIsNotSet(var) => write!(f, "Env variable {} is not set", var.display()),
             Self::FileSystem(err) => write!(f, "Filesystem error: {err}"),
-            Self::Codegen(err) => fmt::Display::fmt(err, f),
+            Self::Codegen(err) => write!(f, "Codegen: {err}"),
         }
     }
 }
@@ -103,10 +103,11 @@ pub fn generate_logo() -> Result<(), GenLogoError> {
     let logo_path = find_logo_path();
     println!("cargo:rerun-if-changed={}", logo_path.display());
 
-    let out_dir = env::var_os("OUT_DIR")
+    let env = env::var_os("OUT_DIR")
         .map(PathBuf::from)
         .ok_or_else(|| GenLogoError::EnvIsNotSet(OsString::from("OUT_DIR")))?;
 
+    let out_dir = env.join("logo");
     fs::create_dir_all(&out_dir)?;
     generate(&logo_path, &out_dir)?;
     Ok(())
@@ -169,7 +170,7 @@ fn generate_logo_info(entry: &LogoEntry) -> Result<TokenStream, CodegenError> {
     let q = quote! {
         crate::logo::LogoInfo {
             names: &[#(#names),*],
-            encoded: include_bytes!(concat!(env!("LOGO_OUT_DIR"), #path_lit)),
+            encoded: include_bytes!(concat!(env!("OUT_DIR"), #path_lit)),
             colors: &[
                 #(#colors),*
             ],

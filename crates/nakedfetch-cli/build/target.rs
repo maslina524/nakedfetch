@@ -11,8 +11,6 @@ pub struct Target {
     full_name: Box<OsStr>,
     arch: Box<OsStr>,
     os: Box<OsStr>,
-    family: Box<OsStr>,
-    env: Box<OsStr>,
 }
 
 impl Target {
@@ -26,15 +24,11 @@ impl Target {
         let full_name = get_env("TARGET").into_boxed_os_str();
         let arch = get_env("CARGO_CFG_TARGET_ARCH").into_boxed_os_str();
         let os = get_env("CARGO_CFG_TARGET_OS").into_boxed_os_str();
-        let family = get_env("CARGO_CFG_TARGET_FAMILY").into_boxed_os_str();
-        let env = get_env("CARGO_CFG_TARGET_ENV").into_boxed_os_str();
 
         Self {
             full_name,
             arch,
             os,
-            family,
-            env,
         }
     }
 
@@ -52,13 +46,5 @@ impl Target {
 
     pub fn os() -> &'static OsStr {
         &Self::get_or_init().os
-    }
-
-    pub fn family() -> &'static OsStr {
-        &Self::get_or_init().family
-    }
-
-    pub fn env() -> &'static OsStr {
-        &Self::get_or_init().env
     }
 }

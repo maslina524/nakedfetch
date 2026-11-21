@@ -45,6 +45,7 @@ fn main() -> Result<(), MainError> {
     setup_env::compile_time();
     setup_env::rustc_version()?;
     setup_env::llvm_version()?;
+    setup_env::libc_version();
 
     let commit = Commit::read_git()?;
     setup_env::commit(&commit);

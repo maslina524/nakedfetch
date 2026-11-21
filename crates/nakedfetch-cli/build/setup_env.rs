@@ -32,6 +32,10 @@ pub fn llvm_version() -> Result<(), rustc_version::Error> {
     Ok(())
 }
 
+pub fn libc_version() {
+    set_env!("LIBC_VERSION=");
+}
+
 pub fn commit(commit: &Commit) {
     println!("cargo:rerun-if-env-changed=GITHUB_SHA");
     println!("cargo:rerun-if-env-changed=GITHUB_REF_NAME");

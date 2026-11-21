@@ -175,7 +175,13 @@ pub fn lua_lib() -> Result<(), LuaLinkError> {
             link_lib!("dylib=dl");
         },
         (b"windows", _) => {
-            let dir = lib_dir("bin\\windows")?;
+            let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+            let dir = manifest_dir
+                .ancestors()
+                .map(|ancestor| ancestor.join("bin\\windows"))
+                .find(|candidate| candidate.exists())
+                .unwrap_or_else(|| manifest_dir.join("bin\\windows"));
+
             link_search!("native={}", dir.display());
             link_lib!("static=lua55");
         },

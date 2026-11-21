@@ -23,7 +23,7 @@ logo_mod!(
     a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z
 );
 
-const UNKNOWN: &[u8] = include_bytes!(concat!(env!("LOGO_OUT_DIR"), "/temp/_/unknown.txt"));
+const UNKNOWN: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/temp/_/unknown.txt"));
 static UNKNOWN_PTR: &LogoInfo = &LogoInfo {
     names: &[],
     encoded: UNKNOWN,
