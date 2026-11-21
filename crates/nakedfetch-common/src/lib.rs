@@ -10,6 +10,7 @@ pub mod allocator;
 pub mod env;
 pub mod fs;
 pub mod io;
+pub mod process;
 pub mod sync;
 
 #[cfg(target_family = "unix")]

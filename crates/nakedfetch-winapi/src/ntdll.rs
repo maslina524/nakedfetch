@@ -47,7 +47,14 @@ define_fn!(
         _Out_ PVOID FileInformation,
         _In_ ULONG Length,
         _In_ FILE_INFORMATION_CLASS FileInformationClass
-        );
+    );
+
+    NtStatus NTAPI NtQuerySystemInformation(
+        _In_ SYSTEM_INFORMATION_CLASS SystemInformationClass,
+        _Out_ PVOID SystemInformation,
+        _In_ ULONG SystemInformationLength,
+        _Out_opt_ PULONG ReturnLength
+    );
 
     NtStatus NTAPI NtReadFile(
         _In_ HANDLE FileHandle,
@@ -61,13 +68,10 @@ define_fn!(
         _In_opt_ PULONG Key
     );
 
-    NtStatus NTAPI NtQuerySystemInformation(
-        _In_ SYSTEM_INFORMATION_CLASS SystemInformationClass,
-        _Out_ PVOID SystemInformation,
-        _In_ ULONG SystemInformationLength,
-        _Out_opt_ PULONG ReturnLength
+    NtStatus NTAPI NtTerminateProcess(
+        _In_opt_ HANDLE ProcessHandle,
+        _In_ NtStatus ExitStatus
     );
-
 
     NtStatus NTAPI NtWriteFile(
         _In_ HANDLE FileHandle,

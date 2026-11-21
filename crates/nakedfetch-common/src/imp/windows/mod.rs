@@ -3,5 +3,6 @@ pub mod env;
 pub mod fs;
 pub mod handle;
 pub mod io;
+pub mod process;
 
 pub type RawError = winapi::ntstatus::NtStatus;
